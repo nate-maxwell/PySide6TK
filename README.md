@@ -8,6 +8,8 @@ Currently, PySide 6 compatible.
 Run `QtToolkit.stylesheets._example_viewer.main()`, or the file itself, to see
 an example widget that displays all the collected style sheets.
 
+<img src="https://i.imgur.com/DePm39f.png">
+
 ### Wrappers
 
 Wrapper methods will always be snake_case, i.e. if a widget has methods to
