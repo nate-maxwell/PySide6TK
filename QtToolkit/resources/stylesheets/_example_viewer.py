@@ -22,9 +22,9 @@ from QtToolkit.groupbox import GroupBox
 
 
 _styles = QtToolkit.gui.STYLE_PATH.glob('*')
-_sheets = [i.stem for i in _styles]
-_sheets.remove('__init__')
-_sheets.remove('_example_viewer')
+_sheets = [i.name for i in _styles]
+_sheets.remove('__init__.py')
+_sheets.remove('_example_viewer.py')
 
 
 class ExampleWidget(QtWidgets.QWidget):
@@ -37,9 +37,9 @@ class ExampleWidget(QtWidgets.QWidget):
     def _create_widgets(self) -> None:
         self.layout_main = QtWidgets.QHBoxLayout()
 
-        self.sl_items = SearchableList('Searchable List')
-
+        self.sl_items = SearchableList('Style Library')
         self.sl_items.populate_column(_sheets)
+        self.sl_items.item_selected = self._on_item_selected
 
         self.cmb_example = QtWidgets.QComboBox()
         self.cmb_example.addItems(['One', 'Two', 'Three'])
@@ -54,8 +54,8 @@ class ExampleWidget(QtWidgets.QWidget):
         self.btn_example = QtWidgets.QPushButton('Push Button')
         self.btn_example.setFixedWidth(200)
         self.dial_example = QtWidgets.QDial()
-        self.sldr_example = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
-        self.sldr_example.setValue(50)
+        self.slider_example = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.slider_example.setValue(50)
         self.grp_example = GroupBox('Group Box')
 
     def _create_layout(self) -> None:
@@ -81,53 +81,29 @@ class ExampleWidget(QtWidgets.QWidget):
         self.grp_example.add_widget(self.dial_example)
         self.grp_example.add_widget(QtToolkit.shapes.HorizontalLine())
         self.grp_example.add_widget(QtWidgets.QLabel('Slider'))
-        self.grp_example.add_widget(self.sldr_example)
+        self.grp_example.add_widget(self.slider_example)
         self.grp_example.add_stretch()
 
         self.layout_main.addWidget(self.sl_items)
         self.layout_main.addWidget(self.grp_example)
+
+    def _on_item_selected(self) -> None:
+        if self.sl_items.selected_items is None:
+            return
+
+        p = Path(QtToolkit.gui.STYLE_PATH, f'{self.sl_items.selected_item}')
+        if not p.exists():
+            return
+
+        with open(p) as f:
+            self.setStyleSheet(f.read())
 
 
 class StyleViewer(MainWindow):
     def __init__(self) -> None:
         super().__init__('Style Library Viewer',
                          (0, 0), (0, 0))
-        self._create_widgets()
-        self._create_layout()
-        self._create_connections()
-        self._on_cmb_change()
-
-    def _create_widgets(self) -> None:
-        self.widget_main = QtWidgets.QWidget()
-        self.layout_main = QtWidgets.QHBoxLayout()
-
-        self.vlayout_left = QtWidgets.QVBoxLayout()
-        self.cmb_stylesheet = LabeledComboBox('Stylesheet')
-        self.cmb_stylesheet.add_items(_sheets)
-
-        self.example_widget = ExampleWidget()
-
-    def _create_layout(self) -> None:
-        self.setCentralWidget(self.widget_main)
-        self.widget_main.setLayout(self.layout_main)
-
-        self.vlayout_left.addWidget(self.cmb_stylesheet)
-        self.vlayout_left.addStretch()
-
-        self.layout_main.addLayout(self.vlayout_left)
-        self.layout_main.addWidget(QtToolkit.shapes.VerticalLine())
-        self.layout_main.addWidget(self.example_widget)
-
-    def _create_connections(self) -> None:
-        self.cmb_stylesheet.cmb_box.currentTextChanged.connect(self._on_cmb_change)
-
-    def _on_cmb_change(self) -> None:
-        p = Path(QtToolkit.gui.STYLE_PATH, f'{self.cmb_stylesheet.current_text()}.qss')
-        if not p.exists():
-            return
-
-        with open(p) as f:
-            self.setStyleSheet(f.read())
+        self.setCentralWidget(ExampleWidget())
 
 
 def main():

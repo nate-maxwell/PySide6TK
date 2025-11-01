@@ -63,7 +63,7 @@ class SearchableList(QtWidgets.QWidget):
         self.layout_main.addWidget(self.le_search)
         self.layout_main.addWidget(self.list_column)
 
-        self.list_column.itemClicked.connect(self.item_selected)
+        self.list_column.currentRowChanged.connect(self.item_selected)
         self.le_search.textChanged.connect(self._search_list)
 
     def populate_column(self, contents: list):

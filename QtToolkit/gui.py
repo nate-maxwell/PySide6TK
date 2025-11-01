@@ -69,7 +69,7 @@ ICON_NO_PREVIEW_384x384 = Path(ICONS_PATH, 'icons/T_NoPreview_384x384.png')
 
 STYLE_PATH = Path(RESOURCES_PATH, 'stylesheets')
 
-# ----------Qss----------------------------------------------------------------
+# ----------QSS----------------------------------------------------------------
 QSS_ADAPTIC = Path(STYLE_PATH, 'Adaptic.qss')
 QSS_CHATBEE = Path(STYLE_PATH, 'Chatbee.qss')
 QSS_CLIENTOR = Path(STYLE_PATH, 'Clientor.qss')
@@ -116,3 +116,6 @@ QSS_VISUALSCRIPT = Path(STYLE_PATH, 'VisualScript.qss')
 QSS_WEBMAS = Path(STYLE_PATH, 'Webmas.qss')
 QSS_WORDOFFICE = Path(STYLE_PATH, 'WordOffice.qss')
 QSS_WSTARTPAGE = Path(STYLE_PATH, 'Wstartpage.qss')
+
+# ----------CSS----------------------------------------------------------------
+CSS_DARKORANGE = Path(STYLE_PATH, 'DarkOrange.css')
