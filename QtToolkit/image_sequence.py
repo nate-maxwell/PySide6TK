@@ -39,7 +39,11 @@ class ImageSequence(QtCore.QObject):
         QtCore.QObject.__init__(self, *args)
 
         self._fps = self.DEFAULT_FPS
-        self._timer = None
+
+        self._timer = QtCore.QTimer(self.parent())
+        self._timer.setSingleShot(False)
+        self._timer.timeout.connect(self._frame_changed)\
+
         self._frame = 0
         self._frames = []
         self._directory = None
@@ -97,11 +101,6 @@ class ImageSequence(QtCore.QObject):
 
     def reset(self):
         """Stop and reset the current frame to 0."""
-        if not self._timer:
-            self._timer = QtCore.QTimer(self.parent())
-            self._timer.setSingleShot(False)
-            self._timer.timeout.connect(self._frame_changed)
-
         if not self._paused:
             self._frame = 0
         self._timer.stop()
@@ -124,8 +123,7 @@ class ImageSequence(QtCore.QObject):
     def start(self):
         """Starts the movie. ImageSequence will enter Running state."""
         self.reset()
-        if self._timer:
-            self._timer.start(1000.0 / self._fps)
+        self._timer.start(int(1000.0 / self._fps))
 
     @property
     def frames(self):
@@ -166,7 +164,7 @@ class ImageSequence(QtCore.QObject):
         Returns the current frame as a QIcon.
 
         Return:
-            QtGui.QIcon: The created qicon of the current frame.
+            QtGui.QIcon: The created QIcon of the current frame.
         """
         return QtGui.QIcon(self.current_filename.as_posix())
 
@@ -176,7 +174,7 @@ class ImageSequence(QtCore.QObject):
         Return the current frame as a QPixmap.
 
         Return:
-            QtGui.QPixmap: The created qpixmap of the current frame.
+            QtGui.QPixmap: The created QPixmap of the current frame.
         """
         return QtGui.QPixmap(self.current_filename)
 

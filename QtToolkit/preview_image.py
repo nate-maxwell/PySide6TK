@@ -12,71 +12,153 @@
     Contains basic functionality for handling invalid paths.
 """
 
-
 from pathlib import Path
-from typing import Optional
+from typing import Union
 
-from PySide6 import QtCore
-from PySide6 import QtGui
-from PySide6 import QtWidgets
+import PySide6.QtCore as QtCore
+import PySide6.QtGui as QtGui
+import PySide6.QtWidgets as QtWidgets
 
 import QtToolkit.gui
+from image_sequence import ImageSequence
 
-
-# TODO: Refactor this to work with image_sequence.ImageSequence
 
 class PreviewImage(QtWidgets.QWidget):
-    def __init__(self, label: str, size: tuple[int, int] = None,
-                 label_top: bool = True):
+    """Preview widget that can display a still image or animate an
+    ImageSequence.
+
+    Args:
+        label: Optional caption shown above/below the image.
+        size: Target display size (width, height) for the preview area.
+        label_top: If True, label is placed above the image; otherwise below.
+
+    Notes:
+        - Uses ImageSequence for both single-frame and multi-frame sources.
+        - Connects to ImageSequence.frame_changed to update the pixmap live.
+        - Make sure to call close() (or let Qt manage lifetime) so timers stop.
+    """
+
+    def __init__(self, label: str, size: tuple[int, int] | None = None,
+                 label_top: bool = True) -> None:
         super().__init__()
-        if size is None:
-            self.size = [200, 200]
-        else:
-            self.size = size
 
-        self.layout_main = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout_main)
+        self._size = (200, 200) if size is None else size
+        self._sequence: Union[ImageSequence, None] = None
+        self._default_image_path: Path = Path(QtToolkit.gui.ICON_NO_PREVIEW_384x384)
 
-        self.image_path: Path = Path('/does/not/exist')
-        self.DEFAULT_IMAGE_PATH = Path(QtToolkit.icons.ICON_NO_PREVIEW_384x384)
+        self._layout = QtWidgets.QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.label = QtWidgets.QLabel(label)
-        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.image = QtWidgets.QLabel()
+        self._label = QtWidgets.QLabel(label)
+        self._label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._image = QtWidgets.QLabel()
+        self._image.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
         if label_top:
-            if label:  # no reason to add label if it contains no text
-                self.layout_main.addWidget(self.label)
-            self.layout_main.addWidget(self.image)
+            if label:
+                self._layout.addWidget(self._label)
+            self._layout.addWidget(self._image)
         else:
-            self.layout_main.addWidget(self.image)
-            if label:  # no reason to add label if it contains no text
-                self.layout_main.addWidget(self.label)
+            self._layout.addWidget(self._image)
+            if label:
+                self._layout.addWidget(self._label)
 
-        self.update_preview()
+        self._set_pixmap(self._pixmap_from_path(self._default_image_path))
 
-    def update_preview(self, image_path: Optional[Path] = None):
+    # ----------Public API-----------------------------------------------------
+
+    def set_source(self, path: Path | str | None) -> None:
+        """Set the preview source to a file or directory.
+
+        If 'path' is a file -> treated as single-frame sequence.
+        If 'path' is a directory -> treated as multi-frame sequence.
+        If 'path' is None or invalid -> shows default image.
         """
-        Updates and resets the pixmap to display the asset screenshot.
+        self._disconnect_sequence()
 
-        Args:
-            image_path (Optional[Path]): The file path to the image. If None is
-             given, the preview will be set to the default image path.
+        p = Path(path) if path is not None else None
+        if not p or not p.exists():
+            self._set_pixmap(self._pixmap_from_path(self._default_image_path))
+            return
 
-        Returns:
-            list: A list of strings containing the version entries. If not
-             versions exist, an empty list will be returned.
-        """
-        if image_path is None or not image_path.exists():
-            image_path = self.DEFAULT_IMAGE_PATH
+        self._sequence = ImageSequence(p, self)
+        self._sequence.frame_changed.connect(self._on_frame_changed)
+        self._on_frame_changed(self._sequence.current_frame_number or 0)
 
-        self.pixmap_preview = QtGui.QPixmap(image_path.as_posix())
-        self.pixmap_preview = self.pixmap_preview.scaled(self.size[0],
-                                                         self.size[1],
-                                                         QtCore.Qt.AspectRatioMode.KeepAspectRatio,
-                                                         QtCore.Qt.TransformationMode.FastTransformation)
-        self.image.setPixmap(self.pixmap_preview)
+    def play(self) -> None:
+        """Begin playback."""
+        if not self._sequence:
+            return
+        self._sequence.start()
 
-    def set_pixmap(self, pixmap: QtGui.QPixmap) -> None:
-        """Sets the pixmap of the image."""
-        self.image.setPixmap(pixmap)
+    def pause(self) -> None:
+        """Pause playback (frame remains)."""
+        if self._sequence and getattr(self._sequence, '_timer', None):
+            self._sequence.pause()
+
+    def resume(self) -> None:
+        """Resume playback if paused."""
+        if self._sequence and getattr(self._sequence, '_timer', None):
+            self._sequence.resume()
+
+    def stop(self) -> None:
+        """Stop playback (frame index preserved by ImageSequence unless reset)."""
+        if self._sequence and getattr(self._sequence, '_timer', None):
+            self._sequence.stop()
+
+    def reset(self) -> None:
+        """Stop (if running) and reset to frame 0; updates preview."""
+        if not self._sequence:
+            return
+        self._sequence.reset()
+        self._on_frame_changed(self._sequence.current_frame_number or 0)
+
+    # ----------Overrides / Internals------------------------------------------
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Ensure background timers are stopped before the widget closes."""
+        try:
+            self.stop()
+        finally:
+            super().closeEvent(event)
+
+    def _on_frame_changed(self, _frame_index: int) -> None:
+        """Slot for ImageSequence.frame_changed: update pixmap with scaling."""
+        if not self._sequence:
+            return
+
+        pix: QtGui.QPixmap = self._sequence.current_pixmap
+        self._set_pixmap(pix)
+
+    def _set_pixmap(self, pixmap: QtGui.QPixmap) -> None:
+        """Scale and set pixmap into the label."""
+        if pixmap.isNull():
+            pixmap = self._pixmap_from_path(self._default_image_path)
+
+        scaled = pixmap.scaled(
+            self._size[0],
+            self._size[1],
+            QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+            QtCore.Qt.TransformationMode.SmoothTransformation,
+        )
+        self._image.setPixmap(scaled)
+
+    @staticmethod
+    def _pixmap_from_path(path: Path) -> QtGui.QPixmap:
+        return QtGui.QPixmap(path.as_posix())
+
+    def _disconnect_sequence(self) -> None:
+        """Detach old sequence and stop any timers safely."""
+        if self._sequence:
+            try:
+                if getattr(self._sequence, '_timer', None):
+                    self._sequence.stop()
+            except (RuntimeError, AttributeError) as err:
+                print(f'[PreviewImage] Warning: failed to stop ImageSequence timer: {err!r}')
+
+            try:
+                self._sequence.frame_changed.disconnect(self._on_frame_changed)
+            except (TypeError, RuntimeError) as err:
+                print(f'[PreviewImage] Warning: failed to disconnect frame_changed: {err!r}')
+
+        self._sequence = None
