@@ -47,10 +47,10 @@ ICON_CHEVRON_DOWN_100x100 = Path(ICONS_PATH, 'ICON_chevron-down_100x100.svg')
 ICON_CHEVRON_LEFT_100x100 = Path(ICONS_PATH, 'ICON_chevron-left_100x100.svg')
 ICON_CHEVRON_RIGHT_100x100 = Path(ICONS_PATH, 'ICON_chevron-right_100x100.svg')
 
-# ----------Logos---------------------------------------------------------------
+# ----------Logos--------------------------------------------------------------
 LOGO_64x64_DD = Path(ICONS_PATH, 'DD_64x64.png')
 
-# ----------Program LOGOS / ICONS-----------------------------------------------
+# ----------Program LOGOS / ICONS----------------------------------------------
 ICON_AFTER_EFFECTS_400x400 = Path(ICONS_PATH, 'ICON_after_effects_400x400.png')
 ICON_BLENDER_400x400 = Path(ICONS_PATH, 'ICON_blender_400x400.png')
 ICON_MAYA_400x400 = Path(ICONS_PATH, 'ICON_maya_400x400.png')
