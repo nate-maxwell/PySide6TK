@@ -144,16 +144,18 @@ class PreviewImage(QtWidgets.QWidget):
 
     def _disconnect_sequence(self) -> None:
         """Detach old sequence and stop any timers safely."""
-        if self._sequence:
-            try:
-                if getattr(self._sequence, '_timer', None):
-                    self._sequence.stop()
-            except (RuntimeError, AttributeError) as err:
-                print(f'[PreviewImage] Warning: failed to stop ImageSequence timer: {err!r}')
+        if self._sequence is None:
+            return
 
-            try:
-                self._sequence.frame_changed.disconnect(self._on_frame_changed)
-            except (TypeError, RuntimeError) as err:
-                print(f'[PreviewImage] Warning: failed to disconnect frame_changed: {err!r}')
+        try:
+            if getattr(self._sequence, '_timer', None):
+                self._sequence.stop()
+        except (RuntimeError, AttributeError) as err:
+            print(f'[PreviewImage] Warning: failed to stop ImageSequence timer: {err!r}')
+
+        try:
+            self._sequence.frame_changed.disconnect(self._on_frame_changed)
+        except (TypeError, RuntimeError) as err:
+            print(f'[PreviewImage] Warning: failed to disconnect frame_changed: {err!r}')
 
         self._sequence = None
