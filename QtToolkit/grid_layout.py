@@ -60,10 +60,9 @@ class GridLayout(QtWidgets.QGridLayout):
         last_row = self.get_last_occupied_row()
         next_row = 0 if last_row == -1 else last_row + 1
 
-        t = QtToolkit.get_item_common_type(item)
-        if t == QtToolkit.QT_WIDGET_TYPE:
+        if isinstance(item, QtWidgets.QWidget):
             self.addWidget(item, next_row, 0)
-        elif t == QtToolkit.QT_LAYOUT_TYPE:
+        elif isinstance(item, QtWidgets.QLayout):
             self.addLayout(item, next_row, 0)
         else:
             print('[ERROR] - :add_new_row_grid_layout: item is not layout or widget!')
@@ -81,10 +80,9 @@ class GridLayout(QtWidgets.QGridLayout):
         last_column = self.get_last_occupied_column(last_row)
         next_column = 0 if last_column == -1 else last_column + 1
 
-        t = QtToolkit.get_item_common_type(item)
-        if t == QtToolkit.QT_WIDGET_TYPE:
+        if isinstance(item, QtWidgets.QWidget):
             self.addWidget(item, last_row, next_column)
-        elif t == QtToolkit.QT_LAYOUT_TYPE:
+        elif isinstance(item, QtWidgets.QLayout):
             self.addLayout(item, last_row, next_column)
         else:
             print('[ERROR] - "add_last_row_grid_layout" item is not layout or widget!')
