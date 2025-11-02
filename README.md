@@ -5,7 +5,7 @@ Currently, PySide 6 compatible.
 
 ### Stylesheet Viewer
 
-Run `QtToolkit.stylesheets._example_viewer.main()`, or the file itself, to see
+Run `PSToolkit.stylesheets._example_viewer.main()`, or the file itself, to see
 an example widget that displays all the collected style sheets.
 
 <img src="https://i.imgur.com/DePm39f.png">
