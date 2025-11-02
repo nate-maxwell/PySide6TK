@@ -75,7 +75,7 @@ class Toolbar(QtWidgets.QToolBar):
              defaults to pass.
             image_path(Optional[Path]): The path to the button icon, if set to
              None: a blank item is added.
-             Defaults to QtToolkit.icons.BUTTON_BLACK_40X40.
+             Defaults to QtToolkit.gui.BUTTON_BLACK_40X40.
         """
         action = QtGui.QAction(label, self)
         action.triggered.connect(command)
@@ -91,7 +91,7 @@ class Toolbar(QtWidgets.QToolBar):
             label(str): The menu label.
             image_path(Optional[Path]): The path to the menu icon, if set to
              None: a blank item is added.
-             Defaults to QtToolkit.icons.BUTTON_BLACK_40X40.
+             Defaults to QtToolkit.gui.BUTTON_BLACK_40X40.
 
         Returns:
             QtWidgets.QMenu: The created submenu, incase further submenus need
@@ -140,7 +140,6 @@ class Toolbar(QtWidgets.QToolBar):
             cmd(Callable): The function to connect the item selection to.
         """
         item = submenu.addAction(cmd_name)
-        # noinspection PyUnresolvedReferences
         item.triggered.connect(cmd)
 
     def add_submenu_separator(self, submenu: QtWidgets.QMenu, label: str = '---------------') -> None:
