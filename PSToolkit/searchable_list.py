@@ -45,6 +45,7 @@ class SearchableList(QtWidgets.QWidget):
         super().__init__()
         self.column_label = column_label
         self.index = index
+        self.contents: list[str] = []
 
         self.layout_main = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout_main)

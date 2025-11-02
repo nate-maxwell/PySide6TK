@@ -207,4 +207,4 @@ marimo/_lsp/
 __marimo__/
 
 # dev
-QtToolkit/test_wid.py
+PSToolkit/test_wid.py

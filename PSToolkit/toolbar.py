@@ -15,7 +15,7 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
-import QtToolkit.gui
+import PSToolkit.gui
 
 
 def null(*args) -> None:
@@ -25,7 +25,7 @@ def null(*args) -> None:
     pass
 
 
-DEFAULT_ICON = QtToolkit.gui.BUTTON_BLACK_40X40
+DEFAULT_ICON = PSToolkit.gui.BUTTON_BLACK_40X40
 
 
 class Toolbar(QtWidgets.QToolBar):
@@ -75,7 +75,7 @@ class Toolbar(QtWidgets.QToolBar):
              defaults to pass.
             image_path(Optional[Path]): The path to the button icon, if set to
              None: a blank item is added.
-             Defaults to QtToolkit.gui.BUTTON_BLACK_40X40.
+             Defaults to PSToolkit.gui.BUTTON_BLACK_40X40.
         """
         action = QtGui.QAction(label, self)
         action.triggered.connect(command)
@@ -91,7 +91,7 @@ class Toolbar(QtWidgets.QToolBar):
             label(str): The menu label.
             image_path(Optional[Path]): The path to the menu icon, if set to
              None: a blank item is added.
-             Defaults to QtToolkit.gui.BUTTON_BLACK_40X40.
+             Defaults to PSToolkit.gui.BUTTON_BLACK_40X40.
 
         Returns:
             QtWidgets.QMenu: The created submenu, incase further submenus need

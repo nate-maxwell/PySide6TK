@@ -12,7 +12,7 @@ from typing import Optional
 
 from PySide6 import QtWidgets
 
-import QtToolkit.regx
+import PSToolkit.regx
 
 
 class LabeledComboBox(QtWidgets.QWidget):
@@ -41,7 +41,7 @@ class LabeledComboBox(QtWidgets.QWidget):
         """Returns whether the current item does not contain non-alpha-numeric
         or non-underscore characters.
         """
-        return QtToolkit.regx.validation_no_special_chars(
+        return PSToolkit.regx.validation_no_special_chars(
             self.cmb_box.currentText())
 
     def clear(self) -> None:

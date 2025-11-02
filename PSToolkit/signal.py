@@ -14,7 +14,7 @@ from typing import Callable
 from PySide6 import QtCore
 
 
-def Signal(*types: type) -> QtCore.SignalInstance:
+def signal(*types: type) -> QtCore.SignalInstance:
     """A simple wrapper around QtCore.Signal that fixes intellisense and type
     checker issues.
     """
@@ -25,10 +25,10 @@ def emit_signal(signal_name: str):
     """Class method decorator for emitting a Qt signal after method execution.
 
     Examples:
-        >>> import QtToolkit.signal
+        >>> import PSToolkit.signal
         >>>
         >>> class MyClass(QtCore.QObject):
-        >>>     my_signal = QtToolkit.signal.Signal()
+        >>>     my_signal = PSToolkit.signal.signal()
         >>>
         >>>     @emit_signal('my_signal')
         >>>     def some_method(self, *args):
@@ -39,8 +39,8 @@ def emit_signal(signal_name: str):
         def wrapped_method(*args, **kwargs):
             r = func(*args, **kwargs)
             self = args[0]
-            signal = getattr(self, signal_name)
-            signal.emit()
+            signal_ = getattr(self, signal_name)
+            signal_.emit()
             return r
         return wrapped_method
     return signal_decorator

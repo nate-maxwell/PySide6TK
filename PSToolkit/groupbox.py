@@ -10,7 +10,7 @@
 
 from PySide6 import QtWidgets
 
-import QtToolkit.layout
+import PSToolkit.layout
 
 
 class GroupBox(QtWidgets.QGroupBox):
@@ -39,4 +39,4 @@ class GroupBox(QtWidgets.QGroupBox):
         self.layout.addStretch()
 
     def on_toggle(self, checked: bool) -> None:
-        QtToolkit.layout.set_layout_visible(self.layout, checked)
+        PSToolkit.layout.set_layout_visible(self.layout, checked)

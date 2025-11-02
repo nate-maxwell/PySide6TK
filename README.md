@@ -1,4 +1,4 @@
-# PySideToolkit
+# PSToolkit
 A library of PySide helpers + stylesheets.
 
 Currently, PySide 6 compatible.
