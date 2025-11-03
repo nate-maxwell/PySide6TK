@@ -77,6 +77,7 @@ def set_window_icon(window: QtWidgets.QMainWindow,
 
     if platform.system() == 'Windows':
         my_app_id = f'QtToolkit.MainWindow.{type(window).__name__}'
+        # noinspection PyUnresolvedReferences
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(my_app_id)
 
 
@@ -148,7 +149,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle(window_name)
 
-        _settings_path: Path = Path(_appdata_path, f'QtToolkit/{window_name}.ini')
+        ini_name = window_name.replace(' ', '_')
+        _settings_path: Path = Path(_appdata_path, f'QtToolkit/{ini_name}.ini')
         if not os.path.exists(_settings_path.parent):
             os.makedirs(_settings_path.parent)
         self._settings: QtCore.QSettings = QtCore.QSettings(
