@@ -158,9 +158,9 @@ class MainWindow(QtWidgets.QMainWindow):
         window_name (str): Display title of the window. Also used as the base
             name for the associated `.ini` settings file.
         min_size (tuple[int, int]): Minimum allowed window dimensions (width,
-            height). Passing None will disable constraint.
+            height). Passing None or (0, 0) will disable constraint.
         max_size (tuple[int, int]): Maximum allowed window dimensions (width,
-            height). Passing None will disable constraint.
+            height). Passing None or (0, 0) will disable constraint.
         parent (Optional[QtWidgets.QWidget]): Optional parent widget, defaults
             to None.
 
