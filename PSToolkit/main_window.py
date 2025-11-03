@@ -9,7 +9,6 @@
 
 
 import ctypes
-import os
 import platform
 from pathlib import Path
 from typing import Any
@@ -151,8 +150,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         ini_name = window_name.replace(' ', '_')
         _settings_path: Path = Path(_appdata_path, f'QtToolkit/{ini_name}.ini')
-        if not os.path.exists(_settings_path.parent):
-            os.makedirs(_settings_path.parent)
+        if not _settings_path.parent.exists():
+            _settings_path.parent.mkdir(parents=True, exist_ok=True)
+
         self._settings: QtCore.QSettings = QtCore.QSettings(
             _settings_path.as_posix(),
             QtCore.QSettings.Format.IniFormat
