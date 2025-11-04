@@ -1,4 +1,4 @@
-# PSToolkit
+# PySide6TK
 A library of PySide6 helpers + stylesheets specifically for Windows development.
 
 # Remember!
