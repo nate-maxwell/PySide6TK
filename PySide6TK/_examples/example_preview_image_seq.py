@@ -1,9 +1,7 @@
 
 from pathlib import Path
 
-import PySide6TK.app
-import PySide6TK.main_window
-from PySide6TK.preview_sequence import PreviewSequence
+from PySide6TK import QtWrappers
 
 
 _FRAMES_PATH = Path(Path(__file__).parent, 'frames')
@@ -12,13 +10,13 @@ _FRAMES_PATH = Path(Path(__file__).parent, 'frames')
 # Minimal example - Probably should expand to have FPS combo box ¯\_(ツ)_/¯
 
 
-class ExampleWindow(PySide6TK.main_window.MainWindow):
+class ExampleWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Example Preview Sequence')
-        self.wid = PreviewSequence('Example Frames')
+        self.wid = QtWrappers.PreviewSequence('Example Frames')
         self.wid.set_source(Path(_FRAMES_PATH))
         self.setCentralWidget(self.wid)
 
 
 if __name__ == '__main__':
-    PySide6TK.app.exec_app(ExampleWindow, 'ExampleSeqViewer')
+    QtWrappers.exec_app(ExampleWindow, 'ExampleSeqViewer')

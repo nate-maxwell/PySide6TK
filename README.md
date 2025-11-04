@@ -3,12 +3,25 @@ A library of PySide helpers + stylesheets specifically for Windows development.
 
 Currently, PySide 6 compatible.
 
-### Stylesheet Viewer
+# Remember!
 
-Run `PSToolkit._example.style_viewer` file itself, to see an example widget
-that displays all the collected style sheets.
+When adding to the toolkit, be sure to run `PySide6TK._generate_namespace.py`
+to rebuild the `PySide6TK.QtWrappers.py` file before pushing updates.
 
-<img src="https://i.imgur.com/DePm39f.png">
+### Namespaces
+
+Wrapper objects and helper methods can be imported similarly to how PySide
+namespaces are usually handled:
+
+```python
+from PySide6TK import QtWrappers
+
+class Foo(QtWrappers.MainWindow):
+    def __init__(self) -> None:
+        super().__init__('example window')
+        self.wid = QtWrappers.GroupBox('test box')
+        self.setCentralWidget(self.wid)
+```
 
 ### Wrappers
 
@@ -26,3 +39,10 @@ PySide. Use `object.value()` or  `object.get_value()` and
 
 `QtToolkit.gui` contains path variables to the stored icons and stylesheets.
 */.idea
+
+### Stylesheet Viewer
+
+Run `PSToolkit._example.style_viewer` file itself, to see an example widget
+that displays all the collected style sheets.
+
+<img src="https://i.imgur.com/DePm39f.png">

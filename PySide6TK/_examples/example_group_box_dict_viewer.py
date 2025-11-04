@@ -6,9 +6,7 @@
     Sandbox file for testing - DO NOT CHECK IN!
 """
 
-from PySide6TK import app
-from PySide6TK.dict_viewer import DictViewer
-from PySide6TK.main_window import MainWindow
+from PySide6TK import QtWrappers
 
 data = {
     "parameters": {
@@ -43,13 +41,13 @@ data = {
 }
 
 
-class TestWindow(MainWindow):
+class TestWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Example Dict Viewer',
                          (0, 0), (0, 0))
-        self.widget = DictViewer('Test Data', data)
+        self.widget = QtWrappers.DictViewer('Test Data', data)
         self.setCentralWidget(self.widget)
 
 
 if __name__ == '__main__':
-    app.exec_app(TestWindow, 'ExampleDictViewer')
+    QtWrappers.exec_app(TestWindow, 'ExampleDictViewer')

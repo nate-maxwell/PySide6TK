@@ -1,15 +1,13 @@
 
 from PySide6 import QtWidgets
 
-import PySide6TK.app
-import PySide6TK.grid_layout
-import PySide6TK.main_window
+from PySide6TK import QtWrappers
 
 
-class ExampleWindow(PySide6TK.main_window.MainWindow):
+class ExampleWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Example Grid Layout')
-        self.grid_layout = PySide6TK.grid_layout.GridLayout()
+        self.grid_layout = QtWrappers.GridLayout()
         self.widget_main = QtWidgets.QWidget()
         self.widget_main.setLayout(self.grid_layout)
         self.setCentralWidget(self.widget_main)
@@ -33,4 +31,4 @@ class ExampleWindow(PySide6TK.main_window.MainWindow):
 
 
 if __name__ == '__main__':
-    PySide6TK.app.exec_app(ExampleWindow, 'ExampleGridLayout')
+    QtWrappers.exec_app(ExampleWindow, 'ExampleGridLayout')

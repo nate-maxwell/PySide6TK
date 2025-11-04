@@ -1,15 +1,9 @@
 from PySide6 import QtWidgets
 
-import PySide6TK.app
-import PySide6TK.main_window
-from PySide6TK.labeled_combobox import LabeledComboBox
-from PySide6TK.labeled_line_edit import LabeledLineEdit
-from PySide6TK.labeled_spinbox import LabeledSpinBox
-from PySide6TK.grid_layout import GridLayout
-from PySide6TK.groupbox import GroupBox
+from PySide6TK import QtWrappers
 
 
-class ExampleWindow(PySide6TK.main_window.MainWindow):
+class ExampleWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Example Labeled Components')
         self.widget_main = QtWidgets.QWidget()
@@ -19,40 +13,40 @@ class ExampleWindow(PySide6TK.main_window.MainWindow):
         self.setFixedWidth(400)
 
         # -----Labeled---------------------------------------------------------
-        self.group_labeled = GroupBox('Labeled On Widget')
+        self.group_labeled = QtWrappers.GroupBox('Labeled On Widget')
 
         items_dyn = ['alpha', 'bravo', 'charlie', 'echo']
-        self.combo_dynamic = LabeledComboBox('Dynamic Combobox', items_dyn, True)
+        self.combo_dynamic = QtWrappers.LabeledComboBox('Dynamic Combobox', items_dyn, True)
 
         item_stc = ['1', '2', '3', '4', '5']
-        self.combo_static = LabeledComboBox('Static Combobox', item_stc)
+        self.combo_static = QtWrappers.LabeledComboBox('Static Combobox', item_stc)
 
-        self.line_edit = LabeledLineEdit('Line Edit')
+        self.line_edit = QtWrappers.LabeledLineEdit('Line Edit')
         self.line_edit.set_placeholder_text("Don't read this.")
 
-        self.spinbox_int = LabeledSpinBox('Spinbox Int')
+        self.spinbox_int = QtWrappers.LabeledSpinBox('Spinbox Int')
         self.spinbox_int.set_value(41)
-        self.spinbox_float = LabeledSpinBox('Spinbox Float', True)
+        self.spinbox_float = QtWrappers.LabeledSpinBox('Spinbox Float', True)
         self.spinbox_float.set_value(21.4)
 
         # -----Unlabeled-------------------------------------------------------
-        self.group_unlabeled = GroupBox('Unlabeled Widget, Labels in GridLayout')
+        self.group_unlabeled = QtWrappers.GroupBox('Unlabeled Widget, Labels in GridLayout')
 
         items_dyn = ['alpha', 'bravo', 'charlie', 'echo']
-        self.un_combo_dynamic = LabeledComboBox('', items_dyn, True)
+        self.un_combo_dynamic = QtWrappers.LabeledComboBox('', items_dyn, True)
 
         item_stc = ['1', '2', '3', '4', '5']
-        self.un_combo_static = LabeledComboBox('', item_stc)
+        self.un_combo_static = QtWrappers.LabeledComboBox('', item_stc)
 
-        self.un_line_edit = LabeledLineEdit('')
+        self.un_line_edit = QtWrappers.LabeledLineEdit('')
         self.un_line_edit.set_placeholder_text("Don't read this.")
 
-        self.un_spinbox_int = LabeledSpinBox('')
+        self.un_spinbox_int = QtWrappers.LabeledSpinBox('')
         self.un_spinbox_int.set_value(41)
-        self.un_spinbox_float = LabeledSpinBox('', True)
+        self.un_spinbox_float = QtWrappers.LabeledSpinBox('', True)
         self.un_spinbox_float.set_value(21.4)
 
-        self.grid_layout = GridLayout()
+        self.grid_layout = QtWrappers.GridLayout()
         self.grid_layout.add_to_last_row(QtWidgets.QLabel('Dynamic Combobox'))
         self.grid_layout.add_to_last_row(self.un_combo_dynamic)
         self.grid_layout.add_to_new_row(QtWidgets.QLabel('Static Combobox'))
@@ -78,4 +72,4 @@ class ExampleWindow(PySide6TK.main_window.MainWindow):
 
 
 if __name__ == '__main__':
-    PySide6TK.app.exec_app(ExampleWindow, 'ExampleLabeledComponents')
+    QtWrappers.exec_app(ExampleWindow, 'ExampleLabeledComponents')

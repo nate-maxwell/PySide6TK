@@ -12,15 +12,10 @@ from pathlib import Path
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
-import PySide6TK.styles
-import PySide6TK.shapes
-from PySide6TK import app
-from PySide6TK.main_window import MainWindow
-from PySide6TK.searchable_list import SearchableList
-from PySide6TK.groupbox import GroupBox
+from PySide6TK import QtWrappers
 
 
-_styles = PySide6TK.styles.STYLE_PATH.glob('*')
+_styles = QtWrappers.STYLE_PATH.glob('*')
 _sheets = [i.name for i in _styles]
 
 
@@ -34,7 +29,7 @@ class ExampleWidget(QtWidgets.QWidget):
     def _create_widgets(self) -> None:
         self.layout_main = QtWidgets.QHBoxLayout()
 
-        self.sl_items = SearchableList('Style Library')
+        self.sl_items = QtWrappers.SearchableList('Style Library')
         self.sl_items.populate_column(_sheets)
         self.sl_items.item_selected = self._on_item_selected
 
@@ -53,30 +48,30 @@ class ExampleWidget(QtWidgets.QWidget):
         self.dial_example = QtWidgets.QDial()
         self.slider_example = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.slider_example.setValue(50)
-        self.grp_example = GroupBox('Group Box')
+        self.grp_example = QtWrappers.GroupBox('Group Box')
 
     def _create_layout(self) -> None:
         self.setLayout(self.layout_main)
 
         self.grp_example.add_widget(QtWidgets.QLabel('Combo Box'))
         self.grp_example.add_widget(self.cmb_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(self.le_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(QtWidgets.QLabel('Spin Box'))
         self.grp_example.add_widget(self.sbx_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(QtWidgets.QLabel('Double Spin Box'))
         self.grp_example.add_widget(self.fsbx_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(self.cbx_example)
         self.grp_example.add_widget(self.rdo_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(self.btn_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(QtWidgets.QLabel('Dial'))
         self.grp_example.add_widget(self.dial_example)
-        self.grp_example.add_widget(PySide6TK.shapes.HorizontalLine())
+        self.grp_example.add_widget(QtWrappers.HorizontalLine())
         self.grp_example.add_widget(QtWidgets.QLabel('Slider'))
         self.grp_example.add_widget(self.slider_example)
         self.grp_example.add_stretch()
@@ -85,7 +80,7 @@ class ExampleWidget(QtWidgets.QWidget):
         self.layout_main.addWidget(self.grp_example)
 
     def _on_item_selected(self) -> None:
-        p = Path(PySide6TK.styles.STYLE_PATH, f'{self.sl_items.selected_item()}')
+        p = Path(QtWrappers.STYLE_PATH, f'{self.sl_items.selected_item()}')
         if self.sl_items.selected_items is None or not p.exists():
             return
 
@@ -93,7 +88,7 @@ class ExampleWidget(QtWidgets.QWidget):
             self.setStyleSheet(f.read())
 
 
-class StyleViewer(MainWindow):
+class StyleViewer(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Style Library Viewer',
                          (0, 0), (0, 0))
@@ -102,4 +97,4 @@ class StyleViewer(MainWindow):
 
 
 if __name__ == '__main__':
-    app.exec_app(StyleViewer, 'StyleViewer')
+    QtWrappers.exec_app(StyleViewer, 'StyleViewer')
