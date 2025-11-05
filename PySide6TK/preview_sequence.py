@@ -33,13 +33,17 @@ class PreviewSequence(PreviewImage):
     def __init__(self, label: str, size: tuple[int, int] | None = None) -> None:
         super().__init__(label, size, True)
         self._playing = False
+        self._create_widgets()
+        self._create_layout()
 
+    def _create_widgets(self) -> None:
         self.hlayout_buttons = QtWidgets.QHBoxLayout()
         self.btn_play = QtWidgets.QPushButton('Play')
         self.btn_play.clicked.connect(self.play_seq)
         self.btn_stop = QtWidgets.QPushButton('Stop')
         self.btn_stop.clicked.connect(self.stop_seq)
 
+    def _create_layout(self) -> None:
         self.hlayout_buttons.addWidget(self.btn_play)
         self.hlayout_buttons.addWidget(self.btn_stop)
         self._layout.addLayout(self.hlayout_buttons)

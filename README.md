@@ -33,6 +33,17 @@ Properties are not used to keep the workflow / coding style similar to actual
 PySide. Use `object.value()` or  `object.get_value()` and 
 `object.set_value(val)`.
 
+Complex wrappers follow a constructor pattern of
+
+```python
+def __init__(self) -> None:
+    super().__init__()
+    self._create_widgets()
+    self._create_layout()
+    self._create_connections()
+```
+for standardized organization.
+
 ## Resources
 
 `PySide6TK.icons` contains path variables to the stored icons while

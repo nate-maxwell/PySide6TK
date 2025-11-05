@@ -48,24 +48,33 @@ class SearchableList(QtWidgets.QWidget):
         self.column_label = column_label
         self.index = index
         self.contents: list[str] = []
+        self.multi_select = multi_select
 
+        self._create_widgets()
+        self._create_layout()
+        self._create_connections()
+
+    def _create_widgets(self) -> None:
         self.layout_main = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout_main)
-        self.layout_main.setContentsMargins(0, 0, 0, 0)
 
         self.le_search = QtWidgets.QLineEdit()
         self.le_search.setPlaceholderText('Search')
-        self.list_column = QtWidgets.QListWidget()
-        if multi_select:
-            self.list_column.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.lbl_column = QtWidgets.QLabel(column_label)
-        self.lbl_column.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.contents: list
 
+        self.list_column = QtWidgets.QListWidget()
+        if self.multi_select:
+            self.list_column.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+
+        self.lbl_column = QtWidgets.QLabel(self.column_label)
+        self.lbl_column.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+    def _create_layout(self) -> None:
+        self.setLayout(self.layout_main)
+        self.layout_main.setContentsMargins(0, 0, 0, 0)
         self.layout_main.addWidget(self.lbl_column)
         self.layout_main.addWidget(self.le_search)
         self.layout_main.addWidget(self.list_column)
 
+    def _create_connections(self) -> None:
         self.list_column.currentRowChanged.connect(self.item_selected)
         self.le_search.textChanged.connect(self._search_list)
 

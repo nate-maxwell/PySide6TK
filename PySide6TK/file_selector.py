@@ -19,23 +19,23 @@ class FileSelector(QtWidgets.QWidget):
         """Label text before line edit."""
         super().__init__()
         self.name = name
-        self.create_widgets()
-        self.create_layout()
-        self.create_connections()
+        self._create_widgets()
+        self._create_layout()
+        self._create_connections()
 
-    def create_widgets(self) -> None:
+    def _create_widgets(self) -> None:
         self.hlayout_main = QtWidgets.QHBoxLayout()
         self.le_path = LabeledLineEdit(self.name)
         self.le_path.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                    QtWidgets.QSizePolicy.Policy.Preferred)
         self.btn_exe = QtWidgets.QPushButton('Open')
 
-    def create_layout(self) -> None:
+    def _create_layout(self) -> None:
         self.hlayout_main.addWidget(self.le_path)
         self.hlayout_main.addWidget(self.btn_exe)
         self.setLayout(self.hlayout_main)
 
-    def create_connections(self) -> None:
+    def _create_connections(self) -> None:
         self.btn_exe.clicked.connect(self.find_path)
 
     def find_path(self) -> None:

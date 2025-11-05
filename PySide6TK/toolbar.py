@@ -29,14 +29,40 @@ DEFAULT_ICON = PySide6TK.icons.BUTTON_BLACK_40X40
 
 
 class Toolbar(QtWidgets.QToolBar):
-    """
-    A shelf-like toolbar with top level buttons and nestable sub-menus.
+    """A shelf-like toolbar providing buttons and nested sub-menus.
+
+    This class serves as a customizable base for application toolbars that
+    require button and submenu organization similar to a "shelf" layout.
+    Developers should subclass and override the ``build`` method to
+    populate toolbar items.
+
+    Args:
+        toolbar_name (str): The name of the toolbar.
+        parent (Optoinal[QtWidget.QWidget]): What to parent the toolbar to.
+
+    Example:
+        >>> class MyToolbar(Toolbar):
+        ...     def build(self) -> None:
+        ...         self.add_toolbar_command('Save', self.save_command)
+        ...
+        >>> toolbar = MyToolbar('My Tools')
+
+    Attributes:
+        default_button_resolution (list[int]): The default width and height of
+            toolbar buttons, in pixels. Defaults to ``[40, 40]``.
+        icon_brightness (float): The brightness factor applied to icons to
+            normalize their appearance. Defaults to ``0.2``.
 
     Notes:
-        - Be sure to override Toolbar.build() in derived classes or the toolbar
-          won't build!
+        - The ``build`` method **must** be overridden in subclasses.
+          Failure to do so will raise ``NotImplemented``.
+        - Buttons can be added with or without icons.
+        - Submenus can be nested indefinitely using
+          ``add_submenu_submenu``.
     """
-    def __init__(self, toolbar_name: str, parent=None) -> None:
+    def __init__(self,
+                 toolbar_name: str,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent=parent)
         self.default_button_resolution: list[int] = [40, 40]
         self.icon_brightness: float = 0.2
