@@ -117,6 +117,7 @@ def generate_imports_from_directory(directory_: str | Path) -> str:
                             seen.add(line)
                             import_lines.append(line)
 
+    import_lines.sort(key=lambda s: s.lower())
     return '\n'.join(import_lines)
 
 
