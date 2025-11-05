@@ -26,7 +26,7 @@ def set_windows_app_user_model_id(app_id: str) -> None:
     No-op on non-Windows.
 
     Args:
-        app_id: e.g. 'Vendor.Product.SubProduct.Version'
+        app_id (str): e.g. 'Vendor.Product.SubProduct.Version'
     """
     if platform.system() != 'Windows':
         return
@@ -69,7 +69,7 @@ def single_instance_lock(name: str) -> QtCore.QLockFile:
     lock = QtCore.QLockFile(lock_path.as_posix())
     lock.setStaleLockTime(0)
     if not lock.tryLock(0):
-        raise RuntimeError(f'Another instance is already running (lock: {lock_path}).')
+        raise RuntimeError(f'Another instance already running (lock: {lock_path}).')
     return lock
 
 
@@ -129,7 +129,7 @@ def exec_single_instance_app(
     try:
         lock = single_instance_lock(lock_name or app_name)
     except RuntimeError:
-        info = 'Another instance is already running.'
+        info = 'Another instance already running.'
         QtWidgets.QMessageBox.information(None, app_name, info)
         return 0
 
