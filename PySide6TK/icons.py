@@ -37,4 +37,4 @@ ICON_UNREAL_400x400 = Path(ICONS_PATH, 'ICON_unreal_400x400.png')
 
 # ----------Misc---------------------------------------------------------------
 ICON_IMG_NOT_FOUND_400x400 = Path(ICONS_PATH, 'ICON_img_not_found_400x400.png')
-ICON_NO_PREVIEW_384x384 = Path(ICONS_PATH, 'icons/T_NoPreview_384x384.png')
+ICON_NO_PREVIEW_384x384 = Path(ICONS_PATH, 'T_NoPreview_384x384.png')
