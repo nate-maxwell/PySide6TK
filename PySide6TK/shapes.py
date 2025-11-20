@@ -24,3 +24,17 @@ class VerticalLine(QtWidgets.QFrame):
         self.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         if sunken:
             self.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+
+
+class HorizontalSpacer(QtWidgets.QWidget):
+    def __init__(self, width: int) -> None:
+        super().__init__()
+        self.setFixedWidth(width)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+
+
+class VerticalSpacer(QtWidgets.QWidget):
+    def __init__(self, height: int) -> None:
+        super().__init__()
+        self.setFixedHeight(height)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
