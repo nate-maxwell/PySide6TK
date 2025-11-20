@@ -8,8 +8,26 @@
 
 
 from pathlib import Path
+from typing import Union
+
+from PySide6 import QtWidgets
 
 import PySide6TK
+
+
+T_MENU = Union[QtWidgets.QMainWindow, QtWidgets.QWidget]
+
+
+def set_style(menu: T_MENU, style_path: Path) -> None:
+    """Applies the style file contents to the given menu.
+
+    Args:
+        menu (Union[QtWidgets.QMainWindow, QtWidgets.QWidget]): The menu to
+            apply the style to.
+        style_path (Path): The path to the stylesheet file.
+    """
+    with open(style_path) as f:
+        menu.setStyleSheet(f.read())
 
 
 STYLE_PATH = Path(PySide6TK.RESOURCES_PATH, 'stylesheets')

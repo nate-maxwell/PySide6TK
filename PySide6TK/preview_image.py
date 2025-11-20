@@ -39,7 +39,7 @@ class PreviewImage(QtWidgets.QWidget):
 
         self._size = (200, 200) if size is None else size
         self.sequence: Union[ImageSequence, None] = None
-        self._default_image_path: Path = Path(PySide6TK.icons.ICON_NO_PREVIEW_384x384)
+        self._default_image_path: Path = Path(PySide6TK.icons.ICON_NO_PREVIEW_384X384)
 
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)

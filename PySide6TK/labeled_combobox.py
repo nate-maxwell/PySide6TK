@@ -31,7 +31,7 @@ class LabeledComboBox(QtWidgets.QWidget):
         >>> print(quality_box.current_text())
 
         >>> appendable_box = LabeledComboBox('Category', appendable=True)
-        >>> appendable_box.append_item()  # Prompts user to add a new entry
+        >>> appendable_box._append_item()  # Prompts user to add a new entry
 
     Attributes:
         layout_main (QtWidgets.QLayout): The main layout managing the label,
@@ -69,6 +69,7 @@ class LabeledComboBox(QtWidgets.QWidget):
         super().__init__()
 
         self.label = QtWidgets.QLabel(text)
+        self.new_item_text: str = 'Name:'
         self.cmb_box = QtWidgets.QComboBox()
         self.cmb_box.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                    QtWidgets.QSizePolicy.Policy.Fixed)
@@ -103,7 +104,7 @@ class LabeledComboBox(QtWidgets.QWidget):
         if appendable:
             self.btn_add = QtWidgets.QPushButton('+')
             self.hlayout_box.addWidget(self.btn_add)
-            self.btn_add.clicked.connect(self.append_item)
+            self.btn_add.clicked.connect(self._add_button_connection)
 
     def current_text(self) -> str:
         """Shortened namespace way to get current selected item."""
@@ -126,11 +127,42 @@ class LabeledComboBox(QtWidgets.QWidget):
             return
         self.cmb_box.addItems(items)
 
-    def append_item(self) -> None:
-        dlg = PySide6TK.dialogs.SingleLineTextDialog('New Item', 'Name:')
+    def add_unique(self, item: str) -> None:
+        if self.cmb_box.findText(item) == -1:
+            self.cmb_box.addItem(item)
+
+    def _add_button_connection(self) -> None:
+        item_added = self._append_item()
+        if item_added:
+            self.on_button_clicked()
+
+    def on_button_clicked(self) -> None:
+        """A hook for adding functionality to the user adding an item to
+        the box.
+        """
+        pass
+
+    def _append_item(self) -> bool:
+        dlg = PySide6TK.dialogs.SingleLineTextDialog('New Item', self.new_item_text)
         if dlg.exec():
-            self.add_items([dlg.text()])
+            new_item = self.append_item_formatter(dlg.text())
+            if new_item == '':
+                return False
+
+            self.add_unique(new_item)
             self.cmb_box.model().sort(0, QtCore.Qt.SortOrder.AscendingOrder)
+            self.cmb_box.setCurrentText(new_item)
+            return True
+
+        return False
+
+    def append_item_formatter(self, raw: str) -> str:
+        """Overridable method for formatting the text captured by the dialog box
+        before adding it to the combobox contents.
+
+        If the method returns an empty string, the item is not added.
+        """
+        return raw
 
     def set_current_index(self, index: int):
         """Sets the combobox active index much like

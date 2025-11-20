@@ -84,8 +84,7 @@ class ExampleWidget(QtWidgets.QWidget):
         if self.sl_items.selected_items is None or not p.exists():
             return
 
-        with open(p) as f:
-            self.setStyleSheet(f.read())
+        QtWrappers.set_style(self, p)
 
 
 class StyleViewer(QtWrappers.MainWindow):

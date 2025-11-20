@@ -71,6 +71,7 @@ from PySide6TK.shapes import HorizontalLine
 from PySide6TK.shapes import VerticalLine
 from PySide6TK.signal import emit_signal
 from PySide6TK.signal import signal
+from PySide6TK.styles import set_style
 from PySide6TK.styles import QSS_ADAPTIC
 from PySide6TK.styles import QSS_CHATBEE
 from PySide6TK.styles import QSS_CLIENTOR
