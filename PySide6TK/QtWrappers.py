@@ -68,7 +68,9 @@ from PySide6TK.regx import validation_no_special_chars
 from PySide6TK.scroll_area import ScrollArea
 from PySide6TK.searchable_list import SearchableList
 from PySide6TK.shapes import HorizontalLine
+from PySide6TK.shapes import HorizontalSpacer
 from PySide6TK.shapes import VerticalLine
+from PySide6TK.shapes import VerticalSpacer
 from PySide6TK.signal import emit_signal
 from PySide6TK.signal import signal
 from PySide6TK.styles import set_style
