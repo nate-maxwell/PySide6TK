@@ -22,6 +22,9 @@ from PySide6TK.app import exec_single_instance_app
 from PySide6TK.app import init_application
 from PySide6TK.app import set_windows_app_user_model_id
 from PySide6TK.app import single_instance_lock
+from PySide6TK.code_editor import CodeEditor
+from PySide6TK.code_editor import LineNumberArea
+from PySide6TK.column_browser import ColumnBrowser
 from PySide6TK.dialogs import MultiLineTextDialog
 from PySide6TK.dialogs import SingleLineTextDialog
 from PySide6TK.dict_viewer import DictViewer
@@ -53,6 +56,11 @@ from PySide6TK.image_sequence import ImageSequence
 from PySide6TK.labeled_combobox import LabeledComboBox
 from PySide6TK.labeled_line_edit import LabeledLineEdit
 from PySide6TK.labeled_spinbox import LabeledSpinBox
+from PySide6TK.languages.json_syntax import HighlightRule
+from PySide6TK.languages.json_syntax import JsonHighlighter
+from PySide6TK.languages.python_syntax import color_format
+from PySide6TK.languages.python_syntax import PythonHighlighter
+from PySide6TK.languages.python_syntax import STYLES
 from PySide6TK.layout import clear_layout
 from PySide6TK.layout import remove_layout
 from PySide6TK.layout import set_layout_visibility
@@ -73,7 +81,6 @@ from PySide6TK.shapes import VerticalLine
 from PySide6TK.shapes import VerticalSpacer
 from PySide6TK.signal import emit_signal
 from PySide6TK.signal import signal
-from PySide6TK.styles import set_style
 from PySide6TK.styles import QSS_ADAPTIC
 from PySide6TK.styles import QSS_CHATBEE
 from PySide6TK.styles import QSS_CLIENTOR
@@ -121,7 +128,9 @@ from PySide6TK.styles import QSS_VISUALSCRIPT
 from PySide6TK.styles import QSS_WEBMAS
 from PySide6TK.styles import QSS_WORDOFFICE
 from PySide6TK.styles import QSS_WSTARTPAGE
+from PySide6TK.styles import set_style
 from PySide6TK.styles import STYLE_PATH
+from PySide6TK.styles import T_MENU
 from PySide6TK.toolbar import DEFAULT_ICON
 from PySide6TK.toolbar import null
 from PySide6TK.toolbar import Toolbar

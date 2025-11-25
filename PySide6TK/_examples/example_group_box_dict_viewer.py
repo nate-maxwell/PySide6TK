@@ -1,11 +1,3 @@
-"""
-# Test Playground
-
-* Description:
-
-    Sandbox file for testing - DO NOT CHECK IN!
-"""
-
 from PySide6TK import QtWrappers
 
 data = {

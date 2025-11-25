@@ -1,12 +1,3 @@
-"""
-# Example Toolbar
-
-* Description:
-
-    A toolbar that looks like the one we had in maya.
-"""
-
-
 from PySide6 import QtWidgets
 
 from PySide6TK import QtWrappers

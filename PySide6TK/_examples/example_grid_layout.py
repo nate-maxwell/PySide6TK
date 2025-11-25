@@ -1,4 +1,3 @@
-
 from PySide6 import QtWidgets
 
 from PySide6TK import QtWrappers

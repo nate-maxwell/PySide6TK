@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 from PySide6TK import QtWrappers
