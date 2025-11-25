@@ -31,6 +31,7 @@ class _LineNumberArea(QtWidgets.QWidget):
 
 
 T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
+"""Any QSyntaxHighlighter class object or derived class object."""
 
 
 class CodeEditor(QtWidgets.QPlainTextEdit):
