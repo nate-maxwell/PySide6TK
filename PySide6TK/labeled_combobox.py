@@ -110,6 +110,13 @@ class LabeledComboBox(QtWidgets.QWidget):
         """Shortened namespace way to get current selected item."""
         return self.cmb_box.currentText()
 
+    def set_current_text(self, s: str) -> None:
+        """Shortened namespace way to set current combo box text."""
+        self.cmb_box.setCurrentText(s)
+
+    def get_items(self) -> list[str]:
+        return [self.cmb_box.itemText(i) for i in range(self.cmb_box.count())]
+
     def item_is_alphanum(self) -> bool:
         """Returns whether the current item does not contain non-alpha-numeric
         or non-underscore characters.
