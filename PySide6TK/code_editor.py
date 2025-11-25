@@ -22,7 +22,7 @@ T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
 SyntaxHighlighter = Type[T_Highlighter]
 """Any QSyntaxHighlighter class object or derived class object."""
 
-INDENT = ' ' * 4
+_INDENT = ' ' * 4
 
 
 class _LineNumberArea(QtWidgets.QWidget):
@@ -253,12 +253,12 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     def indent(self, lines: range) -> None:
         """Indent the lines within the given range."""
         for i in lines:
-            self.add_line_prefix(INDENT, i)
+            self.add_line_prefix(_INDENT, i)
 
     def unindent(self, lines: range) -> None:
         """Unindent the lines within the given range."""
         for i in lines:
-            self.remove_line_prefix(INDENT, i)
+            self.remove_line_prefix(_INDENT, i)
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
@@ -278,7 +278,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
         # Tab as 4 spaces
         if e.key() == QtCore.Qt.Key.Key_Tab:
-            self.insertPlainText(INDENT)
+            self.insertPlainText(_INDENT)
             return
 
         super(CodeEditor, self).keyPressEvent(e)
