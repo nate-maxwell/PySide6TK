@@ -26,15 +26,14 @@ def _color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
     return _format
 
 
-# Syntax styles that can be shared by all languages
 _STYLES = {
     'keyword': _color_format('cyan'),
     'operator': _color_format('white'),
     'brace': _color_format('orange'),
     'defclass': _color_format('lightgreen'),
-    'string': _color_format('gray'),
-    'string2': _color_format('gray'),
-    'comment': _color_format('darkgreen', 'italic'),
+    'string': _color_format('lightgreen'),
+    'string2': _color_format('darkgreen'),
+    'comment': _color_format('magenta', 'italic'),
     'self': _color_format('orange'),
     'numbers': _color_format('magenta'),
 }
@@ -42,17 +41,17 @@ _STYLES = {
 
 class PythonHighlighter(QtGui.QSyntaxHighlighter):
     """Syntax highlighter for the Python language."""
-    # Python keywords
+    #  Keywords
     keywords = [
         'and', 'assert', 'break', 'class', 'continue', 'def',
         'del', 'elif', 'else', 'except', 'exec', 'finally',
         'for', 'from', 'global', 'if', 'import', 'in',
         'is', 'lambda', 'not', 'or', 'pass', 'print',
         'raise', 'return', 'try', 'while', 'yield',
-        'None', 'True', 'False',
+        'None', 'True', 'False'
     ]
 
-    # Python operators
+    # Operators
     operators = [
         '=',
         # Comparison
@@ -62,12 +61,12 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         # In-place
         '\+=', '-=', '\*=', '/=', '\%=',
         # Bitwise
-        '\^', '\|', '\&', '\~', '>>', '<<',
+        '\^', '\|', '\&', '\~', '>>', '<<'
     ]
 
-    # Python braces
+    # Braces
     braces = [
-        '\{', '\}', '\(', '\)', '\[', '\]',
+        '\{', '\}', '\(', '\)', '\[', '\]'
     ]
 
     def __init__(self, parent: QtGui.QTextDocument = None) -> None:

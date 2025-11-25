@@ -234,14 +234,21 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         """Enable shortcuts in keypress event."""
         first_line, last_line = self._get_selection_range()
 
+        # Multi-line indent
         if e.key() == QtCore.Qt.Key.Key_Tab and last_line - first_line:
             lines = range(first_line, last_line + 1)
             self.indented.emit(lines)
             return
 
+        # Multi-line unindent
         if e.key() == QtCore.Qt.Key.Key_Backtab:
             lines = range(first_line, last_line + 1)
             self.unindented.emit(lines)
+            return
+
+        # Tab as 4 spaces
+        if e.key() == QtCore.Qt.Key.Key_Tab:
+            self.insertPlainText(' ' * 4)
             return
 
         super(CodeEditor, self).keyPressEvent(e)
