@@ -129,7 +129,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         cr = self.contentsRect()
         self.line_number_area.setGeometry(QtCore.QRect(cr.left(), cr.top(), self.line_number_area_width, cr.height()))
 
-    def line_number_area_paint_event(self, event) -> None:
+    def line_number_area_paint_event(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QtGui.QColor(21, 21, 21))  # Background color
 
@@ -229,6 +229,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         """Unindent the lines within the given range."""
         for i in lines:
             self.remove_line_prefix('\t', i)
+            self.remove_line_prefix(' '*4, i)
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
