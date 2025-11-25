@@ -84,7 +84,9 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     ) -> None:
         super(CodeEditor, self).__init__()
 
-        self.setTabStopDistance(QtGui.QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
+        self.setTabStopDistance(
+            QtGui.QFontMetricsF(self.font()).horizontalAdvance(' ') * 4
+        )
 
         self.line_number_area = _LineNumberArea(self)
         self._create_shortcut_signals()
@@ -119,7 +121,12 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         if dy:
             self.line_number_area.scroll(0, dy)
         else:
-            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+            self.line_number_area.update(
+                0,
+                rect.y(),
+                self.line_number_area.width(),
+                rect.height()
+            )
 
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width(0)
@@ -127,7 +134,14 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     def resizeEvent(self, e: QtGui.QResizeEvent) -> None:
         super().resizeEvent(e)
         cr = self.contentsRect()
-        self.line_number_area.setGeometry(QtCore.QRect(cr.left(), cr.top(), self.line_number_area_width, cr.height()))
+        self.line_number_area.setGeometry(
+            QtCore.QRect(
+                cr.left(),
+                cr.top(),
+                self.line_number_area_width,
+                cr.height()
+            )
+        )
 
     def line_number_area_paint_event(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self.line_number_area)
