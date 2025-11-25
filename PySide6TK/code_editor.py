@@ -34,6 +34,8 @@ T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
 SyntaxHighlighter = Type[T_Highlighter]
 """Any QSyntaxHighlighter class object or derived class object."""
 
+INDENT = ' '*4
+
 
 class CodeEditor(QtWidgets.QPlainTextEdit):
     """
@@ -239,13 +241,12 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     def indent(self, lines: range) -> None:
         """Indent the lines within the given range."""
         for i in lines:
-            self.add_line_prefix('\t', i)
+            self.add_line_prefix(INDENT, i)
 
     def unindent(self, lines: range) -> None:
         """Unindent the lines within the given range."""
         for i in lines:
-            self.remove_line_prefix('\t', i)
-            self.remove_line_prefix(' '*4, i)
+            self.remove_line_prefix(INDENT, i)
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
@@ -265,7 +266,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
         # Tab as 4 spaces
         if e.key() == QtCore.Qt.Key.Key_Tab:
-            self.insertPlainText(' ' * 4)
+            self.insertPlainText(INDENT)
             return
 
         super(CodeEditor, self).keyPressEvent(e)
