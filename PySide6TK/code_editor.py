@@ -22,7 +22,7 @@ T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
 SyntaxHighlighter = Type[T_Highlighter]
 """Any QSyntaxHighlighter class object or derived class object."""
 
-INDENT = ' '*4
+INDENT = ' ' * 4
 
 
 class _LineNumberArea(QtWidgets.QWidget):
