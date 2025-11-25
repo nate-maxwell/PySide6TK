@@ -17,7 +17,27 @@ from PySide6 import QtWidgets
 from PySide6TK.languages.python_syntax import PythonHighlighter
 
 
+T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
+
+SyntaxHighlighter = Type[T_Highlighter]
+"""Any QSyntaxHighlighter class object or derived class object."""
+
+INDENT = ' '*4
+
+
 class _LineNumberArea(QtWidgets.QWidget):
+    """
+    A side-gutter widget responsible for rendering line numbers for a
+    ``CodeEditor`` instance.
+
+    Notes:
+        - ``_LineNumberArea`` does not paint anything by itself; all
+          drawing is delegated back to the parent editor.
+        - ``sizeHint()`` returns a width based on the current block
+          count so the gutter resizes correctly as line numbers grow
+          into additional digits.
+    """
+
     def __init__(self, code_editor: 'CodeEditor') -> None:
         super().__init__(code_editor)
         self.editor = code_editor
@@ -27,14 +47,6 @@ class _LineNumberArea(QtWidgets.QWidget):
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         self.editor.line_number_area_paint_event(event)
-
-
-T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
-
-SyntaxHighlighter = Type[T_Highlighter]
-"""Any QSyntaxHighlighter class object or derived class object."""
-
-INDENT = ' '*4
 
 
 class CodeEditor(QtWidgets.QPlainTextEdit):
