@@ -3,8 +3,7 @@
 
 * Description
 
-    A QPlainTextEdit wrapper with numbered lines and python syntax
-    highlighting.
+    A QPlainTextEdit wrapper with numbered lines and syntax highlighting.
 """
 
 
