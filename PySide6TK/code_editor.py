@@ -31,6 +31,8 @@ class _LineNumberArea(QtWidgets.QWidget):
 
 
 T_Highlighter = TypeVar('T_Highlighter', bound=QtGui.QSyntaxHighlighter)
+
+SyntaxHighlighter = Type[T_Highlighter]
 """Any QSyntaxHighlighter class object or derived class object."""
 
 
@@ -63,7 +65,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             Emitted when a block of lines should be unindented.
 
     Args:
-        syntax_highlighter (Type[T_Highlighter], optional):
+        syntax_highlighter (SyntaxHighlighter, optional):
             A ``QSyntaxHighlighter`` subclass to use for syntax
             highlighting. Defaults to ``PythonHighlighter``.
 
@@ -81,7 +83,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
     def __init__(
             self,
-            syntax_highlighter: Type[T_Highlighter] = PythonHighlighter
+            syntax_highlighter: SyntaxHighlighter = PythonHighlighter
     ) -> None:
         super(CodeEditor, self).__init__()
 
