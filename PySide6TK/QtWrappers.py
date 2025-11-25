@@ -56,7 +56,6 @@ from PySide6TK.image_sequence import ImageSequence
 from PySide6TK.labeled_combobox import LabeledComboBox
 from PySide6TK.labeled_line_edit import LabeledLineEdit
 from PySide6TK.labeled_spinbox import LabeledSpinBox
-from PySide6TK.languages.json_syntax import HighlightRule
 from PySide6TK.languages.json_syntax import JsonHighlighter
 from PySide6TK.languages.python_syntax import PythonHighlighter
 from PySide6TK.layout import clear_layout

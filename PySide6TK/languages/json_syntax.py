@@ -2,7 +2,7 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 
 
-class HighlightRule(object):
+class _HighlightRule(object):
     def __init__(
             self,
             pattern: str,
@@ -32,17 +32,17 @@ class JsonHighlighter(QtGui.QSyntaxHighlighter):
         num_fmt.setForeground(QtGui.QColor('blue'))
         num_fmt.setFontWeight(QtGui.QFont.Weight.Bold)
         numeric_pattern = r'([-0-9.]+)(?!([^"]*"\s*:))'
-        self.rules.append(HighlightRule(numeric_pattern, num_fmt, group=1))
+        self.rules.append(_HighlightRule(numeric_pattern, num_fmt, group=1))
 
         key_fmt = QtGui.QTextCharFormat()
         key_fmt.setFontWeight(QtGui.QFont.Weight.Bold)
         key_pattern = r'("([^"]*)")\s*:'
-        self.rules.append(HighlightRule(key_pattern, key_fmt, group=1))
+        self.rules.append(_HighlightRule(key_pattern, key_fmt, group=1))
 
         val_fmt = QtGui.QTextCharFormat()
         val_fmt.setForeground(QtGui.QColor('darkgreen'))
         value_pattern = r':\s*("([^"]*)")'
-        self.rules.append(HighlightRule(value_pattern, val_fmt, group=1))
+        self.rules.append(_HighlightRule(value_pattern, val_fmt, group=1))
 
     def highlightBlock(self, text: str) -> None:
         """
