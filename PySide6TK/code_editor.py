@@ -18,7 +18,7 @@ from PySide6 import QtWidgets
 from PySide6TK.languages.python_syntax import PythonHighlighter
 
 
-class LineNumberArea(QtWidgets.QWidget):
+class _LineNumberArea(QtWidgets.QWidget):
     def __init__(self, code_editor: 'CodeEditor') -> None:
         super().__init__(code_editor)
         self.editor = code_editor
@@ -51,7 +51,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     external tools to hook into indentation events if needed.
 
     Attributes:
-        line_number_area (LineNumberArea):
+        line_number_area (_LineNumberArea):
             The side widget responsible for drawing line numbers.
         highlighter (QSyntaxHighlighter):
             The active syntax highlighter instance applied to the
@@ -86,7 +86,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
         self.setTabStopDistance(QtGui.QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
 
-        self.line_number_area = LineNumberArea(self)
+        self.line_number_area = _LineNumberArea(self)
         self._create_shortcut_signals()
         self._create_connections()
         self.update_line_number_area_width(0)
