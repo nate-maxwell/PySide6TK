@@ -58,9 +58,7 @@ from PySide6TK.labeled_line_edit import LabeledLineEdit
 from PySide6TK.labeled_spinbox import LabeledSpinBox
 from PySide6TK.languages.json_syntax import HighlightRule
 from PySide6TK.languages.json_syntax import JsonHighlighter
-from PySide6TK.languages.python_syntax import color_format
 from PySide6TK.languages.python_syntax import PythonHighlighter
-from PySide6TK.languages.python_syntax import STYLES
 from PySide6TK.layout import clear_layout
 from PySide6TK.layout import remove_layout
 from PySide6TK.layout import set_layout_visibility

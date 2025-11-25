@@ -2,7 +2,7 @@ from PySide6 import QtGui
 from PySide6 import QtCore
 
 
-def color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
+def _color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
     """
     Return a QTextCharFormat with the given attributes.
 
@@ -27,16 +27,16 @@ def color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
 
 
 # Syntax styles that can be shared by all languages
-STYLES = {
-    'keyword': color_format('cyan'),
-    'operator': color_format('white'),
-    'brace': color_format('orange'),
-    'defclass': color_format('lightgreen'),
-    'string': color_format('gray'),
-    'string2': color_format('gray'),
-    'comment': color_format('darkgreen', 'italic'),
-    'self': color_format('orange'),
-    'numbers': color_format('magenta'),
+_STYLES = {
+    'keyword': _color_format('cyan'),
+    'operator': _color_format('white'),
+    'brace': _color_format('orange'),
+    'defclass': _color_format('lightgreen'),
+    'string': _color_format('gray'),
+    'string2': _color_format('gray'),
+    'comment': _color_format('darkgreen', 'italic'),
+    'self': _color_format('orange'),
+    'numbers': _color_format('magenta'),
 }
 
 
@@ -74,38 +74,38 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         super().__init__(parent)
 
         # Multi-line strings (expression, flag, style)
-        self.tri_single = (QtCore.QRegularExpression(r"[']{3}"), 1, STYLES['string2'])
-        self.tri_double = (QtCore.QRegularExpression(r'["]{3}'), 2, STYLES['string2'])
+        self.tri_single = (QtCore.QRegularExpression(r"[']{3}"), 1, _STYLES['string2'])
+        self.tri_double = (QtCore.QRegularExpression(r'["]{3}'), 2, _STYLES['string2'])
 
         rules = []
 
         # Keyword, operator, and brace rules
-        rules += [(r'\b%s\b' % w, 0, STYLES['keyword']) for w in PythonHighlighter.keywords]
-        rules += [(r'%s' % o, 0, STYLES['operator']) for o in PythonHighlighter.operators]
-        rules += [(r'%s' % b, 0, STYLES['brace']) for b in PythonHighlighter.braces]
+        rules += [(r'\b%s\b' % w, 0, _STYLES['keyword']) for w in PythonHighlighter.keywords]
+        rules += [(r'%s' % o, 0, _STYLES['operator']) for o in PythonHighlighter.operators]
+        rules += [(r'%s' % b, 0, _STYLES['brace']) for b in PythonHighlighter.braces]
 
         # All other rules
         rules += [
             # 'self'
-            (r'\bself\b', 0, STYLES['self']),
+            (r'\bself\b', 0, _STYLES['self']),
 
             # 'def' followed by an identifier
-            (r'\bdef\b\s*(\w+)', 1, STYLES['defclass']),
+            (r'\bdef\b\s*(\w+)', 1, _STYLES['defclass']),
             # 'class' followed by an identifier
-            (r'\bclass\b\s*(\w+)', 1, STYLES['defclass']),
+            (r'\bclass\b\s*(\w+)', 1, _STYLES['defclass']),
 
             # Numeric literals
-            (r'\b[+-]?[0-9]+[lL]?\b', 0, STYLES['numbers']),
-            (r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b', 0, STYLES['numbers']),
-            (r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b', 0, STYLES['numbers']),
+            (r'\b[+-]?[0-9]+[lL]?\b', 0, _STYLES['numbers']),
+            (r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b', 0, _STYLES['numbers']),
+            (r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b', 0, _STYLES['numbers']),
 
             # Double-quoted string, possibly containing escape sequences
-            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, STYLES['string']),
+            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, _STYLES['string']),
             # Single-quoted string, possibly containing escape sequences
-            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, STYLES['string']),
+            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, _STYLES['string']),
 
             # From '#' until a newline
-            (r'#[^\n]*', 0, STYLES['comment']),
+            (r'#[^\n]*', 0, _STYLES['comment']),
         ]
 
         # Build a QRegularExpression for each pattern
