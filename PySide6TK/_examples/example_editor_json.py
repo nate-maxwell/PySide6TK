@@ -153,6 +153,14 @@ example_code = """{
 class JsonEditor(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Json Editor', (450, 750))
+        self.toolbar = QtWrappers.HelpToolbar(
+            parent=self,
+            description='Example code editor with dict viewer for viewing json',
+            version='1.0.0',
+            author='Nate Maxwell',
+            repo_url='https://github.com/nate-maxwell/PySide6TK',
+            documentation_url='https://github.com/nate-maxwell/PySide6TK'
+        )
 
         self._create_widgets()
         self._create_layout()

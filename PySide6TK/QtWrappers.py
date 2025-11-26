@@ -31,6 +31,7 @@ from PySide6TK.enums import Orient
 from PySide6TK.file_selector import FileSelector
 from PySide6TK.grid_layout import GridLayout
 from PySide6TK.groupbox import GroupBox
+from PySide6TK.helpbar import HelpToolbar
 from PySide6TK.icons import BUTTON_BLACK_40X40
 from PySide6TK.icons import BUTTON_BLUE_40X40
 from PySide6TK.icons import BUTTON_BLUE_80X40

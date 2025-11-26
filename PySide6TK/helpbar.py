@@ -1,0 +1,202 @@
+"""
+# Help Bar
+
+* Description:
+
+    A toolbar to insert at the top of tools for developer and user
+    convenience.
+"""
+
+
+import os
+import webbrowser
+from functools import partial
+from pathlib import Path
+from typing import Callable
+from typing import Optional
+
+from PySide6 import QtCore
+from PySide6 import QtWidgets
+
+import PySide6TK
+from PySide6TK import styles
+from PySide6TK import toolbar
+
+
+class _AboutWidget(QtWidgets.QWidget):
+    def __init__(
+            self,
+            description: Optional[str],
+            version: Optional[str],
+            author: Optional[str],
+    ) -> None:
+        super().__init__()
+        self.layout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.layout)
+        self.setWindowTitle('About')
+        self.setMinimumSize(200, 200)
+
+        text = ''
+        if description:
+            text += f'[Description]\n{description}\n\n'
+        if version:
+            text += f'[Version]\n{version}\n\n'
+        if author:
+            text += f'[Author]\n{author}\n\n'
+
+        if not text:
+            text = 'Nothing about ¯\\_(ツ)_/¯'
+
+        self.label = QtWidgets.QLabel(text)
+        self.layout.addWidget(self.label)
+
+
+class HelpToolbar(toolbar.Toolbar):
+    """
+    A reusable top-of-window toolbar providing developer utilities, theme
+    controls, and help/documentation actions.
+
+    This toolbar attaches itself to the top of a parent QMainWindow-like
+    widget and exposes a consistent set of convenience actions commonly
+    needed in pipeline tools. It includes:
+
+    **Developer tools**
+        - Reloading the tool's Python module.
+        - Rebuilding the UI by recreating the parent widget.
+        - Opening the tool’s log directory.
+        - Opening an embedded or external console.
+
+    **Theme selection**
+        - Dynamically applies any QSS theme defined in ``PySide6TK.styles``.
+        - Uses ``functools.partial`` to avoid late-binding issues when building
+          menu actions.
+
+    **Help / About**
+        - Opens a small "About" dialog displaying description, version, and
+          author information.
+        - Optional shortcuts to repository and documentation URLs.
+
+    The toolbar is designed to be lightweight, self-contained, and safe to
+    reuse across all GUI tools in the pipeline.
+
+    Args:
+        parent:
+            The window or widget that will receive this toolbar. Must provide
+            ``addToolBar`` and typically be a ``QMainWindow`` subclass.
+        description:
+            Short text displayed in the About dialog under [Description].
+        version:
+            Optional version string shown in the About dialog under [Version].
+        author:
+            Optional author string shown in the About dialog under [Author].
+        repo_url:
+            If provided, adds a "Repo" entry under the Help menu which opens the
+            URL in the user's default browser.
+        documentation_url:
+            If provided, adds a "Documentation" entry under the Help menu.
+        reload_module_func:
+            Callable executed when the user selects "Reload Module". Defaults to
+            ``toolbar.null`` (disabled).
+        logs_dir:
+            Optional filesystem path to the tool’s log directory. When set,
+            enables a "Show Logs" menu option.
+        open_console_func:
+            Callable used to open a developer console panel or window. Defaults
+            to ``toolbar.null`` (disabled).
+
+    Notes:
+        - The toolbar sets its own button height using ``default_button_resolution``.
+        - The parent UI will close and a new instance will be constructed when
+          selecting "Reload UI".
+        """
+
+    def __init__(
+            self,
+            parent: PySide6TK.PHYSICAL_PARENTS,
+            description: Optional[str] = None,
+            version: Optional[str] = None,
+            author: Optional[str] = None,
+            repo_url: Optional[str] = None,
+            documentation_url: Optional[str] = None,
+            reload_module_func: Callable = toolbar.null,
+            logs_dir: Optional[Path] = None,
+            open_console_func: Callable = toolbar.null
+    ) -> None:
+        self.parent = parent
+
+        # developer section
+        self.reload_module: Callable = reload_module_func
+        self.logs_dir: Optional[Path] = logs_dir
+        self.open_console: Callable = open_console_func
+
+        # help section
+        self.about_widget = _AboutWidget(description, version, author)
+        self.repo_url: Optional[str] = repo_url
+        self.documentation_url: Optional[str] = documentation_url
+
+        super().__init__('Test Toolbar', default_button_resolution=[0, 20])
+        self.setMovable(False)
+        parent.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, self)
+
+    def build(self) -> None:
+        self._developer_section()
+        self._theme_section()
+        self._help_section()
+
+    def _developer_section(self) -> None:
+        submenu = self.add_toolbar_submenu('Developer', image_path=None)
+
+        if self.reload_module != toolbar.null:
+            self.add_submenu_command(
+                submenu, 'Reload Module', self.reload_module
+            )
+
+        def reload_ui() -> None:
+            cls = self.parent.__class__
+            new_wid = cls()
+            new_wid.show()
+            self.parent.close()
+
+        self.add_submenu_command(submenu, 'Reload UI', reload_ui)
+
+        if self.logs_dir is not None:
+            self.add_submenu_command(
+                submenu, 'Show Logs', lambda: os.startfile(self.logs_dir.as_posix())
+            )
+        if self.open_console != toolbar.null:
+            self.add_submenu_command(
+                submenu, 'Open Console', self.open_console
+            )
+
+    def _theme_section(self) -> None:
+        submenu = self.add_toolbar_submenu('Theme', image_path=None)
+
+        for k, v in styles.__dict__.items():
+            if not k.startswith('QSS_'):
+                continue
+            name = k.replace('QSS_', '').title()
+            self.add_submenu_command(
+                submenu,
+                name,
+                # I cannot stand python's late-binding closures with lambdas...
+                partial(styles.set_style, self.parent, v)
+            )
+
+    def _help_section(self) -> None:
+        submenu = self.add_toolbar_submenu('Help', image_path=None)
+        self.add_submenu_command(
+            submenu, 'About', lambda: self.about_widget.show()
+        )
+
+        if self.repo_url is not None:
+            self.add_submenu_command(
+                submenu,
+                'Repo',
+                lambda: webbrowser.open_new_tab(self.repo_url)
+            )
+        if self.documentation_url is not None:
+            self.add_submenu_command(
+                submenu,
+                'Documentation',
+                lambda: webbrowser.open_new_tab(self.documentation_url)
+            )

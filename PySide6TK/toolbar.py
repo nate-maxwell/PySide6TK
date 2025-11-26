@@ -16,6 +16,7 @@ from PySide6 import QtGui
 from PySide6 import QtWidgets
 
 import PySide6TK.icons
+import PySide6TK.shapes
 
 
 def null(*args) -> None:
@@ -41,6 +42,9 @@ class Toolbar(QtWidgets.QToolBar):
     Args:
         toolbar_name (str): The name of the toolbar.
         parent (Optoinal[QtWidget.QWidget]): What to parent the toolbar to.
+        default_button_resolution (list[int]): The default resolution for
+            buttons, e.g. [x, y]. If a value is 0, it is not used.
+            Defaults to [40, 40].
 
     Example:
         >>> class MyToolbar(Toolbar):
@@ -64,9 +68,14 @@ class Toolbar(QtWidgets.QToolBar):
     """
     def __init__(self,
                  toolbar_name: str,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+                 parent: Optional[QtWidgets.QWidget] = None,
+                 default_button_resolution: list[int] = None) -> None:
         super().__init__(parent=parent)
-        self.default_button_resolution: list[int] = [40, 40]
+        if default_button_resolution is None:
+            self.default_button_resolution = [40, 40]
+        else:
+            self.default_button_resolution = default_button_resolution
+
         self.icon_brightness: float = 0.2
 
         self.setObjectName(toolbar_name.replace(' ', '_'))
@@ -83,7 +92,12 @@ class Toolbar(QtWidgets.QToolBar):
         """
         tool_button = QtWidgets.QToolButton()
         tool_button.setContentsMargins(0, 0, 0, 0)
-        tool_button.setFixedSize(self.default_button_resolution[0], self.default_button_resolution[1])
+        x = self.default_button_resolution[0]
+        if x > 0:
+            tool_button.setFixedWidth(x)
+        y = self.default_button_resolution[1]
+        if y > 0:
+            tool_button.setFixedHeight(y)
         if button_image is None:
             return tool_button
 
@@ -187,9 +201,7 @@ class Toolbar(QtWidgets.QToolBar):
         """Adds a horizontal spacer to the toolbar of the given width.
         Width defaults to 10.
         """
-        wid = QtWidgets.QWidget()
-        wid.setFixedWidth(width)
-        self.addWidget(wid)
+        self.addWidget(PySide6TK.shapes.HorizontalSpacer(width))
 
     def build(self) -> None:
         """The derived class's constructor.

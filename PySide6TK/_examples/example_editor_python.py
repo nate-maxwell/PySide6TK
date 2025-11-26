@@ -25,6 +25,14 @@ class DictionaryViewer(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Dictionary Viewer', (1200, 800))
         self.sg = None
+        self.toolbar = QtWrappers.HelpToolbar(
+            parent=self,
+            description='Example code editor with dict viewer',
+            version='1.0.0',
+            author='Nate Maxwell',
+            repo_url='https://github.com/nate-maxwell/PySide6TK',
+            documentation_url='https://github.com/nate-maxwell/PySide6TK'
+        )
 
         self._create_widgets()
         self._create_layout()
