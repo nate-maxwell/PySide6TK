@@ -171,6 +171,8 @@ class MainWindow(QtWidgets.QMainWindow):
             height). Passing None or (0, 0) will disable constraint.
         parent (Optional[QtWidgets.QWidget]): Optional parent widget, defaults
             to None.
+        icon_path (Optional[Path]): Optional path to window icon, defaults
+            to None.
 
     Methods:
         closeEvent(event: QtGui.QCloseEvent) -> None:
@@ -182,9 +184,12 @@ class MainWindow(QtWidgets.QMainWindow):
                  window_name: str,
                  min_size: Optional[tuple[int, int]] = None,
                  max_size: Optional[tuple[int, int]] = None,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+                 parent: Optional[QtWidgets.QWidget] = None,
+                 icon_path: Optional[Path] = None) -> None:
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle(window_name)
+        if icon_path is not None and icon_path.exists():
+            set_window_icon(self, icon_path)
 
         ini_name = window_name.replace(' ', '_')
         _settings_path: Path = Path(_appdata_path, f'{PySide6TK.MODULE_NAME}/{ini_name}.ini')
