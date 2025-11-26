@@ -8,10 +8,12 @@
 """
 
 
+import importlib
 import os
 import webbrowser
 from functools import partial
 from pathlib import Path
+from types import ModuleType
 from typing import Callable
 from typing import Optional
 
@@ -94,9 +96,8 @@ class HelpToolbar(toolbar.Toolbar):
             URL in the user's default browser.
         documentation_url:
             If provided, adds a "Documentation" entry under the Help menu.
-        reload_module_func:
-            Callable executed when the user selects "Reload Module". Defaults to
-            ``toolbar.null`` (disabled).
+        reload_modules:
+            list of modules to reimport.
         logs_dir:
             Optional filesystem path to the tool’s log directory. When set,
             enables a "Show Logs" menu option.
@@ -118,14 +119,14 @@ class HelpToolbar(toolbar.Toolbar):
             author: Optional[str] = None,
             repo_url: Optional[str] = None,
             documentation_url: Optional[str] = None,
-            reload_module_func: Callable = toolbar.null,
+            reload_modules: list[ModuleType] = None,
             logs_dir: Optional[Path] = None,
             open_console_func: Callable = toolbar.null
     ) -> None:
         self.parent = parent
 
         # developer section
-        self.reload_module: Callable = reload_module_func
+        self.reload_modules: list[ModuleType] = reload_modules if reload_modules else []
         self.logs_dir: Optional[Path] = logs_dir
         self.open_console: Callable = open_console_func
 
@@ -146,9 +147,9 @@ class HelpToolbar(toolbar.Toolbar):
     def _developer_section(self) -> None:
         submenu = self.add_toolbar_submenu('Developer', image_path=None)
 
-        if self.reload_module != toolbar.null:
+        if len(self.reload_modules) > 0:
             self.add_submenu_command(
-                submenu, 'Reload Module', self.reload_module
+                submenu, 'Reload Module', self._reload_modules
             )
 
         def reload_ui() -> None:
@@ -200,3 +201,13 @@ class HelpToolbar(toolbar.Toolbar):
                 'Documentation',
                 lambda: webbrowser.open_new_tab(self.documentation_url)
             )
+
+    def _reload_modules(self) -> None:
+        # Reload the modules twice because some modules may be dependent on others
+        # that are going to be reimported, but are reimported in the wrong order,
+        # thus referencing stale state.
+
+        for i in self.reload_modules:
+            importlib.reload(i)
+        for i in self.reload_modules:
+            importlib.reload(i)
