@@ -1,24 +1,19 @@
-from PySide6 import QtCore
+from dataclasses import dataclass
+
 from PySide6 import QtGui
 
+from PySide6TK.text import HighlightRule
+from PySide6TK.text import color_format
 
-class _HighlightRule(object):
-    def __init__(
-            self,
-            pattern: str,
-            char_format: QtGui.QTextCharFormat,
-            group: int = 0
-    ) -> None:
-        """
-        Args:
-            pattern (str): A QRegularExpression pattern string.
-            char_format (QtGui.QTextCharFormat): The text format to apply to
-                matches.
-            group (int): Which capture group to highlight (0 = whole match).
-        """
-        self.pattern = QtCore.QRegularExpression(pattern)
-        self.format = char_format
-        self.group = group
+
+@dataclass
+class JsonSyntaxColors(object):
+    numerical = color_format('orange', 'bold')
+    keys = color_format('white', 'bold')
+    values = color_format('lightgreen')
+
+
+_color_scheme = JsonSyntaxColors()
 
 
 class JsonHighlighter(QtGui.QSyntaxHighlighter):
@@ -28,21 +23,18 @@ class JsonHighlighter(QtGui.QSyntaxHighlighter):
 
         self.rules = []
 
-        num_fmt = QtGui.QTextCharFormat()
-        num_fmt.setForeground(QtGui.QColor('blue'))
-        num_fmt.setFontWeight(QtGui.QFont.Weight.Bold)
         numeric_pattern = r'([-0-9.]+)(?!([^"]*"\s*:))'
-        self.rules.append(_HighlightRule(numeric_pattern, num_fmt, group=1))
-
-        key_fmt = QtGui.QTextCharFormat()
-        key_fmt.setFontWeight(QtGui.QFont.Weight.Bold)
+        self.rules.append(
+            HighlightRule(numeric_pattern, _color_scheme.numerical, group=1)
+        )
         key_pattern = r'("([^"]*)")\s*:'
-        self.rules.append(_HighlightRule(key_pattern, key_fmt, group=1))
-
-        val_fmt = QtGui.QTextCharFormat()
-        val_fmt.setForeground(QtGui.QColor('darkgreen'))
+        self.rules.append(
+            HighlightRule(key_pattern, _color_scheme.keys, group=1)
+        )
         value_pattern = r':\s*("([^"]*)")'
-        self.rules.append(_HighlightRule(value_pattern, val_fmt, group=1))
+        self.rules.append(
+            HighlightRule(value_pattern, _color_scheme.values, group=1)
+        )
 
     def highlightBlock(self, text: str) -> None:
         """

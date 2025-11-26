@@ -69,9 +69,6 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     Attributes:
         line_number_area (_LineNumberArea):
             The side widget responsible for drawing line numbers.
-        highlighter (QSyntaxHighlighter):
-            The active syntax highlighter instance applied to the
-            document.
         indented (Signal(range)):
             Emitted when a block of lines should be indented.
         unindented (Signal(range)):
@@ -109,7 +106,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         self._create_connections()
         self.update_line_number_area_width(0)
 
-        self.highlighter = syntax_highlighter(self.document())
+        syntax_highlighter(self.document())
 
     def _create_shortcut_signals(self) -> None:
         self.indented.connect(self.indent)

@@ -56,7 +56,9 @@ from PySide6TK.labeled_combobox import LabeledComboBox
 from PySide6TK.labeled_line_edit import LabeledLineEdit
 from PySide6TK.labeled_spinbox import LabeledSpinBox
 from PySide6TK.languages.json_syntax import JsonHighlighter
+from PySide6TK.languages.json_syntax import JsonSyntaxColors
 from PySide6TK.languages.python_syntax import PythonHighlighter
+from PySide6TK.languages.python_syntax import PythonSyntaxColors
 from PySide6TK.layout import clear_layout
 from PySide6TK.layout import remove_layout
 from PySide6TK.layout import set_layout_visibility
@@ -127,6 +129,8 @@ from PySide6TK.styles import QSS_WSTARTPAGE
 from PySide6TK.styles import set_style
 from PySide6TK.styles import STYLE_PATH
 from PySide6TK.styles import T_MENU
+from PySide6TK.text import color_format
+from PySide6TK.text import HighlightRule
 from PySide6TK.toolbar import DEFAULT_ICON
 from PySide6TK.toolbar import null
 from PySide6TK.toolbar import Toolbar

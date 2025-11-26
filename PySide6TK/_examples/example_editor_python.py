@@ -1,6 +1,7 @@
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
+
 from PySide6TK import QtWrappers
 
 
@@ -20,12 +21,9 @@ result: Union[list, dict] = values
 """
 
 
-class ShotGridQueryViewer(QtWrappers.MainWindow):
+class DictionaryViewer(QtWrappers.MainWindow):
     def __init__(self) -> None:
-        super().__init__(
-            'ShotGrid Query Viewer',
-            (1200, 800)
-        )
+        super().__init__('Dictionary Viewer', (1200, 800))
         self.sg = None
 
         self._create_widgets()
@@ -51,20 +49,7 @@ class ShotGridQueryViewer(QtWrappers.MainWindow):
         self.code_editor = QtWrappers.CodeEditor()
         self.code_editor.setFont(font)
         self.code_editor.setMinimumHeight(150)
-        self.code_editor.setPlaceholderText(
-            "# Will run any query code, but queried data must be stored in\n"
-            "# 'result' variable to be viewed.\n"
-            "\n"
-            "import sgtk\n"
-            "\n"
-            "engine = sgtk.platform.current_engine()\n"
-            "\n"
-            "result = assets = sg.find(\n"
-            "    'Asset',\n"
-            "    [['project', 'is', engine.context.project]],\n"
-            "    ['id', 'code', 'sg_asset_type', 'description']\n"
-            ")\n"
-        )
+        self.code_editor.setPlaceholderText(example_code)
 
         # -----Message/Errors-----
         self.traceback_widget = QtWidgets.QWidget()
@@ -208,7 +193,7 @@ class ShotGridQueryViewer(QtWrappers.MainWindow):
 
 
 def main() -> None:
-    QtWrappers.exec_app(ShotGridQueryViewer, 'ShotGridQueryViewer')
+    QtWrappers.exec_app(DictionaryViewer, 'DictionaryViewer')
 
 
 if __name__ == '__main__':
