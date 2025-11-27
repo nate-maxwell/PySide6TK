@@ -129,7 +129,6 @@ from PySide6TK.styles import QSS_WORDOFFICE
 from PySide6TK.styles import QSS_WSTARTPAGE
 from PySide6TK.styles import set_style
 from PySide6TK.styles import STYLE_PATH
-from PySide6TK.styles import T_MENU
 from PySide6TK.text import color_format
 from PySide6TK.text import HighlightRule
 from PySide6TK.toolbar import DEFAULT_ICON
