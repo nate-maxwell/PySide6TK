@@ -66,6 +66,10 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         self.tri_single = (QtCore.QRegularExpression(r"[']{3}"), 1, _color_scheme.string2)
         self.tri_double = (QtCore.QRegularExpression(r'["]{3}'), 2, _color_scheme.string2)
 
+        # Track triple quotes that occur inside single-line strings so we can]
+        # skip them in block highlighting.
+        self.trip_quote_within_strings: list[int] = []
+
         # Assemble HighlightRule objects
         rules: list[HighlightRule] = []
 
@@ -104,8 +108,6 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         Args:
             text: The text block to highlight.
         """
-        # Track triple quotes that occur inside single-line strings so we can skip them
-        self.tripleQuoutesWithinStrings: list[int] = []
 
         string_rule_patterns = {
             r'"[^"\\]*(\\.[^"\\]*)*"',
@@ -126,7 +128,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
                 if ii == -1:
                     ii = self.tri_double[0].match(text, start0 + 1).capturedStart(0)
                 if ii != -1:
-                    self.tripleQuoutesWithinStrings.extend((ii, ii + 1, ii + 2))
+                    self.trip_quote_within_strings.extend((ii, ii + 1, ii + 2))
 
         # Second pass: apply all HighlightRule-based patterns
         for rule in self.rules:
@@ -145,7 +147,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
                     continue
 
                 # Skip characters that are part of embedded triple-quote tokens
-                if start in self.tripleQuoutesWithinStrings:
+                if start in self.trip_quote_within_strings:
                     continue
 
                 self.setFormat(start, length, rule.format)
@@ -185,7 +187,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             first_match = delimiter.match(text)
             start = first_match.capturedStart() if first_match.hasMatch() else -1
             # skip triple quotes that are inside single-line string tokens
-            if start in getattr(self, 'tripleQuoutesWithinStrings', set()):
+            if start in self.trip_quote_within_strings:
                 return False
             add = first_match.capturedLength() if first_match.hasMatch() else 0
 
