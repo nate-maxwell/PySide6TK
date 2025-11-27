@@ -85,7 +85,7 @@ class DictViewer(GroupBox):
             self.add_widget(shapes.HorizontalLine())
             if isinstance(v, Mapping):
                 self._add_row_mapping(str(k), v)
-            elif not isinstance(v, str) and isinstance(v, Sequence):
+            elif not isinstance(v, (str, bytes, bytearray)) and isinstance(v, Sequence):
                 self._add_row_sequence(str(k), v)
             else:
                 self._add_row_str(str(k), str(v))
