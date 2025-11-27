@@ -10,6 +10,6 @@ MODULE_NAME = Path(__file__).parent.name
 QT_COMMON_TYPE = Union[QtWidgets.QWidget, QtWidgets.QLayout]
 OPTIONAL_COMMON_TYPE = Optional[QT_COMMON_TYPE]
 
-PHYSICAL_PARENTS = Union[QtWidgets.QMainWindow, QtWidgets.QWidget]
+MENU_TYPE = Union[QtWidgets.QMainWindow, QtWidgets.QWidget]
 
 RESOURCES_PATH = Path(Path(__file__).parent, 'resources')

@@ -113,7 +113,7 @@ class HelpToolbar(toolbar.Toolbar):
 
     def __init__(
             self,
-            parent: PySide6TK.PHYSICAL_PARENTS,
+            parent: PySide6TK.MENU_TYPE,
             description: Optional[str] = None,
             version: Optional[str] = None,
             author: Optional[str] = None,
