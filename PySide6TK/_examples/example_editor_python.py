@@ -1,3 +1,9 @@
+"""
+Example editor for python code that creates a table from dictionaries.
+
+Also doubles as example showing help bar.
+"""
+
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets

@@ -1,3 +1,10 @@
+"""
+Example editor for python code that creates a dict viewer from JSON code.
+
+Also doubles as example showing help bar.
+"""
+
+
 import json
 
 from PySide6 import QtCore
