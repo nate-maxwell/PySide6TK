@@ -8,11 +8,14 @@
 """
 
 from collections.abc import Mapping
+from collections.abc import Sequence
+from typing import Any
 
 from PySide6 import QtWidgets
 
 from PySide6TK import shapes
 from PySide6TK.groupbox import GroupBox
+from PySide6TK.labeled_line_edit import LabeledLineEdit
 
 
 class DictViewer(GroupBox):
@@ -81,38 +84,37 @@ class DictViewer(GroupBox):
         for k, v in data.items():
             self.add_widget(shapes.HorizontalLine())
             if isinstance(v, Mapping):
-                self._add_row_dict(str(k), v)
+                self._add_row_mapping(str(k), v)
+            elif not isinstance(v, str) and isinstance(v, Sequence):
+                self._add_row_sequence(str(k), v)
             else:
                 self._add_row_str(str(k), str(v))
 
-    def _add_row_dict(self, label: str, data: Mapping) -> None:
+    def _add_row_mapping(self, label: str, data: Mapping) -> None:
         """Adds a nested DictViewer if the value of the instanced data var
         was another dictionary.
         """
         wid_value = DictViewer(label, data, False)
+        self.add_widget(wid_value)
 
-        hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(1, 1, 1, 1)
-        hlayout.addWidget(wid_value)
+    def _add_row_sequence(self, label: str, data: Sequence[Any]) -> None:
+        """Adds a nested dict viewer showing element numbers to values."""
+        group_box = GroupBox(label)
+        for i in data:
+            line_edit = QtWidgets.QLineEdit(str(i))
+            line_edit.setReadOnly(True)
+            line_edit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                                    QtWidgets.QSizePolicy.Policy.Preferred)
+            group_box.add_widget(line_edit)
 
-        self.add_layout(hlayout)
+        self.add_widget(group_box)
 
     def _add_row_str(self, label: str, value: str) -> None:
         """Adds a row with a label and read-only line edit containing a str()
         version of the given value.
         """
-        lbl_key = QtWidgets.QLabel(label)
-        lbl_key.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                              QtWidgets.QSizePolicy.Policy.Preferred)
-
-        lbl_value = QtWidgets.QLineEdit(str(value))
-        lbl_value.setReadOnly(True)
-        lbl_value.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                                QtWidgets.QSizePolicy.Policy.Preferred)
-
-        hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(1, 1, 1, 1)
-        hlayout.addWidget(lbl_key)
-        hlayout.addWidget(lbl_value)
-
-        self.add_layout(hlayout)
+        labeled_line_edit = LabeledLineEdit(label)
+        labeled_line_edit.set_text(value)
+        labeled_line_edit.set_label_expanding(True)
+        labeled_line_edit.set_read_only(True)
+        self.add_widget(labeled_line_edit)

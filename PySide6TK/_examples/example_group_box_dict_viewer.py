@@ -37,8 +37,10 @@ class TestWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__('Example Dict Viewer',
                          (0, 0), (0, 0))
-        self.widget = QtWrappers.DictViewer('Test Data', data)
+        self.widget = QtWrappers.ScrollArea()
         self.setCentralWidget(self.widget)
+        self.viewer = QtWrappers.DictViewer('Test Data', data)
+        self.widget.add_widget(self.viewer)
 
 
 if __name__ == '__main__':

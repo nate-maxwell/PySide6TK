@@ -83,3 +83,15 @@ class LabeledLineEdit(QtWidgets.QWidget):
     def clear(self) -> None:
         """Shortened namespace to clear text."""
         self.line_edit.clear()
+
+    def set_read_only(self, b: bool) -> None:
+        """Shortened namespace to set read only."""
+        self.line_edit.setReadOnly(b)
+
+    def set_label_expanding(self, expand: bool) -> None:
+        """Sets the label as expanding if True, and preferred if False."""
+        if expand:
+            policy = QtWidgets.QSizePolicy.Policy.Expanding
+        else:
+            policy = QtWidgets.QSizePolicy.Policy.Preferred
+        self.label.setSizePolicy(policy, QtWidgets.QSizePolicy.Policy.Preferred)
