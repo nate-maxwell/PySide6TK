@@ -23,7 +23,7 @@ class ExampleStaticBrowser(ColumnBrowser):
         super().__init__('Example Static Browser', (950, 550), (950, 550), ['first', 'second', 'third', 'fourth'])
 
         # Default values
-        self.default_path = Path('K:/')
+        self.default_path = Path('C:/')
 
         self.columns[0].populate_column(list_folder_contents(self.default_path))
 
@@ -71,7 +71,7 @@ class ExampleDynamicBrowser(ColumnBrowser):
         super().__init__('Example Dynamic Browser', (950, 550), (950, 950), ['shows'])
 
         # Default values
-        self.default_path = Path('K:/')
+        self.default_path = Path('C:/')
 
         self.columns[0].populate_column(list_folder_contents(self.default_path))
 
