@@ -57,14 +57,16 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
 
         # -----Code Editor-----
         self.code_widget = QtWidgets.QWidget()
-        self.code_layout = QtWidgets.QVBoxLayout()
+        self.editor_layout = QtWidgets.QVBoxLayout()
         self.code_label = QtWidgets.QLabel('Query Code:')
         self.code_label.setStyleSheet('font-weight: bold; font-size: 12px;')
 
+        self.code_layout = QtWidgets.QHBoxLayout()
         self.code_editor = QtWrappers.CodeEditor()
         self.code_editor.setFont(font)
         self.code_editor.setMinimumHeight(150)
         self.code_editor.setPlaceholderText(example_code)
+        self.minimap = QtWrappers.CodeMiniMapWidget(self.code_editor)
 
         # -----Message/Errors-----
         self.traceback_widget = QtWidgets.QWidget()
@@ -100,13 +102,16 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
 
     def _create_layout(self) -> None:
         # -----Code Editor-----
-        self.code_widget.setLayout(self.code_layout)
-        self.code_layout.addWidget(self.code_label)
         self.code_layout.addWidget(self.code_editor)
+        self.code_layout.addWidget(self.minimap)
+
+        self.code_widget.setLayout(self.editor_layout)
+        self.editor_layout.addWidget(self.code_label)
+        self.editor_layout.addLayout(self.code_layout)
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.btn_execute_query)
-        self.code_layout.addLayout(button_layout)
+        self.editor_layout.addLayout(button_layout)
         self.splitter_code.addWidget(self.code_widget)
 
         # -----Message/Errors-----

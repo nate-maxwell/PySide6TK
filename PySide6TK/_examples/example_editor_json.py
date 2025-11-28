@@ -83,10 +83,14 @@ class JsonEditor(QtWrappers.MainWindow):
         self.sa_output = QtWrappers.ScrollArea()
         self.dict_viewer = QtWrappers.DictViewer('Output', {})
 
-        self.vlayout_editor = QtWidgets.QVBoxLayout()
+        self.vlayout_code = QtWidgets.QVBoxLayout()
+
+        self.hlayout_editor = QtWidgets.QHBoxLayout()
         self.editor = QtWrappers.CodeEditor(QtWrappers.JsonHighlighter)
         self.editor.setFont(font)
         self.editor.setPlainText(example_code)
+        self.minimap = QtWrappers.CodeMiniMapWidget(self.editor)
+
         self.btn_run = QtWidgets.QPushButton(
             text='Run',
             icon=self.style().standardIcon(
@@ -98,13 +102,16 @@ class JsonEditor(QtWrappers.MainWindow):
         self.sa_output.add_stretch()
         self.splitter.addWidget(self.sa_output)
 
-        self.vlayout_editor.addWidget(self.editor)
+        self.hlayout_editor.addWidget(self.editor)
+        self.hlayout_editor.addWidget(self.minimap)
+
+        self.vlayout_code.addLayout(self.hlayout_editor)
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.btn_run)
-        self.vlayout_editor.addLayout(button_layout)
+        self.vlayout_code.addLayout(button_layout)
         wid = QtWidgets.QWidget()
-        wid.setLayout(self.vlayout_editor)
+        wid.setLayout(self.vlayout_code)
         self.splitter.addWidget(wid)
 
         self.setCentralWidget(self.widget_main)
