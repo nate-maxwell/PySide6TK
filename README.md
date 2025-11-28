@@ -19,6 +19,10 @@ class Foo(QtWrappers.MainWindow):
         super().__init__('example window')
         self.wid = QtWrappers.GroupBox('test box')
         self.setCentralWidget(self.wid)
+
+        
+if __name__ == '__main__':
+    QtWrapers.exec_app(Foo, 'Foo')
 ```
 
 Optionally, these same items can be gotten from like so:
