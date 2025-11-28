@@ -176,3 +176,11 @@ class LabeledComboBox(QtWidgets.QWidget):
         QtWidgets.QComboBox.setCurrentIndex().
         """
         self.cmb_box.setCurrentIndex(index)
+
+    def set_label_expanding(self, expand: bool) -> None:
+        """Sets the label as expanding if True, and preferred if False."""
+        if expand:
+            policy = QtWidgets.QSizePolicy.Policy.Expanding
+        else:
+            policy = QtWidgets.QSizePolicy.Policy.Preferred
+        self.label.setSizePolicy(policy, QtWidgets.QSizePolicy.Policy.Preferred)

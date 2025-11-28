@@ -84,3 +84,11 @@ class LabeledSpinBox(QtWidgets.QWidget):
 
     def value(self) -> Union[int, float]:
         return self.spinbox.value()
+
+    def set_label_expanding(self, expand: bool) -> None:
+        """Sets the label as expanding if True, and preferred if False."""
+        if expand:
+            policy = QtWidgets.QSizePolicy.Policy.Expanding
+        else:
+            policy = QtWidgets.QSizePolicy.Policy.Preferred
+        self.label.setSizePolicy(policy, QtWidgets.QSizePolicy.Policy.Preferred)
