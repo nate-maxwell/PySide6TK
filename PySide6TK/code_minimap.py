@@ -108,8 +108,10 @@ class CodeMiniMapWidget(QtWidgets.QWidget):
 
         self.editor = editor
         if self.editor:
+            self.editor.updateRequest.connect(lambda *_: self.update())
             self.editor.textChanged.connect(self.update)
             self.editor.verticalScrollBar().valueChanged.connect(self.update)
+
         self.update()
 
     # -----Line drawing--------------------------------------------------------
@@ -138,93 +140,77 @@ class CodeMiniMapWidget(QtWidgets.QWidget):
         painter.end()
 
     def _draw_lines(self, painter: QtGui.QPainter) -> None:
-        """Draw the colored lines for each code block in the editor."""
-        # Boy howdy are painter functions in qt ugly...
+        """Draw color bars by sampling blocks across the entire document height."""
+        doc = self.editor.document()
+        total_blocks = doc.blockCount()
+        if total_blocks <= 0:
+            return
 
         inner_w = max(1, self.width() - 2 * self.margin)
         max_lines = max(0, self.height() // self.line_height)
-        block = self.editor.document().firstBlock()
+        if max_lines <= 0:
+            return
 
-        painted = 0
+        # Map each minimap row i -> a document block index
+        # Use (total_blocks - 1) so the last block maps to the very bottom row.
+        denom = max(1, total_blocks - 1)
+
         for i in range(max_lines):
-            if not block.isValid():
-                break
-
+            block_idx = min(total_blocks - 1, int(i * denom / max(1, max_lines - 1)))
+            block = doc.findBlockByNumber(block_idx)
             y = i * self.line_height
+
             text = block.text()
-            text_len = len(text)
+            if not text:
+                painter.fillRect(self.margin, y, inner_w, self.line_height - 1, QtGui.QColor('#2a2a2a'))
+                continue
 
-            if text_len == 0:
-                painter.fillRect(
-                    self.margin,
-                    y,
-                    inner_w,
-                    self.line_height - 1,
-                    QtGui.QColor('#2a2a2a')
-                )
+            layout = block.layout()
+            runs = layout.formats()
+            if runs:
+                text_len = max(1, len(text))
+                for run in runs:
+                    if run.length <= 0:
+                        continue
+                    x0_ratio = max(0.0, run.start / text_len)
+                    x1_ratio = min(1.0, (run.start + run.length) / text_len)
+                    x = self.margin + int(x0_ratio * inner_w)
+                    w = max(1, int((x1_ratio - x0_ratio) * inner_w))
+                    color = run.format.foreground().color()
+                    if not color.isValid():
+                        color = QtGui.QColor('#666')
+                    painter.fillRect(x, y, w, self.line_height - 1, color)
             else:
-                layout = block.layout()
-                runs = layout.formats()
-                if runs:
-                    denom = max(1, text_len)
-                    for run in runs:
-                        start = max(0, run.start)
-                        length = max(0, run.length)
-                        if length == 0:
-                            continue
-                        x0_ratio = start / denom
-                        x1_ratio = min(1.0, (start + length) / denom)
-                        x = self.margin + int(x0_ratio * inner_w)
-                        w = max(1, int((x1_ratio - x0_ratio) * inner_w))
-                        color = run.format.foreground().color()
-                        if not color.isValid():
-                            color = QtGui.QColor('#666')
-                        painter.fillRect(x, y, w, self.line_height - 1, color)
-                else:
-                    painter.fillRect(
-                        self.margin, y, inner_w,
-                        self.line_height - 1,
-                        QtGui.QColor('#666')
-                    )
-
-            painted += 1
-            block = block.next()
-
-        # Fill any remaining minimap rows with faint bars so bottom isn't blank
-        for i in range(painted, max_lines):
-            y = i * self.line_height
-            painter.fillRect(
-                self.margin,
-                y,
-                inner_w,
-                self.line_height - 1,
-                QtGui.QColor('#2a2a2a')
-            )
+                painter.fillRect(self.margin, y, inner_w, self.line_height - 1, QtGui.QColor('#666'))
 
     def _draw_view_area(self, painter: QtGui.QPainter) -> None:
         """Draws a green square on the minimap corresponding to the viewed
         lines of code.
         """
-        vbar = self.editor.verticalScrollBar()
-        page = max(1, vbar.pageStep())  # visible portion (scrollbar units)
-        maximum = max(0, vbar.maximum())
-        total = page + maximum
+        if not self.editor:
+            return
 
-        top_ratio = (vbar.value() / total) if total else 0.0
-        height_ratio = (page / total) if total else 1.0
-
-        # IMPORTANT: scale to the actual painted area height, not full widget
+        inner_w = max(1, self.width() - 2 * self.margin)
         max_lines = max(0, self.height() // self.line_height)
         usable_h = max_lines * self.line_height
-        inner_w = max(1, self.width() - 2 * self.margin)
+        if usable_h <= 0:
+            return
 
-        # Minimum height
-        h = max(2, int(height_ratio * usable_h))
-        y = int(top_ratio * usable_h)
+        first_idx, visible_count, total_blocks = self._visible_block_span()
+        if total_blocks <= 0 or visible_count <= 0:
+            return
 
-        # Clamp to painted area to prevent overrun
-        if y + h > usable_h:
-            y = max(0, usable_h - h)
+        # Use the same denominator as _draw_lines so the scales match.
+        denom = max(1, total_blocks - 1)
+
+        # Map block indices → minimap Y with identical scaling to _draw_lines
+        y_top = int((first_idx / denom) * (usable_h - self.line_height))
+        # Show last visible block; +visible_count-1 to include the last block itself
+        last_idx = min(total_blocks - 1, first_idx + max(1, visible_count) - 1)
+        y_bottom = int((last_idx / denom) * (usable_h - self.line_height)) + self.line_height
+
+        y = max(0, min(y_top, usable_h - 2))
+        h = max(2, min(y_bottom - y_top, usable_h - y))
 
         painter.setPen(QtGui.QColor('#59ff00'))
         painter.drawRect(self.margin, y, inner_w - 1, h)
@@ -303,3 +289,43 @@ class CodeMiniMapWidget(QtWidgets.QWidget):
 
         top_ratio = y / float(usable_h) if usable_h else 0.0
         vbar.setValue(int(top_ratio * total))
+
+    def _visible_block_span(self) -> tuple[int, int, int]:
+        """Return (first_block_index, visible_block_count, total_block_count).
+
+        Uses the editor's layout to count how many text blocks are currently
+        visible inside the viewport, starting at firstVisibleBlock().
+        """
+        if not self.editor:
+            return 0, 0, 0
+
+        doc = self.editor.document()
+        total_blocks = doc.blockCount()
+        if total_blocks == 0:
+            return 0, 0, 0
+
+        layout: QtGui.QAbstractTextDocumentLayout = doc.documentLayout()
+        viewport_h = self.editor.viewport().height()
+        content_off_y = self.editor.contentOffset().y()
+
+        block = self.editor.firstVisibleBlock()
+        first_idx = block.blockNumber()
+
+        # Position of this block's top inside the viewport coordinates
+        # (translate by contentOffset).
+        top_y = layout.blockBoundingRect(block).translated(0, content_off_y).top()
+
+        visible = 0
+        y = top_y
+        cur = block
+        while cur.isValid() and y < viewport_h:
+            rect = layout.blockBoundingRect(cur)
+            h = rect.height()
+            # Guard against zero-height (can happen on empty docs/themes)
+            if h <= 0:
+                h = self.editor.fontMetrics().height()
+            visible += 1
+            y += h
+            cur = cur.next()
+
+        return first_idx, visible, total_blocks
