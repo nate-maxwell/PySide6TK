@@ -48,6 +48,7 @@ example_code = """{
         }
     ]
 }
+
 """
 
 
@@ -94,6 +95,7 @@ class JsonEditor(QtWrappers.MainWindow):
 
     def _create_layout(self) -> None:
         self.sa_output.add_widget(self.dict_viewer)
+        self.sa_output.add_stretch()
         self.splitter.addWidget(self.sa_output)
 
         self.vlayout_editor.addWidget(self.editor)

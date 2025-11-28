@@ -27,9 +27,9 @@ result: Union[list, dict] = values
 """
 
 
-class DictionaryViewer(QtWrappers.MainWindow):
+class ExamplePythonEditor(QtWrappers.MainWindow):
     def __init__(self) -> None:
-        super().__init__('Dictionary Viewer', (1200, 800))
+        super().__init__('Example Python Editor', (1200, 800))
         self.sg = None
         self.toolbar = QtWrappers.HelpToolbar(
             parent=self,
@@ -46,6 +46,7 @@ class DictionaryViewer(QtWrappers.MainWindow):
         self.code_editor.setPlainText(example_code)
 
     def _create_widgets(self) -> None:
+        # -----Main-----
         self.widget_main = QtWidgets.QWidget()
         self.layout_main = QtWidgets.QVBoxLayout()
         self.splitter_code = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
@@ -207,7 +208,7 @@ class DictionaryViewer(QtWrappers.MainWindow):
 
 
 def main() -> None:
-    QtWrappers.exec_app(DictionaryViewer, 'DictionaryViewer')
+    QtWrappers.exec_app(ExamplePythonEditor, 'ExamplePythonEditor')
 
 
 if __name__ == '__main__':
