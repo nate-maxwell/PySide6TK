@@ -66,7 +66,7 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.code_editor.setFont(font)
         self.code_editor.setMinimumHeight(150)
         self.code_editor.setPlaceholderText(example_code)
-        self.minimap = QtWrappers.CodeMiniMapWidget(self.code_editor)
+        self.minimap = QtWrappers.CodeMiniMap(self.code_editor)
 
         # -----Message/Errors-----
         self.traceback_widget = QtWidgets.QWidget()

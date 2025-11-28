@@ -279,3 +279,56 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             return
 
         super(CodeEditor, self).keyPressEvent(e)
+
+    # -----Helpers for Mini-map------------------------------------------------
+
+    def first_visible_block(self) -> QtGui.QTextBlock:
+        """Return the first block that is (partially) visible in the viewport.
+        """
+        return self.firstVisibleBlock()
+
+    def first_visible_line_index(self) -> int:
+        """Return the 0-based line index of the first visible block."""
+        return self.first_visible_block().blockNumber()
+
+    def visible_line_count_estimate(self) -> int:
+        """Estimate how many whole lines fit in the current viewport.
+
+        Returns:
+            int: Estimated number of visible lines. This intentionally avoids
+            expensive geometry queries; perfect accuracy isn't required for
+            a minimap viewport rectangle.
+        """
+        fm: QtGui.QFontMetrics = self.fontMetrics()
+        line_h: int = max(1, fm.height())
+        return max(1, self.viewport().height() // line_h)
+
+    def total_line_count(self) -> int:
+        """Return the total number of text blocks (lines) in the document."""
+        return self.blockCount()
+
+    def scroll_to_line_top(self, line_index: int) -> None:
+        """Scroll so that the specified line appears at the top of the
+        viewport.
+
+        Args:
+            line_index (int): 0-based line index to align to the top.
+        """
+        line_index = max(0, min(line_index, self.total_line_count() - 1))
+        sb: QtWidgets.QScrollBar = self.verticalScrollBar()
+        max_val = max(0, sb.maximum())
+        if self.total_line_count() <= 1 or max_val == 0:
+            sb.setValue(line_index)
+            return
+
+        value = int(round(line_index / max(1, self.total_line_count() - 1) * max_val))
+        sb.setValue(value)
+
+    def center_on_line(self, line_index: int) -> None:
+        """Scroll so that the specified line is approximately centered.
+
+        Args:
+            line_index (int): 0-based target line.
+        """
+        half: int = self.visible_line_count_estimate() // 2
+        self.scroll_to_line_top(max(0, line_index - half))
