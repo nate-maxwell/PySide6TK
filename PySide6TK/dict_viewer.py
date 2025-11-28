@@ -101,13 +101,17 @@ class DictViewer(GroupBox):
         """Adds a nested dict viewer showing element numbers to values."""
         group_box = GroupBox(label)
         for i in data:
-            line_edit = QtWidgets.QLineEdit(str(i))
-            line_edit.setReadOnly(True)
-            line_edit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                                    QtWidgets.QSizePolicy.Policy.Preferred)
-            group_box.add_widget(line_edit)
+            if isinstance(i, Mapping):
+                self._add_row_mapping('', i)
+            else:
+                line_edit = QtWidgets.QLineEdit(str(i))
+                line_edit.setReadOnly(True)
+                line_edit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                                        QtWidgets.QSizePolicy.Policy.Preferred)
+                group_box.add_widget(line_edit)
 
-        self.add_widget(group_box)
+        if group_box.layout.count():
+            self.add_widget(group_box)
 
     def _add_row_str(self, label: str, value: str) -> None:
         """Adds a row with a label and read-only line edit containing a str()

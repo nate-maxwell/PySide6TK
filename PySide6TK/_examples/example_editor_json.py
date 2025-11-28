@@ -4,155 +4,49 @@ Example editor for python code that creates a dict viewer from JSON code.
 Also doubles as example showing help bar.
 """
 
-
 import json
 
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
+import PySide6TK.dict_viewer
+import PySide6TK.main_window
 from PySide6TK import QtWrappers
 
-
 example_code = """{
-    "General": {
-        "show_full_name": "str",
-        "show_type": [
-            "Feature",
-            "Episodic"
-        ],
-        "default_phase": [
-            "previs",
-            "postvis",
-            "techvis"
-        ],
-        "default_nuke_color_space": [
-            "linear",
-            "rec709",
-            "sRGB",
-            "Gamma1.8",
-            "Gamma1.8",
-            "Gamma2.2",
-            "Cineon",
-            "Panalog",
-            "REDLog",
-            "ViperLog",
-            "AlexaV3LogC",
-            "PLogLin",
-            "SLog",
-            "Slog1",
-            "Slog2",
-            "Slog3",
-            "CLog",
-            "Protune",
-            "REDSpace"
-        ],
-        "framerate": "int",
-        "version_padding": "int",
-        "frame_padding": "int",
-        "focal_length_pack": "list[int]",
-        "handles": "list[int]"
+    "parameters": {
+        "address": "0.0.0.0",
+        "port": 8080,
+        "verbosity": 2,
+        "log-output": 0,
+        "print-tree": true,
+        "xform-timeout": "45s",
+        "consolidate": true,
+        "security-tokens": [
+            "lockheed",
+            "martin"
+        ]
     },
-    "Previz": {
-        "resolution": "list[int]",
-        "image_type": [
-            "jpg",
-            "png"
-        ],
-        "maya_unit_scale": "float",
-        "nuke_codec": [
-            "Animation",
-            "Apple ProRes",
-            "Avid DNxHD",
-            "Avid DNxHR",
-            "H.246",
-            "Motion JPEG A",
-            "Motion JPEG B",
-            "MPEG-4",
-            "Photo - JPEG",
-            "PNG",
-            "Uncompressed"
-        ],
-        "nuke_template_name": "str",
-        "type_prefix": "str",
-        "type_suffix": "str",
-        "nuke_name_format": "str",
-        "six_pack_resolution": "str"
-    },
-    "Postviz": {
-        "resolution": "list[int]",
-        "image_type": [
-            "jpg",
-            "png"
-        ],
-        "nuke_codec": [
-            "Animation",
-            "Apple ProRes",
-            "Avid DNxHD",
-            "Avid DNxHR",
-            "H.246",
-            "Motion JPEG A",
-            "Motion JPEG B",
-            "MPEG-4",
-            "Photo - JPEG",
-            "PNG",
-            "Uncompressed"
-        ],
-        "nuke_template_name": "str",
-        "type_prefix": "str",
-        "type_suffix": "str",
-        "nuke_name_format": "str"
-    },
-    "Techviz": {
-        "resolution": "list[int]",
-        "image_type": [
-            "jpg",
-            "png"
-        ],
-        "nuke_codec": [
-            "Animation",
-            "Apple ProRes",
-            "Avid DNxHD",
-            "Avid DNxHR",
-            "H.246",
-            "Motion JPEG A",
-            "Motion JPEG B",
-            "MPEG-4",
-            "Photo - JPEG",
-            "PNG",
-            "Uncompressed"
-        ],
-        "nuke_template_name": "str",
-        "type_prefix": "str",
-        "type_suffix": "str",
-        "nuke_name_format": "str"
-    },
-    "Virprod": {
-        "resolution": "list[int]",
-        "image_type": [
-            "jpg",
-            "png"
-        ],
-        "locations": "list[str]",
-        "mocap_slate_server_ip": "str",
-        "nuke_codec": [
-            "Animation",
-            "Apple ProRes",
-            "Avid DNxHD",
-            "Avid DNxHR",
-            "H.246",
-            "Motion JPEG A",
-            "Motion JPEG B",
-            "MPEG-4",
-            "Photo - JPEG",
-            "PNG",
-            "Uncompressed"
-        ],
-        "nuke_template_name": "str",
-        "type_prefix": "str",
-        "type_suffix": "str",
-        "nuke_name_format": "str"
-    }
+    "routes": [
+        {
+            "name": "default",
+            "channels": [
+                {
+                    "name": "inmem",
+                    "strategy": "pub-sub",
+                    "transformers": [
+                        { "address": "127.0.0.1:7010" },
+                        { "address": "10.0.0.52:8008" }
+                    ],
+                    "subscribers": [
+                        { "address": "127.0.0.1:1234" },
+                        { "address": "16.70.18.1:9999" }
+                    ]
+                }
+            ]
+        }
+    ]
 }
 """
 
@@ -166,7 +60,10 @@ class JsonEditor(QtWrappers.MainWindow):
             version='1.0.0',
             author='Nate Maxwell',
             repo_url='https://github.com/nate-maxwell/PySide6TK',
-            documentation_url='https://github.com/nate-maxwell/PySide6TK'
+            documentation_url='https://github.com/nate-maxwell/PySide6TK',
+            reload_modules=[
+                PySide6TK.dict_viewer
+            ]
         )
 
         self._create_widgets()
