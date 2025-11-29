@@ -75,9 +75,6 @@ from PySide6TK.preview_image import PreviewImage
 from PySide6TK.preview_sequence import PreviewSequence
 from PySide6TK.regx import natural_sort_strings
 from PySide6TK.regx import validation_no_special_chars
-from PySide6TK.resource_monitor import filetime_to_int
-from PySide6TK.resource_monitor import get_memory_usage
-from PySide6TK.resource_monitor import ResourceMonitor
 from PySide6TK.scroll_area import ScrollArea
 from PySide6TK.searchable_list import SearchableList
 from PySide6TK.shapes import HorizontalLine
@@ -139,3 +136,6 @@ from PySide6TK.text import HighlightRule
 from PySide6TK.toolbar import DEFAULT_ICON
 from PySide6TK.toolbar import null
 from PySide6TK.toolbar import Toolbar
+from PySide6TK.usage import get_memory_usage
+from PySide6TK.usage import ResourceMonitor
+from PySide6TK.usage import UsageBar

@@ -47,12 +47,35 @@ def get_memory_usage() -> float:
         return 0.0
 
 
-def filetime_to_int(ft: _FileTime) -> int:
+def _filetime_to_int(ft: _FileTime) -> int:
     """Convert FILETIME to integer."""
     return (ft.dwHighDateTime << 32) + ft.dwLowDateTime
 
 
-class _UsageBar(QtWidgets.QWidget):
+class UsageBar(QtWidgets.QWidget):
+    """A custom Qt widget that displays a horizontal progress bar with percentage text.
+
+    This widget renders a filled bar that visually represents a percentage value,
+    with centered text showing both the label and current percentage. The bar
+    includes a colored fill that grows from left to right based on the percentage,
+    a gray background, and a light border.
+
+    Args:
+        label_text: The text label to display alongside the percentage value.
+        color: The QColor to use for the filled portion of the bar.
+        height: The minimum height of the widget in pixels. Defaults to 20.
+        parent: The parent widget, if any. Defaults to None.
+
+    Attributes:
+        label_text (str): The label text displayed in the bar.
+        color (QtGui.QColor): The color of the filled portion.
+        percentage (float): The current percentage value (0-100).
+
+    Example:
+        >>> usage_bar = UsageBar("CPU Usage", QtGui.QColor(0, 255, 0))
+        >>> usage_bar.set_percentage(75.5)
+    """
+
     def __init__(
             self,
             label_text: str,
@@ -98,8 +121,8 @@ class ResourceMonitor(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle('System Monitor')
 
-        self.cpu_bar: _UsageBar
-        self.memory_bar: _UsageBar
+        self.cpu_bar: UsageBar
+        self.memory_bar: UsageBar
         self.timer: QtCore.QTimer
         self.last_idle_time: int = 0
         self.last_kernel_time: int = 0
@@ -114,8 +137,8 @@ class ResourceMonitor(QtWidgets.QWidget):
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.layout.setSpacing(10)
 
-        self.cpu_bar = _UsageBar('CPU', QtGui.QColor(52, 152, 219))
-        self.memory_bar = _UsageBar('Memory', QtGui.QColor(46, 204, 113))
+        self.cpu_bar = UsageBar('CPU', QtGui.QColor(52, 152, 219))
+        self.memory_bar = UsageBar('Memory', QtGui.QColor(46, 204, 113))
 
     def _create_layout(self) -> None:
         self.layout.addWidget(self.cpu_bar)
@@ -148,9 +171,9 @@ class ResourceMonitor(QtWidgets.QWidget):
             if not result:
                 return 0.0
 
-            idle = filetime_to_int(idle_time)
-            kernel = filetime_to_int(kernel_time)
-            user = filetime_to_int(user_time)
+            idle = _filetime_to_int(idle_time)
+            kernel = _filetime_to_int(kernel_time)
+            user = _filetime_to_int(user_time)
 
             if self.last_idle_time != 0:
                 idle_delta = idle - self.last_idle_time
