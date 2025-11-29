@@ -9,6 +9,7 @@ from PySide6 import QtGui
 from PySide6 import QtWidgets
 
 from PySide6TK import QtWrappers
+from PySide6TK import dict_viewer
 
 
 example_code = """import os
@@ -29,7 +30,11 @@ result: Union[list, dict] = values
 
 class ExamplePythonEditor(QtWrappers.MainWindow):
     def __init__(self) -> None:
-        super().__init__('Example Python Editor', (1200, 800))
+        super().__init__(
+            'Example Python Editor',
+            (1200, 800),
+            icon_path=QtWrappers.BUTTON_BLACK_40X40
+        )
         self.sg = None
         self.toolbar = QtWrappers.HelpToolbar(
             parent=self,
@@ -37,8 +42,12 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             version='1.0.0',
             author='Nate Maxwell',
             repo_url='https://github.com/nate-maxwell/PySide6TK',
-            documentation_url='https://github.com/nate-maxwell/PySide6TK'
+            documentation_url='https://github.com/nate-maxwell/PySide6TK',
+            reload_modules=[
+                dict_viewer
+            ]
         )
+        QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
 
         self._create_widgets()
         self._create_layout()

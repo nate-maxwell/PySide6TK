@@ -3,7 +3,7 @@
 
 Description:
 
-    A VSCode minimap like widget for code editors that derive from
+    A VSCode-like minimap widget for code editors that derive from
     QPlainTextEdit.
 """
 
@@ -14,6 +14,43 @@ from PySide6 import QtWidgets
 
 
 class CodeMiniMap(QtWidgets.QWidget):
+    """
+    A VSCode-style minimap widget for QPlainTextEdit-based code editors.
+
+    Displays a miniaturized, scrollable overview of the entire document
+    with syntax highlighting colors. The minimap shows a viewport indicator
+    rectangle representing the currently visible portion of the editor, and
+    allows navigation by clicking or dragging within the minimap.
+
+    The minimap automatically centers around the editor's current viewport
+    and scrolls as you navigate through the document, similar to VSCode's
+    behavior.
+
+    Attributes:
+        editor (QtWidgets.QPlainTextEdit): The text editor to create a
+            minimap for.
+        line_height (int): Height in pixels for each line in the minimap.
+            Default: 2.
+        char_width (int): Width in pixels for each character block.
+            Default: 1.
+        scroll_sensitivity (float): Multiplier for scroll speed when
+            dragging. Values > 1.0 increase sensitivity, < 1.0 decrease it.
+            Default: 1.0.
+        color_brightness (float): Brightness multiplier for syntax colors.
+            Range: 0.0 (black) to 1.0 (original brightness). Default: 0.6.
+
+    Args:
+        editor (QtWidgets.QPlainTextEdit): The code editor to attach the
+            minimap to.
+        parent (QtWidgets.QWidget | None): Optional parent widget.
+
+    Example:
+        >>> editor = CodeEditor()
+        >>> minimap = CodeMiniMap(editor)
+        >>> minimap.color_brightness = 0.4  # Darker colors
+        >>> minimap.scroll_sensitivity = 1.5  # More sensitive scrolling
+    """
+
     def __init__(
         self,
         editor: QtWidgets.QPlainTextEdit,
@@ -80,20 +117,20 @@ class CodeMiniMap(QtWidgets.QWidget):
             if y_offset >= minimap_height:
                 break
 
-            x = 5
+            left_margin = 5  # default to 5 for slight padding
             for j, char in enumerate(line):
                 if char != ' ' and char != '\t':
                     color = self._get_char_color(char_position)
                     painter.fillRect(
-                        x,
+                        left_margin,
                         y_offset,
                         self.char_width,
                         self.line_height,
                         color
                     )
-                x += self.char_width
+                left_margin += self.char_width
                 char_position += 1
-                if x > self.width() - 5:
+                if left_margin > self.width() - 5:
                     char_position += len(line) - j - 1
                     break
 
@@ -199,7 +236,8 @@ class CodeMiniMap(QtWidgets.QWidget):
         )
 
         # Calculate clicked line with sensitivity applied
-        clicked_line = int((y / self.line_height) * self.scroll_sensitivity) + scroll_offset
+        cur_pos = int((y / self.line_height) * self.scroll_sensitivity)
+        clicked_line = cur_pos + scroll_offset
         clicked_line = max(0, min(clicked_line, total_lines - 1))
 
         # Move cursor to that line

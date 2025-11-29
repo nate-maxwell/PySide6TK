@@ -66,6 +66,7 @@ class JsonEditor(QtWrappers.MainWindow):
                 PySide6TK.dict_viewer
             ]
         )
+        QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
 
         self._create_widgets()
         self._create_layout()
@@ -89,7 +90,7 @@ class JsonEditor(QtWrappers.MainWindow):
         self.editor = QtWrappers.CodeEditor(QtWrappers.JsonHighlighter)
         self.editor.setFont(font)
         self.editor.setPlainText(example_code)
-        self.minimap = QtWrappers.CodeMiniMapWidget(self.editor)
+        self.minimap = QtWrappers.CodeMiniMap(self.editor)
 
         self.btn_run = QtWidgets.QPushButton(
             text='Run',
