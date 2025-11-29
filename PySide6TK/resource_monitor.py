@@ -52,7 +52,7 @@ def filetime_to_int(ft: _FileTime) -> int:
     return (ft.dwHighDateTime << 32) + ft.dwLowDateTime
 
 
-class _UsageBar(QtWidgets.QProgressBar):
+class _UsageBar(QtWidgets.QWidget):
     def __init__(
             self,
             label_text: str,
@@ -63,28 +63,8 @@ class _UsageBar(QtWidgets.QProgressBar):
         super().__init__(parent)
         self.label_text: str = label_text
         self.color: QtGui.QColor = color
-
-        self.setRange(0, 100)
-        self.setValue(0)
         self.setMinimumHeight(height)
-        self.setTextVisible(True)
-        self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        self.setStyleSheet(f'''
-            QProgressBar {{
-                border: 1px solid rgb(200, 200, 200);
-                background-color: rgb(100, 100, 100);
-                text-align: center;
-                color: black;
-                font-family: Arial;
-                font-size: 10pt;
-                font-weight: bold;
-            }}
-            QProgressBar::chunk {{
-                background-color: rgb({self.color.red()}, {self.color.green()}, {self.color.blue()});
-                width: 5px;
-            }}
-        ''')
+        self.percentage: float = 0
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self)
@@ -94,7 +74,7 @@ class _UsageBar(QtWidgets.QProgressBar):
         painter.fillRect(self.rect(), QtGui.QColor(100, 100, 100))
 
         # Filled Portion
-        bar_width = int(self.width() * self.value() / 100)
+        bar_width = int(self.width() * self.percentage / 100)
         painter.fillRect(0, 0, bar_width, self.height(), self.color)
 
         # Border
@@ -105,13 +85,12 @@ class _UsageBar(QtWidgets.QProgressBar):
         painter.setPen(QtCore.Qt.GlobalColor.black)
         font = QtGui.QFont("Arial", 10, QtGui.QFont.Weight.Bold)
         painter.setFont(font)
-        text = f'{self.label_text}: {self.value():.1f}%'
+        text = f'{self.label_text}: {self.percentage:.1f}%'
         painter.drawText(self.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, text)
 
     def set_percentage(self, percentage: float) -> None:
-        value = max(0, min(100, int(percentage)))
-        self.setValue(value)
-        self.setFormat(f'{self.label_text}: {value:.1f}%')
+        self.percentage = max(0, min(100, int(percentage)))
+        self.update()
 
 
 class ResourceMonitor(QtWidgets.QWidget):
