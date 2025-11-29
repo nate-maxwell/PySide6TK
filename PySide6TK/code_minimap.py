@@ -25,6 +25,8 @@ class CodeMiniMap(QtWidgets.QWidget):
         self.visible_rect = QtCore.QRect()
         self.line_height = 2
         self.char_width = 1
+        self.scroll_sensitivity = 1.0
+        self.color_brightness = 0.6
 
         self.setFixedWidth(120)
 
@@ -52,9 +54,29 @@ class CodeMiniMap(QtWidgets.QWidget):
         if total_lines == 0:
             return
 
+        first_visible = self.editor.firstVisibleBlock().blockNumber()
+        viewport_height = self.editor.viewport().height()
+        block_height = self.editor.fontMetrics().height()
+        visible_blocks = viewport_height // block_height + 1
+        center_line = first_visible + visible_blocks // 2
+        lines_in_minimap = minimap_height // self.line_height
+
+        scroll_offset = center_line - lines_in_minimap // 2
+        scroll_offset = max(
+            0, min(scroll_offset, total_lines - lines_in_minimap)
+        )
+
+        start_line = max(0, int(scroll_offset))
+        end_line = min(total_lines, start_line + lines_in_minimap + 1)
+        char_position = sum(len(lines[i]) + 1 for i in range(start_line))
+
         y_offset = 0
-        char_position = 0
-        for i, line in enumerate(lines):
+        for i in range(start_line, end_line):
+            if i >= len(lines):
+                break
+
+            line = lines[i]
+
             if y_offset >= minimap_height:
                 break
 
@@ -78,7 +100,7 @@ class CodeMiniMap(QtWidgets.QWidget):
             char_position += 1  # Account for newline character
             y_offset += self.line_height
 
-        self._draw_viewport_indicator(painter, total_lines)
+        self._draw_viewport_indicator(painter, total_lines, scroll_offset)
 
     def _get_char_color(self, position: int) -> QtGui.QColor:
         """Get color from editor's text format at position"""
@@ -86,18 +108,18 @@ class CodeMiniMap(QtWidgets.QWidget):
         doc = self.editor.document()
 
         if position >= doc.characterCount():
-            return fallback_color
+            return self._adjust_color_brightness(fallback_color)
 
         block = doc.findBlock(position)
         if not block.isValid():
-            return fallback_color
+            return self._adjust_color_brightness(fallback_color)
 
         block_position = position - block.position()
 
         # Get formats for this block
         layout = block.layout()
         if layout is None:
-            return fallback_color
+            return self._adjust_color_brightness(fallback_color)
 
         formats = layout.formats()
 
@@ -106,14 +128,23 @@ class CodeMiniMap(QtWidgets.QWidget):
             if fmt_range.start <= block_position < fmt_range.start + fmt_range.length:
                 color = fmt_range.format.foreground().color()
                 if color.isValid():
-                    return color
+                    return self._adjust_color_brightness(color)
 
-        return fallback_color
+        return self._adjust_color_brightness(fallback_color)
+
+    def _adjust_color_brightness(self, color: QtGui.QColor) -> QtGui.QColor:
+        """Adjust color brightness for minimap display"""
+        h, s, v, a = color.getHsv()
+        v = int(v * self.color_brightness)
+        adjusted = QtGui.QColor()
+        adjusted.setHsv(h, s, v, a)
+        return adjusted
 
     def _draw_viewport_indicator(
-        self,
-        painter: QtGui.QPainter,
-        total_lines: int
+            self,
+            painter: QtGui.QPainter,
+            total_lines: int,
+            scroll_offset: float = 0
     ) -> None:
         """Draw rectangle showing visible portion of editor"""
         if total_lines == 0:
@@ -124,17 +155,13 @@ class CodeMiniMap(QtWidgets.QWidget):
         block_height = self.editor.fontMetrics().height()
         visible_blocks = viewport_height // block_height + 1
 
-        content_height = total_lines * self.line_height
-        minimap_height = self.height()
+        # Calculate position in minimap coordinates
+        rect_y = (first_visible - scroll_offset) * self.line_height
+        rect_height = visible_blocks * self.line_height
 
-        # Scale to fit minimap if content is larger, otherwise use actual size
-        if content_height > minimap_height:
-            scale = minimap_height / content_height
-            rect_y = first_visible * self.line_height * scale
-            rect_height = visible_blocks * self.line_height * scale
-        else:
-            rect_y = first_visible * self.line_height
-            rect_height = visible_blocks * self.line_height
+        # Clamp to minimap bounds
+        rect_y = max(0, min(rect_y, self.height() - rect_height))
+        rect_height = min(rect_height, self.height())
 
         # View rect overlay
         painter.setPen(QtGui.QPen(QtGui.QColor(100, 100, 100), 1))
@@ -158,17 +185,21 @@ class CodeMiniMap(QtWidgets.QWidget):
         if total_lines == 0:
             return
 
-        # Calculate content height and scaling
-        content_height = total_lines * self.line_height
-        minimap_height = self.height()
+        # Calculate which line was clicked based on current scroll position
+        first_visible = self.editor.firstVisibleBlock().blockNumber()
+        viewport_height = self.editor.viewport().height()
+        block_height = self.editor.fontMetrics().height()
+        visible_blocks = viewport_height // block_height + 1
 
-        # Adjust click position based on scaling
-        if content_height > minimap_height:
-            scale = minimap_height / content_height
-            clicked_line = int((y / scale) / self.line_height)
-        else:
-            clicked_line = int(y / self.line_height)
+        center_line = first_visible + visible_blocks // 2
+        lines_in_minimap = self.height() // self.line_height
+        scroll_offset = center_line - lines_in_minimap // 2
+        scroll_offset = max(
+            0, min(scroll_offset, total_lines - lines_in_minimap)
+        )
 
+        # Calculate clicked line with sensitivity applied
+        clicked_line = int((y / self.line_height) * self.scroll_sensitivity) + scroll_offset
         clicked_line = max(0, min(clicked_line, total_lines - 1))
 
         # Move cursor to that line
