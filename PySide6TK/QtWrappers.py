@@ -113,7 +113,6 @@ from PySide6TK.styles import QSS_HOOKMARK
 from PySide6TK.styles import QSS_INCRYPT
 from PySide6TK.styles import QSS_INTEGRID
 from PySide6TK.styles import QSS_IRRORATER
-from PySide6TK.styles import QSS_LICENSE
 from PySide6TK.styles import QSS_MAILSY
 from PySide6TK.styles import QSS_MEDIZE
 from PySide6TK.styles import QSS_MIXCHAT

@@ -78,7 +78,8 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.btn_execute_query = QtWidgets.QPushButton(
             text='Run',
             icon=self.style().standardIcon(
-                QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
+                QtWidgets.QStyle.StandardPixmap.SP_MediaPlay
+            )
         )
 
         # -----Message/Errors-----
