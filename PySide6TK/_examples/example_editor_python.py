@@ -65,23 +65,24 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         font.setPointSize(10)
 
         # -----Code Editor-----
-        self.code_widget = QtWidgets.QWidget()
-        self.editor_layout = QtWidgets.QVBoxLayout()
-        self.code_label = QtWidgets.QLabel('Query Code:')
-        self.code_label.setStyleSheet('font-weight: bold; font-size: 12px;')
+        self.grp_code = QtWrappers.GroupBox('Query Code:')
 
-        self.code_layout = QtWidgets.QHBoxLayout()
+        self.hlayout_code_editor = QtWidgets.QHBoxLayout()
         self.code_editor = QtWrappers.CodeEditor()
         self.code_editor.setFont(font)
         self.code_editor.setMinimumHeight(150)
         self.code_editor.setPlaceholderText(example_code)
         self.minimap = QtWrappers.CodeMiniMap(self.code_editor)
 
+        self.hlayout_query_button = QtWidgets.QHBoxLayout()
+        self.btn_execute_query = QtWidgets.QPushButton(
+            text='Run',
+            icon=self.style().standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
+        )
+
         # -----Message/Errors-----
-        self.traceback_widget = QtWidgets.QWidget()
-        self.traceback_layout = QtWidgets.QVBoxLayout()
-        self.traceback_label = QtWidgets.QLabel('Messages / Errors:')
-        self.traceback_label.setStyleSheet('font-weight: bold; font-size: 12px;')
+        self.grp_traceback = QtWrappers.GroupBox('Messages / Errors:')
 
         self.traceback_display = QtWidgets.QTextEdit()
         self.traceback_display.setReadOnly(True)
@@ -91,11 +92,10 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.traceback_display.setFont(font)
         self.traceback_display.setMinimumHeight(50)
 
+        self.resource_monitor = QtWrappers.ResourceMonitor()
+
         # -----Results-----
-        self.results_widget = QtWidgets.QWidget()
-        self.results_layout = QtWidgets.QVBoxLayout()
-        self.results_label = QtWidgets.QLabel('Results:')
-        self.results_label.setStyleSheet('font-weight: bold; font-size: 12px;')
+        self.grp_result = QtWrappers.GroupBox('Results:')
 
         self.results_table = QtWidgets.QTableWidget()
         self.results_table.setMinimumHeight(200)
@@ -104,39 +104,29 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         )
         self.results_table.horizontalHeader().setStretchLastSection(True)
 
-        self.btn_execute_query = QtWidgets.QPushButton(
-            text='Run',
-            icon=self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
-        )
-
     def _create_layout(self) -> None:
         # -----Code Editor-----
-        self.code_layout.addWidget(self.code_editor)
-        self.code_layout.addWidget(self.minimap)
+        self.hlayout_code_editor.addWidget(self.code_editor)
+        self.hlayout_code_editor.addWidget(self.minimap)
 
-        self.code_widget.setLayout(self.editor_layout)
-        self.editor_layout.addWidget(self.code_label)
-        self.editor_layout.addLayout(self.code_layout)
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.addStretch()
-        button_layout.addWidget(self.btn_execute_query)
-        self.editor_layout.addLayout(button_layout)
-        self.splitter_code.addWidget(self.code_widget)
+        self.hlayout_query_button.addStretch()
+        self.hlayout_query_button.addWidget(self.btn_execute_query)
+
+        self.grp_code.add_layout(self.hlayout_code_editor)
+        self.grp_code.add_layout(self.hlayout_query_button)
+        self.splitter_code.addWidget(self.grp_code)
 
         # -----Message/Errors-----
-        self.traceback_widget.setLayout(self.traceback_layout)
-        self.traceback_layout.addWidget(self.traceback_label)
-        self.traceback_layout.addWidget(self.traceback_display)
-        self.splitter_code.addWidget(self.traceback_widget)
+        self.grp_traceback.add_widget(self.traceback_display)
+        self.grp_traceback.add_widget(QtWrappers.HorizontalLine())
+        self.grp_traceback.add_widget(self.resource_monitor)
+        self.splitter_code.addWidget(self.grp_traceback)
+        self.splitter_code.setSizes([300, 50])
 
         # -----Results-----
-        self.results_widget.setLayout(self.results_layout)
-        self.results_layout.addWidget(self.results_label)
-        self.results_layout.addWidget(self.results_table)
-        self.splitter_results.addWidget(self.results_widget)
+        self.grp_result.add_widget(self.results_table)
+        self.splitter_results.addWidget(self.grp_result)
         self.splitter_results.addWidget(self.splitter_code)
-
-        self.splitter_code.setSizes([300, 50])
 
         # -----Main-----
         self.setCentralWidget(self.widget_main)
