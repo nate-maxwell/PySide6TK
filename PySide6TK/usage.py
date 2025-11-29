@@ -1,3 +1,14 @@
+"""
+# Resource Usage
+
+* Description:
+
+    A library of resource usage widgets and helpers.
+    Anything from a percent usage bar to ways to get the used memory values
+    on windows.
+"""
+
+
 import ctypes
 import ctypes.wintypes
 
@@ -117,6 +128,36 @@ class UsageBar(QtWidgets.QWidget):
 
 
 class ResourceMonitor(QtWidgets.QWidget):
+    """A Qt widget that monitors and displays real-time system resource usage.
+
+    This widget provides a visual display of CPU and memory usage through
+    colored progress bars that update every second. It uses Windows API calls
+    to retrieve accurate CPU usage statistics and displays both CPU and memory
+    usage as percentage values.
+
+    The widget creates a window titled 'System Monitor' with two horizontal
+    usage bars: one for CPU (blue) and one for memory (green). The bars
+    automatically update at 1-second intervals.
+
+    Attributes:
+        cpu_bar (UsageBar): The progress bar widget displaying CPU usage.
+        memory_bar (UsageBar): The progress bar widget displaying memory usage.
+        timer (QtCore.QTimer): Timer that triggers periodic updates.
+        last_idle_time (int): Previous idle time value for CPU calculation.
+        last_kernel_time (int): Previous kernel time value for CPU calculation.
+        last_user_time (int): Previous user time value for CPU calculation.
+
+    Note:
+        This class uses Windows-specific API calls (GetSystemTimes) for CPU
+        monitoring and is designed to run on Windows systems only.
+
+    Example:
+        >>> app = QtWidgets.QApplication(sys.argv)
+        >>> monitor = ResourceMonitor()
+        >>> monitor.show()
+        >>> sys.exit(app.exec())
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle('System Monitor')
