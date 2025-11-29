@@ -8,22 +8,22 @@ from PySide6 import QtWidgets
 
 class _MemoryStatus(ctypes.Structure):
     _fields_ = [
-        ("dwLength", ctypes.wintypes.DWORD),
-        ("dwMemoryLoad", ctypes.wintypes.DWORD),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ('dwLength', ctypes.wintypes.DWORD),
+        ('dwMemoryLoad', ctypes.wintypes.DWORD),
+        ('ullTotalPhys', ctypes.c_ulonglong),
+        ('ullAvailPhys', ctypes.c_ulonglong),
+        ('ullTotalPageFile', ctypes.c_ulonglong),
+        ('ullAvailPageFile', ctypes.c_ulonglong),
+        ('ullTotalVirtual', ctypes.c_ulonglong),
+        ('ullAvailVirtual', ctypes.c_ulonglong),
+        ('ullAvailExtendedVirtual', ctypes.c_ulonglong),
     ]
 
 
 class _FileTime(ctypes.Structure):
     _fields_ = [
-        ("dwLowDateTime", ctypes.wintypes.DWORD),
-        ("dwHighDateTime", ctypes.wintypes.DWORD),
+        ('dwLowDateTime', ctypes.wintypes.DWORD),
+        ('dwHighDateTime', ctypes.wintypes.DWORD),
     ]
 
 
@@ -40,16 +40,19 @@ def get_memory_usage() -> float:
         else:
             return 0.0
 
-    except Exception:
+    except AttributeError:
+        # Not on Windows API
+        return 0.0
+    except (OSError, ValueError, TypeError):
         return 0.0
 
 
 def filetime_to_int(ft: _FileTime) -> int:
-    """Convert FILETIME to integer"""
+    """Convert FILETIME to integer."""
     return (ft.dwHighDateTime << 32) + ft.dwLowDateTime
 
 
-class _UsageBar(QtWidgets.QWidget):
+class _UsageBar(QtWidgets.QProgressBar):
     def __init__(
             self,
             label_text: str,
@@ -60,12 +63,28 @@ class _UsageBar(QtWidgets.QWidget):
         super().__init__(parent)
         self.label_text: str = label_text
         self.color: QtGui.QColor = color
-        self.percentage: float = 0
-        self.setMinimumHeight(height)
 
-    def set_percentage(self, percentage: float) -> None:
-        self.percentage = max(0, min(100, int(percentage)))
-        self.update()
+        self.setRange(0, 100)
+        self.setValue(0)
+        self.setMinimumHeight(height)
+        self.setTextVisible(True)
+        self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        self.setStyleSheet(f'''
+            QProgressBar {{
+                border: 1px solid rgb(200, 200, 200);
+                background-color: rgb(100, 100, 100);
+                text-align: center;
+                color: black;
+                font-family: Arial;
+                font-size: 10pt;
+                font-weight: bold;
+            }}
+            QProgressBar::chunk {{
+                background-color: rgb({self.color.red()}, {self.color.green()}, {self.color.blue()});
+                width: 5px;
+            }}
+        ''')
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self)
@@ -75,7 +94,7 @@ class _UsageBar(QtWidgets.QWidget):
         painter.fillRect(self.rect(), QtGui.QColor(100, 100, 100))
 
         # Filled Portion
-        bar_width = int(self.width() * self.percentage / 100)
+        bar_width = int(self.width() * self.value() / 100)
         painter.fillRect(0, 0, bar_width, self.height(), self.color)
 
         # Border
@@ -86,8 +105,13 @@ class _UsageBar(QtWidgets.QWidget):
         painter.setPen(QtCore.Qt.GlobalColor.black)
         font = QtGui.QFont("Arial", 10, QtGui.QFont.Weight.Bold)
         painter.setFont(font)
-        text = f'{self.label_text}: {self.percentage:.1f}%'
+        text = f'{self.label_text}: {self.value():.1f}%'
         painter.drawText(self.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, text)
+
+    def set_percentage(self, percentage: float) -> None:
+        value = max(0, min(100, int(percentage)))
+        self.setValue(value)
+        self.setFormat(f'{self.label_text}: {value:.1f}%')
 
 
 class ResourceMonitor(QtWidgets.QWidget):
