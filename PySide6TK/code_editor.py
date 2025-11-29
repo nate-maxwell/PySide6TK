@@ -14,6 +14,7 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
+import PySide6TK.text
 from PySide6TK.languages.python_syntax import PythonHighlighter
 
 
@@ -246,13 +247,15 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
     def indent(self, lines: range) -> None:
         """Indent the lines within the given range."""
-        for i in lines:
-            self.add_line_prefix(_INDENT, i)
+        with PySide6TK.text.PlainTextUndoBlock(self):
+            for i in lines:
+                self.add_line_prefix(_INDENT, i)
 
     def unindent(self, lines: range) -> None:
         """Unindent the lines within the given range."""
-        for i in lines:
-            self.remove_line_prefix(_INDENT, i)
+        with PySide6TK.text.PlainTextUndoBlock(self):
+            for i in lines:
+                self.remove_line_prefix(_INDENT, i)
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""

@@ -7,8 +7,35 @@
 """
 
 
+from typing import Optional
+
 from PySide6 import QtCore
 from PySide6 import QtGui
+from PySide6 import QtWidgets
+
+
+class PlainTextUndoBlock(object):
+    """Context manager for QPlainTextEdit that captures actions in the with
+    block into a single edit block for easy undo/redo.
+    """
+
+    def __init__(self, text_edit: QtWidgets.QPlainTextEdit) -> None:
+        self.text_edit: QtWidgets.QPlainTextEdit = text_edit
+        self.cursor: Optional[QtGui.QTextCursor] = None
+
+    def __enter__(self) -> QtWidgets.QPlainTextEdit:
+        self.cursor = self.text_edit.textCursor()
+        self.cursor.beginEditBlock()
+        return self.text_edit
+
+    def __exit__(
+            self,
+            exc_type: Optional[type[BaseException]],
+            exc_val: Optional[BaseException],
+            exc_tb: object
+    ) -> bool:
+        self.cursor.endEditBlock()
+        return False
 
 
 class HighlightRule(object):
@@ -30,7 +57,7 @@ class HighlightRule(object):
         self.group = group
 
 
-def color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
+def color_format(color: str, style: Optional[str] = None) -> QtGui.QTextCharFormat:
     """Return a QTextCharFormat with the given attributes.
 
     Args:
@@ -44,6 +71,9 @@ def color_format(color: str, style: str = '') -> QtGui.QTextCharFormat:
 
     _format = QtGui.QTextCharFormat()
     _format.setForeground(_color)
+
+    if style is None:
+        return _format
     if 'bold' in style:
         _format.setFontWeight(QtGui.QFont.Weight.Bold)
     if 'italic' in style:
