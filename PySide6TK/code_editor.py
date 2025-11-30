@@ -25,6 +25,15 @@ SyntaxHighlighter = Type[T_Highlighter]
 
 _INDENT = ' ' * 4
 
+_WRAPPING_PAIRS = {
+    "'": "'",
+    '"': '"',
+    '(': ')',
+    '[': ']',
+    '{': '}',
+    '`': '`',
+}
+
 
 class _LineNumberArea(QtWidgets.QWidget):
     """
@@ -108,6 +117,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         self.update_line_number_area_width(0)
 
         syntax_highlighter(self.document())
+        self.highlight_current_line()
 
     def _create_shortcut_signals(self) -> None:
         self.indented.connect(self.indent)
@@ -186,18 +196,21 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             blockNumber += 1
 
     def highlight_current_line(self) -> None:
+        if self.isReadOnly():
+            self.setExtraSelections([])
+            return
+
         extraSelections = []
-        if not self.isReadOnly():
-            selection = QtWidgets.QTextEdit.ExtraSelection()
-            line_color = QtGui.QColor('yellow').lighter(160)
+        selection = QtWidgets.QTextEdit.ExtraSelection()
 
-            fmt = QtGui.QTextCharFormat()
-            fmt.setBackground(line_color)
-            selection.format = fmt
+        fmt = QtGui.QTextCharFormat()
+        fmt.setBackground(QtGui.QColor(40, 40, 40))
+        fmt.setProperty(QtGui.QTextFormat.Property.FullWidthSelection, True)
+        selection.format = fmt
 
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extraSelections.append(selection)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()
+        extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
 
     def add_line_prefix(self, prefix: str, line: int) -> None:
@@ -257,8 +270,30 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             for i in lines:
                 self.remove_line_prefix(_INDENT, i)
 
+    def wrap_selection(self, opening: str, closing: str) -> None:
+        """
+        Wrap the current selection with opening and closing characters.
+
+        Args:
+            opening (str): Character to insert before the selection.
+            closing (str): Character to insert after the selection.
+        """
+        cursor = self.textCursor()
+        if cursor.hasSelection():
+            selected_text = cursor.selectedText()
+            wrapped_text = f'{opening}{selected_text}{closing}'
+            cursor.insertText(wrapped_text)
+        else:
+            self.insertPlainText(opening)
+
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
+        # Should text be wrapped?
+        typed_char = e.text()
+        if self.textCursor().hasSelection() and typed_char in _WRAPPING_PAIRS:
+            self.wrap_selection(typed_char, _WRAPPING_PAIRS[typed_char])
+            return
+
         first_line, last_line = self._get_selection_range()
 
         # Multi-line indent
@@ -276,6 +311,26 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         # Tab as 4 spaces
         if e.key() == QtCore.Qt.Key.Key_Tab:
             self.insertPlainText(_INDENT)
+            return
+
+        # Enter indentation preservation.
+        if e.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter):
+            # This is rather primitive - it checks there are any number of
+            # spaces preceding the cursor and then newlines to that column.
+            # More complex indenting requires knowledge of the written
+            # language's grammars.
+
+            cursor = self.textCursor()
+            cursor.select(QtGui.QTextCursor.SelectionType.LineUnderCursor)
+            current_line = cursor.selectedText()
+
+            # Count leading spaces
+            indent_count = len(current_line) - len(current_line.lstrip(' '))
+            indent = ' ' * indent_count
+
+            # Insert newline and indentation
+            super(CodeEditor, self).keyPressEvent(e)
+            self.insertPlainText(indent)
             return
 
         super(CodeEditor, self).keyPressEvent(e)
