@@ -81,6 +81,9 @@ from PySide6TK.shapes import HorizontalLine
 from PySide6TK.shapes import HorizontalSpacer
 from PySide6TK.shapes import VerticalLine
 from PySide6TK.shapes import VerticalSpacer
+from PySide6TK.shortcuts import KeyShortcutManager
+from PySide6TK.shortcuts import MODIFIER_KEYS
+from PySide6TK.shortcuts import _ShortcutEditorDialog
 from PySide6TK.signal import emit_signal
 from PySide6TK.signal import signal
 from PySide6TK.styles import QSS_ADAPTIC

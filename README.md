@@ -6,6 +6,11 @@ A library of PySide6 helpers + stylesheets specifically for Windows development.
 When adding to the toolkit, be sure to run `PySide6TK._generate_namespace.py`
 to rebuild the `PySide6TK.QtWrappers.py` file before pushing updates.
 
+Internal files do not reference `QtWrappers`.
+When expanding  the toolkit, reference `PySide6TK.SpecificModule` inside other
+modules. This keeps the internal repo clean and customizable while external
+references all flow  through `QtWrappers`.
+
 ## Namespaces
 
 Wrapper objects and helper methods can be imported similarly to how PySide

@@ -37,7 +37,10 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             (1200, 800),
             icon_path=QtWrappers.BUTTON_BLACK_40X40
         )
+
         self.sg = None
+        self.shortcut_manager = QtWrappers.KeyShortcutManager(self)
+
         self.toolbar = QtWrappers.HelpToolbar(
             parent=self,
             description='Example code editor with dict viewer',
@@ -47,13 +50,15 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             documentation_url='https://github.com/nate-maxwell/PySide6TK',
             reload_modules=[
                 dict_viewer
-            ]
+            ],
+            shortcut_manager=self.shortcut_manager
         )
         QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
 
         self._create_widgets()
         self._create_layout()
         self._create_connections()
+        self._create_shortcuts()
         self.code_editor.setPlainText(example_code)
 
     def _create_widgets(self) -> None:
@@ -139,6 +144,37 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
     def _create_connections(self) -> None:
         self.btn_execute_query.clicked.connect(self.btn_execute_query_connection)
 
+    def _create_shortcuts(self) -> None:
+        desc = 'Create a new file.'
+        self.shortcut_manager.add_shortcut(
+            'new_file', 'Ctrl+N', new_file, desc
+        )
+
+        desc = 'Open an existing file.'
+        self.shortcut_manager.add_shortcut(
+            'open_file', 'Ctrl+O', open_file, desc
+        )
+
+        desc = 'Save the current file.'
+        self.shortcut_manager.add_shortcut(
+            'save_file', 'Ctrl+S', save_file, desc
+        )
+
+        desc = 'Quit the application'
+        self.shortcut_manager.add_shortcut(
+            'quit_app', 'Ctrl+Q', self.close, desc
+        )
+
+        desc = 'Show help documentation.'
+        self.shortcut_manager.add_shortcut(
+            'show_help', 'F1', show_help, desc
+        )
+
+        self.btn_open_shortcuts = QtWidgets.QPushButton('Open Shortcuts')
+        self.btn_open_shortcuts.clicked.connect(
+            self.shortcut_manager.show_editor
+        )
+
     def btn_execute_query_connection(self) -> None:
         self.traceback_display.clear()
         self.results_table.clear()
@@ -221,6 +257,22 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
                     self.results_table.setItem(row, col, table_item)
 
         self.results_table.resizeColumnsToContents()
+
+
+def new_file() -> None:
+    print('New file created!')
+
+
+def open_file() -> None:
+    print('Open file dialog!')
+
+
+def save_file() -> None:
+    print('File saved!')
+
+
+def show_help() -> None:
+    print('Help documentation!')
 
 
 def main() -> None:

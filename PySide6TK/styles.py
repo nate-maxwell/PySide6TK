@@ -15,7 +15,7 @@ from PySide6 import QtWidgets
 import PySide6TK
 
 
-def set_style(menu: PySide6TK.MENU_TYPE, style_path: Path) -> None:
+def set_style(menu: QtWidgets.QWidget, style_path: Path) -> None:
     """Applies the style file contents to the given menu.
 
     Args:

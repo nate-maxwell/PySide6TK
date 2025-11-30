@@ -20,9 +20,9 @@ from typing import Optional
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
-import PySide6TK
 from PySide6TK import styles
 from PySide6TK import toolbar
+from PySide6TK import shortcuts
 
 
 class _AboutWidget(QtWidgets.QWidget):
@@ -113,7 +113,7 @@ class HelpToolbar(toolbar.Toolbar):
 
     def __init__(
             self,
-            parent: PySide6TK.MENU_TYPE,
+            parent: QtWidgets.QMainWindow,
             description: Optional[str] = None,
             version: Optional[str] = None,
             author: Optional[str] = None,
@@ -121,7 +121,8 @@ class HelpToolbar(toolbar.Toolbar):
             documentation_url: Optional[str] = None,
             reload_modules: list[ModuleType] = None,
             logs_dir: Optional[Path] = None,
-            open_console_func: Callable = toolbar.null
+            open_console_func: Callable = toolbar.null,
+            shortcut_manager: Optional[shortcuts.KeyShortcutManager] = None
     ) -> None:
         self.parent = parent
 
@@ -129,6 +130,7 @@ class HelpToolbar(toolbar.Toolbar):
         self.reload_modules: list[ModuleType] = reload_modules if reload_modules else []
         self.logs_dir: Optional[Path] = logs_dir
         self.open_console: Callable = open_console_func
+        self.shortcut_manager = shortcut_manager
 
         # help section
         self.about_widget = _AboutWidget(description, version, author)
@@ -140,9 +142,18 @@ class HelpToolbar(toolbar.Toolbar):
         parent.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, self)
 
     def build(self) -> None:
+        self._file_section()
         self._developer_section()
         self._theme_section()
         self._help_section()
+
+    def _file_section(self) -> None:
+        submenu = self.add_toolbar_submenu('File', image_path=None)
+
+        if self.shortcut_manager is not None:
+            self.add_submenu_command(
+                submenu, 'Shortcuts', self.shortcut_manager.show_editor
+            )
 
     def _developer_section(self) -> None:
         submenu = self.add_toolbar_submenu('Developer', image_path=None)
