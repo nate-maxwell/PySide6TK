@@ -240,9 +240,17 @@ class CodeMiniMap(QtWidgets.QWidget):
         clicked_line = cur_pos + scroll_offset
         clicked_line = max(0, min(clicked_line, total_lines - 1))
 
-        # Scroll to line - do not moving cursor
+        # Center viewport
+        centered_scroll_line = clicked_line - visible_blocks // 2
+
+        # Scroll to that line without moving cursor
         scrollbar = self.editor.verticalScrollBar()
-        scrollbar.setValue(int(clicked_line))
+        # Compensate for last line
+        centered_scroll_line = max(
+            scrollbar.minimum(),
+            min(centered_scroll_line, scrollbar.maximum())
+        )
+        scrollbar.setValue(int(centered_scroll_line))
 
         self.update()
 
