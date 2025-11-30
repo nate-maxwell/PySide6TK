@@ -197,7 +197,7 @@ class CodeMiniMap(QtWidgets.QWidget):
         rect_height = visible_blocks * self.line_height
 
         # Clamp to minimap bounds
-        rect_y = max(0, min(rect_y, self.height() - rect_height))
+        rect_y = max(0, int(min(rect_y, self.height() - rect_height)))
         rect_height = min(rect_height, self.height())
 
         # View rect overlay
@@ -240,16 +240,9 @@ class CodeMiniMap(QtWidgets.QWidget):
         clicked_line = cur_pos + scroll_offset
         clicked_line = max(0, min(clicked_line, total_lines - 1))
 
-        # Move cursor to that line
-        cursor = self.editor.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.MoveOperation.Start)
-        cursor.movePosition(
-            QtGui.QTextCursor.MoveOperation.Down,
-            QtGui.QTextCursor.MoveMode.MoveAnchor,
-            int(clicked_line),
-        )
-        self.editor.setTextCursor(cursor)
-        self.editor.centerCursor()
+        # Scroll to line - do not moving cursor
+        scrollbar = self.editor.verticalScrollBar()
+        scrollbar.setValue(int(clicked_line))
 
         self.update()
 
