@@ -24,6 +24,7 @@ SyntaxHighlighter = Type[T_Highlighter]
 """Any QSyntaxHighlighter class object or derived class object."""
 
 _INDENT = ' ' * 4
+_COMMENT_PREFIX = '# '
 
 _WRAPPING_PAIRS = {
     "'": "'",
@@ -100,6 +101,8 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
     indented = QtCore.Signal(range)
     unindented = QtCore.Signal(range)
+    commented = QtCore.Signal(range)
+    uncommented = QtCore.Signal(range)
 
     def __init__(
             self,
@@ -122,6 +125,8 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     def _create_shortcut_signals(self) -> None:
         self.indented.connect(self.indent)
         self.unindented.connect(self.unindent)
+        self.commented.connect(self.comment_lines)
+        self.uncommented.connect(self.uncomment_lines)
 
     def _create_connections(self) -> None:
         self.blockCountChanged.connect(self.update_line_number_area_width)
@@ -270,6 +275,58 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             for i in lines:
                 self.remove_line_prefix(_INDENT, i)
 
+    def _are_lines_commented(self, lines: range) -> bool:
+        """
+        Check if all lines in the range are commented.
+
+        Args:
+            lines (range): Range of line numbers to check.
+
+        Returns:
+            bool: True if all lines start with comment prefix, False otherwise.
+        """
+        for line_num in lines:
+            cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(line_num))
+            cursor.select(QtGui.QTextCursor.SelectionType.LineUnderCursor)
+            text = cursor.selectedText()
+            if not text.lstrip(' ').startswith(_COMMENT_PREFIX.strip()):
+                return False
+        return True
+
+    def comment_lines(self, lines: range) -> None:
+        """Add comment prefix to lines within the given range."""
+        with PySide6TK.text.PlainTextUndoBlock(self):
+            for i in lines:
+                self.add_line_prefix(_COMMENT_PREFIX, i)
+
+    def uncomment_lines(self, lines: range) -> None:
+        with PySide6TK.text.PlainTextUndoBlock(self):
+            for i in lines:
+                cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(i))
+                cursor.select(QtGui.QTextCursor.SelectionType.LineUnderCursor)
+                text = cursor.selectedText()
+
+                stripped = text.lstrip(' ')
+                if stripped.startswith('#'):
+                    leading_spaces = len(text) - len(stripped)
+                    if stripped.startswith('# '):
+                        new_text = ' ' * leading_spaces + stripped[2:]
+                    else:
+                        new_text = ' ' * leading_spaces + stripped[1:]
+
+                    cursor.removeSelectedText()
+                    cursor.insertText(new_text)
+
+    def toggle_comment(self) -> None:
+        """Toggle comments on selected lines or current line."""
+        first_line, last_line = self._get_selection_range()
+        lines = range(first_line, last_line + 1)
+
+        if self._are_lines_commented(lines):
+            self.uncommented.emit(lines)
+        else:
+            self.commented.emit(lines)
+
     def wrap_selection(self, opening: str, closing: str) -> None:
         """
         Wrap the current selection with opening and closing characters.
@@ -288,6 +345,11 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
+        # Toggle comment with Ctrl+/
+        if e.key() == QtCore.Qt.Key.Key_Slash and e.modifiers() == QtCore.Qt.KeyboardModifier.ControlModifier:
+            self.toggle_comment()
+            return
+
         # Should text be wrapped?
         typed_char = e.text()
         if self.textCursor().hasSelection() and typed_char in _WRAPPING_PAIRS:
