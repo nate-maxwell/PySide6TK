@@ -170,6 +170,11 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             'show_help', 'F1', show_help, desc
         )
 
+        desc = 'Run code.'
+        self.shortcut_manager.add_shortcut(
+            'run_code', 'Ctrl+Return', self.btn_execute_query_connection, desc
+        )
+
         self.btn_open_shortcuts = QtWidgets.QPushButton('Open Shortcuts')
         self.btn_open_shortcuts.clicked.connect(
             self.shortcut_manager.show_editor
