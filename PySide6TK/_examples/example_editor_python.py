@@ -100,7 +100,7 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.traceback_display.setFont(font)
         self.traceback_display.setMinimumHeight(50)
 
-        self.resource_monitor = QtWrappers.ResourceMonitor()
+        self.status_bar = QtWrappers.BasicStatusBar()
 
         # -----Results-----
         self.grp_result = QtWrappers.GroupBox('Results:')
@@ -127,7 +127,6 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         # -----Message/Errors-----
         self.grp_traceback.add_widget(self.traceback_display)
         self.grp_traceback.add_widget(QtWrappers.HorizontalLine())
-        self.grp_traceback.add_widget(self.resource_monitor)
         self.splitter_code.addWidget(self.grp_traceback)
         self.splitter_code.setSizes([300, 50])
 
@@ -139,7 +138,8 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         # -----Main-----
         self.setCentralWidget(self.widget_main)
         self.widget_main.setLayout(self.layout_main)
-        self.layout_main.addWidget(self.splitter_results)
+        self.layout_main.addWidget(self.splitter_results, 1)
+        self.layout_main.addWidget(self.status_bar, 0)
 
     def _create_connections(self) -> None:
         self.btn_execute_query.clicked.connect(self.btn_execute_query_connection)

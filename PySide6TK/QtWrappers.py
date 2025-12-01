@@ -83,9 +83,16 @@ from PySide6TK.shapes import VerticalLine
 from PySide6TK.shapes import VerticalSpacer
 from PySide6TK.shortcuts import KeyShortcutManager
 from PySide6TK.shortcuts import MODIFIER_KEYS
-from PySide6TK.shortcuts import _ShortcutEditorDialog
 from PySide6TK.signal import emit_signal
 from PySide6TK.signal import signal
+from PySide6TK.status import BasicStatusBar
+from PySide6TK.status import check_connection
+from PySide6TK.status import ConnectionStrengthWidget
+from PySide6TK.status import CPUUsageBar
+from PySide6TK.status import get_memory_usage
+from PySide6TK.status import MemoryUsageBar
+from PySide6TK.status import ResourceMonitor
+from PySide6TK.status import UsageBar
 from PySide6TK.styles import QSS_ADAPTIC
 from PySide6TK.styles import QSS_CHATBEE
 from PySide6TK.styles import QSS_CLIENTOR
@@ -140,6 +147,3 @@ from PySide6TK.text import PlainTextUndoBlock
 from PySide6TK.toolbar import DEFAULT_ICON
 from PySide6TK.toolbar import null
 from PySide6TK.toolbar import Toolbar
-from PySide6TK.usage import get_memory_usage
-from PySide6TK.usage import ResourceMonitor
-from PySide6TK.usage import UsageBar

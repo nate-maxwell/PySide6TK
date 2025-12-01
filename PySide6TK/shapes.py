@@ -30,11 +30,29 @@ class HorizontalSpacer(QtWidgets.QWidget):
     def __init__(self, width: int) -> None:
         super().__init__()
         self.setFixedWidth(width)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        if width > 0:
+            self.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Fixed,
+                QtWidgets.QSizePolicy.Policy.Preferred
+            )
+        else:
+            self.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Preferred
+            )
 
 
 class VerticalSpacer(QtWidgets.QWidget):
     def __init__(self, height: int) -> None:
         super().__init__()
         self.setFixedHeight(height)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        if height > 0:
+            self.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Preferred,
+                QtWidgets.QSizePolicy.Policy.Fixed
+            )
+        else:
+            self.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Fixed
+            )
