@@ -145,29 +145,24 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.btn_execute_query.clicked.connect(self.btn_execute_query_connection)
 
     def _create_shortcuts(self) -> None:
-        desc = 'Create a new file.'
+        desc = 'Clear the current code.'
         self.shortcut_manager.add_shortcut(
-            'new_file', 'Ctrl+N', new_file, desc
+            'new_file', 'Ctrl+N', self.new_file, desc
         )
 
         desc = 'Open an existing file.'
         self.shortcut_manager.add_shortcut(
-            'open_file', 'Ctrl+O', open_file, desc
+            'open_file', 'Ctrl+O', self.open_file, desc
         )
 
         desc = 'Save the current file.'
         self.shortcut_manager.add_shortcut(
-            'save_file', 'Ctrl+S', save_file, desc
+            'save_file', 'Ctrl+S', self.save_file, desc
         )
 
-        desc = 'Quit the application'
+        desc = 'Quit the application.'
         self.shortcut_manager.add_shortcut(
             'quit_app', 'Ctrl+Q', self.close, desc
-        )
-
-        desc = 'Show help documentation.'
-        self.shortcut_manager.add_shortcut(
-            'show_help', 'F1', show_help, desc
         )
 
         desc = 'Run code.'
@@ -263,21 +258,40 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
 
         self.results_table.resizeColumnsToContents()
 
+    # -----Shortcuts-----------------------------------------------------------
 
-def new_file() -> None:
-    print('New file created!')
+    def new_file(self) -> None:
+        self.code_editor.clear()
 
+    def save_file(self) -> None:
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+        dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
+        dialog.setNameFilter('Python Script (*.py)')
+        dialog.setDefaultSuffix('py')
+        dialog.setDirectory("/home/user/Documents")
 
-def open_file() -> None:
-    print('Open file dialog!')
+        if dialog.exec():
+            file_paths = dialog.selectedFiles()
+            if file_paths:
+                file_path = file_paths[0]
+                with open(file_path, 'w') as f:
+                    f.write(self.code_editor.toPlainText())
 
+    def open_file(self) -> None:
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptOpen)
+        dialog.setFileMode(QtWidgets.QFileDialog.FileMode.ExistingFile)
+        dialog.setNameFilter('Python Script (*.py)')
+        dialog.setDirectory('/home/user/Documents')
+        dialog.setViewMode(QtWidgets.QFileDialog.ViewMode.Detail)
 
-def save_file() -> None:
-    print('File saved!')
-
-
-def show_help() -> None:
-    print('Help documentation!')
+        if dialog.exec():
+            file_paths = dialog.selectedFiles()
+            if file_paths:
+                file_path = file_paths[0]
+                with open(file_path, 'r') as f:
+                    self.code_editor.setPlainText(f.read())
 
 
 def main() -> None:
