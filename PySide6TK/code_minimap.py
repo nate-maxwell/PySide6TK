@@ -64,21 +64,15 @@ class CodeMiniMap(QtWidgets.QWidget):
         self.scroll_sensitivity = 1.0
         self._color_brightness = 0.6
 
-        self.setFixedWidth(120)
-
-        # Caching
         self._color_cache = {}  # char pos : color mappings
         self._cached_lines = []
-        self._cached_total_lines = 0
-        self._last_scroll_offset = -1
-        self._last_first_visible = -1
 
         self._bg_color = QtGui.QColor(30, 30, 30)
         self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
 
         self.editor.textChanged.connect(self._on_text_changed)
-        self.editor.verticalScrollBar().valueChanged.connect(self._on_scroll)
 
+        self.setFixedWidth(120)
         self.setMouseTracking(True)
 
     @property
@@ -87,41 +81,30 @@ class CodeMiniMap(QtWidgets.QWidget):
 
     @color_brightness.setter
     def color_brightness(self, value: float) -> None:
-        if self._color_brightness != value:
-            self._color_brightness = value
-            self._color_cache.clear()  # Invalidate cache
-            self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
-            self.update()
+        if self._color_brightness == value:
+            return
+        self._color_brightness = value
+        self._color_cache.clear()
+        self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
+        self.update()
 
     def _on_text_changed(self) -> None:
         """Handle text changes - invalidate caches"""
         self._color_cache.clear()
         self._cached_lines = []
-        self._cached_total_lines = 0
         self.update()
-
-    def _on_scroll(self) -> None:
-        """Handle scroll events - only update if visible area changed"""
-        first_visible = self.editor.firstVisibleBlock().blockNumber()
-        if first_visible != self._last_first_visible:
-            self._last_first_visible = first_visible
-            self.update()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, False)
         painter.fillRect(self.rect(), self._bg_color)
 
-        # Cache lines splitting
         if not self._cached_lines:
-            text = self.editor.toPlainText()
-            self._cached_lines = text.split('\n')
-            self._cached_total_lines = len(self._cached_lines)
+            self._cached_lines = self.editor.toPlainText().split('\n')
 
         lines = self._cached_lines
-        total_lines = self._cached_total_lines
+        total_lines = len(lines)
         minimap_height = self.height()
-
         if total_lines == 0:
             return
 
@@ -172,7 +155,6 @@ class CodeMiniMap(QtWidgets.QWidget):
             y_offset += self.line_height
 
         self._draw_viewport_indicator(painter, total_lines, scroll_offset)
-        self._last_scroll_offset = scroll_offset
 
     def _get_char_color_cached(self, position: int) -> QtGui.QColor:
         """Get color with caching to avoid repeated format lookups"""
@@ -264,8 +246,10 @@ class CodeMiniMap(QtWidgets.QWidget):
 
     def _scroll_to_position(self, y: float) -> None:
         """Scroll editor to clicked position in minimap"""
-        total_lines = self._cached_total_lines if self._cached_lines else len(self.editor.toPlainText().split('\n'))
+        if not self._cached_lines:
+            self._cached_lines = self.editor.toPlainText().split('\n')
 
+        total_lines = len(self._cached_lines)
         if total_lines == 0:
             return
 
