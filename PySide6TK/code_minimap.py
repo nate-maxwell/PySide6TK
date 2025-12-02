@@ -4,7 +4,8 @@
 Description:
 
     A VSCode-like minimap widget for code editors that derive from
-    QPlainTextEdit.
+    QPlainTextEdit. Optimized for performance with caching and reduced
+    paint operations.
 """
 
 
@@ -36,8 +37,6 @@ class CodeMiniMap(QtWidgets.QWidget):
         scroll_sensitivity (float): Multiplier for scroll speed when
             dragging. Values > 1.0 increase sensitivity, < 1.0 decrease it.
             Default: 1.0.
-        color_brightness (float): Brightness multiplier for syntax colors.
-            Range: 0.0 (black) to 1.0 (original brightness). Default: 0.6.
 
     Args:
         editor (QtWidgets.QPlainTextEdit): The code editor to attach the
@@ -63,29 +62,64 @@ class CodeMiniMap(QtWidgets.QWidget):
         self.line_height = 2
         self.char_width = 1
         self.scroll_sensitivity = 1.0
-        self.color_brightness = 0.6
+        self._color_brightness = 0.6
 
         self.setFixedWidth(120)
 
-        self.editor.textChanged.connect(self.update)
-        self.editor.verticalScrollBar().valueChanged.connect(self.update)
-        self.editor.cursorPositionChanged.connect(self.update)
+        # Caching
+        self._color_cache = {}  # char pos : color mappings
+        self._cached_lines = []
+        self._cached_total_lines = 0
+        self._last_scroll_offset = -1
+        self._last_first_visible = -1
+
+        self._bg_color = QtGui.QColor(30, 30, 30)
+        self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
+
+        self.editor.textChanged.connect(self._on_text_changed)
+        self.editor.verticalScrollBar().valueChanged.connect(self._on_scroll)
 
         self.setMouseTracking(True)
 
-        self.update_timer = QtCore.QTimer()
-        self.update_timer.timeout.connect(self.update)
-        self.update_timer.setInterval(100)
+    @property
+    def color_brightness(self) -> float:
+        return self._color_brightness
+
+    @color_brightness.setter
+    def color_brightness(self, value: float) -> None:
+        if self._color_brightness != value:
+            self._color_brightness = value
+            self._color_cache.clear()  # Invalidate cache
+            self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
+            self.update()
+
+    def _on_text_changed(self) -> None:
+        """Handle text changes - invalidate caches"""
+        self._color_cache.clear()
+        self._cached_lines = []
+        self._cached_total_lines = 0
+        self.update()
+
+    def _on_scroll(self) -> None:
+        """Handle scroll events - only update if visible area changed"""
+        first_visible = self.editor.firstVisibleBlock().blockNumber()
+        if first_visible != self._last_first_visible:
+            self._last_first_visible = first_visible
+            self.update()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        # Boy howdy do paint events in Qt always look ugly
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, False)
-        painter.fillRect(self.rect(), QtGui.QColor(30, 30, 30))
+        painter.fillRect(self.rect(), self._bg_color)
 
-        text = self.editor.toPlainText()
-        lines = text.split('\n')
-        total_lines = len(lines)
+        # Cache lines splitting
+        if not self._cached_lines:
+            text = self.editor.toPlainText()
+            self._cached_lines = text.split('\n')
+            self._cached_total_lines = len(self._cached_lines)
+
+        lines = self._cached_lines
+        total_lines = self._cached_total_lines
         minimap_height = self.height()
 
         if total_lines == 0:
@@ -98,65 +132,79 @@ class CodeMiniMap(QtWidgets.QWidget):
         center_line = first_visible + visible_blocks // 2
         lines_in_minimap = minimap_height // self.line_height
 
-        scroll_offset = center_line - lines_in_minimap // 2
         scroll_offset = max(
-            0, min(scroll_offset, total_lines - lines_in_minimap)
+            0, min(center_line - lines_in_minimap // 2, total_lines - lines_in_minimap)
         )
 
         start_line = max(0, int(scroll_offset))
         end_line = min(total_lines, start_line + lines_in_minimap + 1)
+
+        # Pre-calculate character position
         char_position = sum(len(lines[i]) + 1 for i in range(start_line))
+
+        # Pre-allocate rect for reuse
+        rect = QtCore.QRect(0, 0, self.char_width, self.line_height)
+        max_width = self.width() - 5
 
         y_offset = 0
         for i in range(start_line, end_line):
-            if i >= len(lines):
+            if i >= len(lines) or y_offset >= minimap_height:
                 break
 
             line = lines[i]
+            left_margin = 5
 
-            if y_offset >= minimap_height:
-                break
-
-            left_margin = 5  # default to 5 for slight padding
+            # Batch similar colors together for fewer fillRect calls
             for j, char in enumerate(line):
-                if char != ' ' and char != '\t':
-                    color = self._get_char_color(char_position)
-                    painter.fillRect(
-                        left_margin,
-                        y_offset,
-                        self.char_width,
-                        self.line_height,
-                        color
-                    )
-                left_margin += self.char_width
-                char_position += 1
-                if left_margin > self.width() - 5:
-                    char_position += len(line) - j - 1
+                if left_margin > max_width:
+                    char_position += len(line) - j
                     break
 
-            char_position += 1  # Account for newline character
+                if char not in (' ', '\t'):
+                    color = self._get_char_color_cached(char_position)
+                    rect.moveTo(left_margin, y_offset)
+                    painter.fillRect(rect, color)
+
+                left_margin += self.char_width
+                char_position += 1
+
+            char_position += 1  # Newline
             y_offset += self.line_height
 
         self._draw_viewport_indicator(painter, total_lines, scroll_offset)
+        self._last_scroll_offset = scroll_offset
+
+    def _get_char_color_cached(self, position: int) -> QtGui.QColor:
+        """Get color with caching to avoid repeated format lookups"""
+        if position in self._color_cache:
+            return self._color_cache[position]
+
+        color = self._get_char_color(position)
+
+        # Limit cache size to prevent memory issues
+        if len(self._color_cache) > 10000:
+            self._color_cache.clear()
+
+        self._color_cache[position] = color
+        return color
 
     def _get_char_color(self, position: int) -> QtGui.QColor:
         """Get color from editor's text format at position"""
-        fallback_color = QtGui.QColor(212, 212, 212)
         doc = self.editor.document()
 
         if position >= doc.characterCount():
-            return self._adjust_color_brightness(fallback_color)
+            return self._fallback_color
 
         block = doc.findBlock(position)
         if not block.isValid():
-            return self._adjust_color_brightness(fallback_color)
+            return self._fallback_color
 
         block_position = position - block.position()
 
         # Get formats for this block
         layout = block.layout()
         if layout is None:
-            return self._adjust_color_brightness(fallback_color)
+            return self._fallback_color
 
         formats = layout.formats()
 
@@ -167,12 +215,12 @@ class CodeMiniMap(QtWidgets.QWidget):
                 if color.isValid():
                     return self._adjust_color_brightness(color)
 
-        return self._adjust_color_brightness(fallback_color)
+        return self._fallback_color
 
     def _adjust_color_brightness(self, color: QtGui.QColor) -> QtGui.QColor:
         """Adjust color brightness for minimap display"""
         h, s, v, a = color.getHsv()
-        v = int(v * self.color_brightness)
+        v = int(v * self._color_brightness)
         adjusted = QtGui.QColor()
         adjusted.setHsv(h, s, v, a)
         return adjusted
@@ -197,13 +245,13 @@ class CodeMiniMap(QtWidgets.QWidget):
         rect_height = visible_blocks * self.line_height
 
         # Clamp to minimap bounds
-        rect_y = max(0, int(min(rect_y, self.height() - rect_height)))
-        rect_height = min(rect_height, self.height())
+        rect_y = max(0, min(int(rect_y), self.height() - int(rect_height)))
+        rect_height = min(int(rect_height), self.height())
 
         # View rect overlay
         painter.setPen(QtGui.QPen(QtGui.QColor(100, 100, 100), 1))
         painter.setBrush(QtGui.QColor(255, 255, 255, 30))
-        painter.drawRect(0, int(rect_y), self.width(), int(rect_height))
+        painter.drawRect(0, rect_y, self.width(), rect_height)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         """Handle click to jump to position"""
@@ -216,8 +264,7 @@ class CodeMiniMap(QtWidgets.QWidget):
 
     def _scroll_to_position(self, y: float) -> None:
         """Scroll editor to clicked position in minimap"""
-        text = self.editor.toPlainText()
-        total_lines = len(text.split('\n'))
+        total_lines = self._cached_total_lines if self._cached_lines else len(self.editor.toPlainText().split('\n'))
 
         if total_lines == 0:
             return
@@ -230,22 +277,19 @@ class CodeMiniMap(QtWidgets.QWidget):
 
         center_line = first_visible + visible_blocks // 2
         lines_in_minimap = self.height() // self.line_height
-        scroll_offset = center_line - lines_in_minimap // 2
         scroll_offset = max(
-            0, min(scroll_offset, total_lines - lines_in_minimap)
+            0, min(center_line - lines_in_minimap // 2, total_lines - lines_in_minimap)
         )
 
         # Calculate clicked line with sensitivity applied
         cur_pos = int((y / self.line_height) * self.scroll_sensitivity)
-        clicked_line = cur_pos + scroll_offset
-        clicked_line = max(0, min(clicked_line, total_lines - 1))
+        clicked_line = max(0, min(cur_pos + scroll_offset, total_lines - 1))
 
         # Center viewport
         centered_scroll_line = clicked_line - visible_blocks // 2
 
         # Scroll to that line without moving cursor
         scrollbar = self.editor.verticalScrollBar()
-        # Compensate for last line
         centered_scroll_line = max(
             scrollbar.minimum(),
             min(centered_scroll_line, scrollbar.maximum())
