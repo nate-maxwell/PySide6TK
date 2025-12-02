@@ -126,8 +126,7 @@ class MultiLineTextDialog(QtWidgets.QDialog):
         self._text_edit = QtWidgets.QTextEdit(self)
         if initial_text:
             self._text_edit.setPlainText(initial_text)
-        # QTextEdit.setPlaceholderText exists in Qt 5.14+; PySide6 supports it.
-        if placeholder and hasattr(self._text_edit, 'setPlaceholderText'):
+        if placeholder:
             self._text_edit.setPlaceholderText(placeholder)
 
         buttons = QtWidgets.QDialogButtonBox(parent=self)
