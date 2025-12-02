@@ -148,19 +148,19 @@ class HelpToolbar(toolbar.Toolbar):
         self._help_section()
 
     def _file_section(self) -> None:
-        submenu = self.add_toolbar_submenu('File', image_path=None)
+        self.file_submenu = self.add_toolbar_submenu('File', image_path=None)
 
         if self.shortcut_manager is not None:
             self.add_submenu_command(
-                submenu, 'Shortcuts', self.shortcut_manager.show_editor
+                self.file_submenu, 'Shortcuts', self.shortcut_manager.show_editor
             )
 
     def _developer_section(self) -> None:
-        submenu = self.add_toolbar_submenu('Developer', image_path=None)
+        self.developer_submenu = self.add_toolbar_submenu('Developer', image_path=None)
 
         if len(self.reload_modules) > 0:
             self.add_submenu_command(
-                submenu, 'Reload Module', self._reload_modules
+                self.developer_submenu, 'Reload Module', self._reload_modules
             )
 
         def reload_ui() -> None:
@@ -169,46 +169,46 @@ class HelpToolbar(toolbar.Toolbar):
             new_wid.show()
             self.parent.close()
 
-        self.add_submenu_command(submenu, 'Reload UI', reload_ui)
+        self.add_submenu_command(self.developer_submenu, 'Reload UI', reload_ui)
 
         if self.logs_dir is not None:
             self.add_submenu_command(
-                submenu, 'Show Logs', lambda: os.startfile(self.logs_dir.as_posix())
+                self.developer_submenu, 'Show Logs', lambda: os.startfile(self.logs_dir.as_posix())
             )
         if self.open_console != toolbar.null:
             self.add_submenu_command(
-                submenu, 'Open Console', self.open_console
+                self.developer_submenu, 'Open Console', self.open_console
             )
 
     def _theme_section(self) -> None:
-        submenu = self.add_toolbar_submenu('Theme', image_path=None)
+        self.theme_submenu = self.add_toolbar_submenu('Theme', image_path=None)
 
         for k, v in styles.__dict__.items():
             if not k.startswith('QSS_'):
                 continue
             name = k.replace('QSS_', '').title()
             self.add_submenu_command(
-                submenu,
+                self.theme_submenu,
                 name,
                 # I cannot stand python's late-binding closures with lambdas...
                 partial(styles.set_style, self.parent, v)
             )
 
     def _help_section(self) -> None:
-        submenu = self.add_toolbar_submenu('Help', image_path=None)
+        self.help_submenu = self.add_toolbar_submenu('Help', image_path=None)
         self.add_submenu_command(
-            submenu, 'About', lambda: self.about_widget.show()
+            self.help_submenu, 'About', lambda: self.about_widget.show()
         )
 
         if self.repo_url is not None:
             self.add_submenu_command(
-                submenu,
+                self.help_submenu,
                 'Repo',
                 lambda: webbrowser.open_new_tab(self.repo_url)
             )
         if self.documentation_url is not None:
             self.add_submenu_command(
-                submenu,
+                self.help_submenu,
                 'Documentation',
                 lambda: webbrowser.open_new_tab(self.documentation_url)
             )

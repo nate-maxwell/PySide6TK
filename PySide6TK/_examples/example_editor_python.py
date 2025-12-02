@@ -37,6 +37,7 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             (1200, 800),
             icon_path=QtWrappers.BUTTON_BLACK_40X40
         )
+        QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
 
         self.sg = None
         self.shortcut_manager = QtWrappers.KeyShortcutManager(self)
@@ -53,7 +54,15 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             ],
             shortcut_manager=self.shortcut_manager
         )
-        QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
+        self.toolbar.add_submenu_command(
+            self.toolbar.file_submenu, 'New', self.new_file
+        )
+        self.toolbar.add_submenu_command(
+            self.toolbar.file_submenu, 'Save', self.save_file
+        )
+        self.toolbar.add_submenu_command(
+            self.toolbar.file_submenu, 'Open', self.open_file
+        )
 
         self._create_widgets()
         self._create_layout()
