@@ -26,7 +26,6 @@ def null(*args) -> None:
     pass
 
 
-DEFAULT_ICON = PySide6TK.icons.BUTTON_BLACK_40X40
 _SEP = '---------------'
 """Submenu separator via text insert."""
 
@@ -66,10 +65,12 @@ class Toolbar(QtWidgets.QToolBar):
         - Submenus can be nested indefinitely using
           ``add_submenu_submenu``.
     """
-    def __init__(self,
-                 toolbar_name: str,
-                 parent: Optional[QtWidgets.QWidget] = None,
-                 default_button_resolution: list[int] = None) -> None:
+    def __init__(
+            self,
+            toolbar_name: str,
+            parent: Optional[QtWidgets.QWidget] = None,
+            default_button_resolution: list[int] = None
+    ) -> None:
         super().__init__(parent=parent)
         if default_button_resolution is None:
             self.default_button_resolution = [40, 40]
@@ -83,7 +84,10 @@ class Toolbar(QtWidgets.QToolBar):
         self.setMovable(False)
         self.build()
 
-    def _make_toolbar_button(self, button_image: Optional[Path] = DEFAULT_ICON) -> QtWidgets.QToolButton:
+    def _make_toolbar_button(
+            self,
+            button_image: Optional[Path] = None
+    ) -> QtWidgets.QToolButton:
         """
         Boilerplate for making a toolbar button with an icon. If button_image
         is set to None, a blank item is added.
@@ -114,8 +118,12 @@ class Toolbar(QtWidgets.QToolBar):
 
         return tool_button
 
-    def add_toolbar_command(self, label: str, command: Callable = null,
-                            image_path: Optional[Path] = DEFAULT_ICON) -> None:
+    def add_toolbar_command(
+            self,
+            label: str,
+            command: Callable = null,
+            image_path: Optional[Path] = None
+    ) -> None:
         """Adds a toolbar button that is connected to the given command.
 
         Args:
@@ -133,7 +141,11 @@ class Toolbar(QtWidgets.QToolBar):
         tool_button.setDefaultAction(action)
         self.addWidget(tool_button)
 
-    def add_toolbar_submenu(self, label: str, image_path: Optional[Path] = DEFAULT_ICON) -> QtWidgets.QMenu:
+    def add_toolbar_submenu(
+            self,
+            label: str,
+            image_path: Optional[Path] = None
+    ) -> QtWidgets.QMenu:
         """Adds a submenu, a collapsable list of options, to the toolbar.
 
         Args:
@@ -159,7 +171,11 @@ class Toolbar(QtWidgets.QToolBar):
 
         return submenu
 
-    def add_submenu_submenu(self, label: str, parent: QtWidgets.QMenu) -> QtWidgets.QMenu:
+    def add_submenu_submenu(
+            self,
+            label: str,
+            parent: QtWidgets.QMenu
+    ) -> QtWidgets.QMenu:
         """Adds a nested submenu to the given submenu parent.
 
         Args:
@@ -178,9 +194,11 @@ class Toolbar(QtWidgets.QToolBar):
         return submenu
 
     @staticmethod
-    def add_submenu_command(submenu: QtWidgets.QMenu,
-                            cmd_name: str,
-                            cmd: Callable = null) -> None:
+    def add_submenu_command(
+            submenu: QtWidgets.QMenu,
+            cmd_name: str,
+            cmd: Callable = null
+    ) -> None:
         """Adds an item to the given submenu connected to the given command.
 
         Args:
@@ -191,7 +209,11 @@ class Toolbar(QtWidgets.QToolBar):
         item = submenu.addAction(cmd_name)
         item.triggered.connect(cmd)
 
-    def add_submenu_separator(self, submenu: QtWidgets.QMenu, label: str = _SEP) -> None:
+    def add_submenu_separator(
+            self,
+            submenu: QtWidgets.QMenu,
+            label: str = _SEP
+    ) -> None:
         """Adds a dummy item to the given submenu, with the given label.
         Label defaults to '---------------'.
         """

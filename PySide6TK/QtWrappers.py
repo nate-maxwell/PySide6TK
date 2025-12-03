@@ -144,6 +144,5 @@ from PySide6TK.styles import STYLE_PATH
 from PySide6TK.text import color_format
 from PySide6TK.text import HighlightRule
 from PySide6TK.text import PlainTextUndoBlock
-from PySide6TK.toolbar import DEFAULT_ICON
 from PySide6TK.toolbar import null
 from PySide6TK.toolbar import Toolbar

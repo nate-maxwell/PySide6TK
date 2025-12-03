@@ -3,6 +3,9 @@ from PySide6 import QtWidgets
 from PySide6TK import QtWrappers
 
 
+DEFAULT_ICON = QtWrappers.BUTTON_BLACK_40X40
+
+
 class TestToolbar(QtWrappers.Toolbar):
     def __init__(self) -> None:
         super().__init__('Example Toolbar')
