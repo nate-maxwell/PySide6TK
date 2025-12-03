@@ -103,6 +103,9 @@ class Toolbar(QtWidgets.QToolBar):
         if y > 0:
             tool_button.setFixedHeight(y)
         if button_image is None:
+            tool_button.setToolButtonStyle(
+                QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
+            )
             return tool_button
 
         tool_button.setStyleSheet(f"""
@@ -141,12 +144,12 @@ class Toolbar(QtWidgets.QToolBar):
         tool_button.setDefaultAction(action)
         self.addWidget(tool_button)
 
-    def add_toolbar_submenu(
+    def add_menu(
             self,
             label: str,
             image_path: Optional[Path] = None
     ) -> QtWidgets.QMenu:
-        """Adds a submenu, a collapsable list of options, to the toolbar.
+        """Adds a menu, a collapsable list of options, to the toolbar.
 
         Args:
             label (str): The menu label.
@@ -155,8 +158,8 @@ class Toolbar(QtWidgets.QToolBar):
               Defaults to PySide6TK.gui.BUTTON_BLACK_40X40.
 
         Returns:
-            QtWidgets.QMenu: The created submenu, incase further submenus need
-              to be added to the created submenu.
+            QtWidgets.QMenu: The created menu, incase further submenus need
+              to be added to the created menu.
         """
         submenu = QtWidgets.QMenu(f'{label}_submenu', self)
 
@@ -171,20 +174,20 @@ class Toolbar(QtWidgets.QToolBar):
 
         return submenu
 
-    def add_submenu_submenu(
+    def add_submenu(
             self,
             label: str,
             parent: QtWidgets.QMenu
     ) -> QtWidgets.QMenu:
-        """Adds a nested submenu to the given submenu parent.
+        """Adds a nested submenu to the given menu parent.
 
         Args:
             label (str): The submenu text label.
             parent (QtWidgets.QMenu): The menu to add the submenu to.
 
         Returns:
-            QtWidgets.QMenu: The created submenu, incase further submenus need to be added to the created
-            submenu.
+            QtWidgets.QMenu: The created submenu, incase further submenus need
+                to be added to the created submenu.
         """
         submenu = QtWidgets.QMenu(f'{label}_submenu', self)
         action = QtGui.QAction(label, self)  # The actual label on the dropdown
@@ -194,7 +197,7 @@ class Toolbar(QtWidgets.QToolBar):
         return submenu
 
     @staticmethod
-    def add_submenu_command(
+    def add_menu_command(
             submenu: QtWidgets.QMenu,
             cmd_name: str,
             cmd: Callable = null
@@ -209,7 +212,7 @@ class Toolbar(QtWidgets.QToolBar):
         item = submenu.addAction(cmd_name)
         item.triggered.connect(cmd)
 
-    def add_submenu_separator(
+    def add_menu_separator(
             self,
             submenu: QtWidgets.QMenu,
             label: str = _SEP
@@ -217,7 +220,7 @@ class Toolbar(QtWidgets.QToolBar):
         """Adds a dummy item to the given submenu, with the given label.
         Label defaults to '---------------'.
         """
-        self.add_submenu_command(submenu, label, null)
+        self.add_menu_command(submenu, label, null)
 
     def add_toolbar_separator(self, width: int = 10) -> None:
         """Adds a horizontal spacer to the toolbar of the given width.

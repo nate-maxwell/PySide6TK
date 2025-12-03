@@ -54,13 +54,13 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
             ],
             shortcut_manager=self.shortcut_manager
         )
-        self.toolbar.add_submenu_command(
+        self.toolbar.add_menu_command(
             self.toolbar.file_submenu, 'New', self.new_file
         )
-        self.toolbar.add_submenu_command(
+        self.toolbar.add_menu_command(
             self.toolbar.file_submenu, 'Save', self.save_file
         )
-        self.toolbar.add_submenu_command(
+        self.toolbar.add_menu_command(
             self.toolbar.file_submenu, 'Open', self.open_file
         )
 
