@@ -232,4 +232,4 @@ class Toolbar(QtWidgets.QToolBar):
         """The derived class's constructor.
         This will build the toolbar widgets/layout.
         """
-        raise NotImplemented
+        raise NotImplementedError
