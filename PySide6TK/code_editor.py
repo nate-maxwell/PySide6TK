@@ -7,6 +7,7 @@
 """
 
 
+from dataclasses import dataclass
 from typing import Type
 from typing import TypeVar
 
@@ -34,6 +35,41 @@ _WRAPPING_PAIRS = {
     '{': '}',
     '`': '`',
 }
+
+
+@dataclass
+class _FoldRegion:
+    """Represents a foldable region in the document."""
+    start_block: int
+    end_block: int
+    is_folded: bool = False
+
+
+class _FoldArea(QtWidgets.QWidget):
+    """Widget for displaying fold indicators."""
+
+    def __init__(self, code_editor: 'CodeEditor') -> None:
+        super().__init__(code_editor)
+        self.editor = code_editor
+        self.setMouseTracking(True)
+        self._hover_block = -1
+
+    def sizeHint(self) -> QtCore.QSize:
+        return QtCore.QSize(16, 0)
+
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        self.editor.fold_area_paint_event(event)
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        block_number = self.editor.get_block_number_at_pos(event.pos().y())
+        if block_number != self._hover_block:
+            self._hover_block = block_number
+            self.update()
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            block_number = self.editor.get_block_number_at_pos(event.pos().y())
+            self.editor.toggle_fold(block_number)
 
 
 class _LineNumberArea(QtWidgets.QWidget):
@@ -84,6 +120,12 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             Emitted when a block of lines should be indented.
         unindented (Signal(range)):
             Emitted when a block of lines should be unindented.
+        commented (signal(range)):
+            Emitted when code is commented out.
+        uncommented (signal(range)):
+            Emitted when code is uncommented.
+        foldingChanged (Signal):
+            Emitted whenever code is folded or unfolded.
 
     Args:
         syntax_highlighter (SyntaxHighlighter, optional):
@@ -103,6 +145,7 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
     unindented = QtCore.Signal(range)
     commented = QtCore.Signal(range)
     uncommented = QtCore.Signal(range)
+    foldingChanged = QtCore.Signal()
 
     def __init__(
             self,
@@ -115,6 +158,10 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         )
 
         self.line_number_area = _LineNumberArea(self)
+        self.fold_area = _FoldArea(self)
+        self._fold_regions: dict[int, _FoldRegion] = {}
+        self.fold_area_width = 16
+
         self._create_shortcut_signals()
         self._create_connections()
         self.update_line_number_area_width(0)
@@ -132,6 +179,35 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
         self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.textChanged.connect(self.analyze_fold_regions)
+
+    def resizeEvent(self, e: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(e)
+        cr = self.contentsRect()
+
+        self.line_number_area.setGeometry(
+            QtCore.QRect(
+                cr.left(),
+                cr.top(),
+                self.line_number_area_width,
+                cr.height()
+            )
+        )
+
+        self.fold_area.setGeometry(
+            QtCore.QRect(
+                # Position next to line numbers
+                cr.left() + self.line_number_area_width,
+                cr.top(),
+                self.fold_area_width,
+                cr.height()
+            )
+        )
+
+        self.line_number_area.raise_()
+        self.fold_area.raise_()
+
+    # -----Line Numbers--------------------------------------------------------
 
     @property
     def line_number_area_width(self) -> int:
@@ -144,11 +220,17 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         return space
 
     def update_line_number_area_width(self, _) -> None:
-        self.setViewportMargins(self.line_number_area_width, 0, 0, 0)
+        total_margin = self.line_number_area_width + self.fold_area_width
+        self.setViewportMargins(total_margin, 0, 0, 0)
 
-    def update_line_number_area(self, rect: QtCore.QRect, dy: int) -> None:
-        if dy:
-            self.line_number_area.scroll(0, dy)
+    def update_line_number_area(
+            self,
+            rect: QtCore.QRect,
+            vertical_scroll: int
+    ) -> None:
+        if vertical_scroll:
+            self.line_number_area.scroll(0, vertical_scroll)
+            self.fold_area.scroll(0, vertical_scroll)
         else:
             self.line_number_area.update(
                 0,
@@ -156,21 +238,169 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
                 self.line_number_area.width(),
                 rect.height()
             )
+            self.fold_area.update(
+                0,
+                rect.y(),
+                self.fold_area.width(),
+                rect.height()
+            )
 
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width(0)
 
-    def resizeEvent(self, e: QtGui.QResizeEvent) -> None:
-        super().resizeEvent(e)
-        cr = self.contentsRect()
-        self.line_number_area.setGeometry(
-            QtCore.QRect(
-                cr.left(),
-                cr.top(),
-                self.line_number_area_width,
-                cr.height()
-            )
+    # -----Code Folding--------------------------------------------------------
+
+    def analyze_fold_regions(self) -> None:
+        """Analyze document to find foldable regions.
+        For Python: looks for lines ending with ':' and their indented blocks.
+        """
+        self._fold_regions.clear()
+        doc = self.document()
+        block = doc.firstBlock()
+
+        while block.isValid():
+            text = block.text()
+            stripped = text.lstrip()
+
+            # Check if this line starts a foldable region (ends with ':')
+            if stripped and stripped.rstrip().endswith(':'):
+                start_block = block.blockNumber()
+                indent_level = len(text) - len(stripped)
+
+                # Find the end of this indented block
+                next_block = block.next()
+                end_block = start_block
+
+                while next_block.isValid():
+                    next_text = next_block.text()
+                    next_stripped = next_text.lstrip()
+
+                    # Skip empty lines
+                    if not next_stripped:
+                        next_block = next_block.next()
+                        continue
+
+                    next_indent = len(next_text) - len(next_stripped)
+
+                    # If indentation decreased or same, we've left the block
+                    if next_indent <= indent_level:
+                        break
+
+                    end_block = next_block.blockNumber()
+                    next_block = next_block.next()
+
+                # Only create fold region if there are indented lines
+                if end_block > start_block:
+                    self._fold_regions[start_block] = _FoldRegion(
+                        start_block=start_block,
+                        end_block=end_block,
+                        is_folded=False
+                    )
+
+            block = block.next()
+
+        self.fold_area.update()
+
+    def toggle_fold(self, block_number: int) -> None:
+        """Toggle folding at the given block number."""
+        if block_number not in self._fold_regions:
+            return
+
+        region = self._fold_regions[block_number]
+        region.is_folded = not region.is_folded
+
+        doc = self.document()
+        for i in range(region.start_block + 1, region.end_block + 1):
+            block = doc.findBlockByNumber(i)
+            block.setVisible(not region.is_folded)
+
+        self.document().markContentsDirty(
+            doc.findBlockByNumber(region.start_block).position(),
+            doc.findBlockByNumber(region.end_block).position()
         )
+
+        self.viewport().update()
+        self.fold_area.update()
+        self.line_number_area.update()
+
+        self.foldingChanged.emit()
+
+    def fold_area_paint_event(self, event: QtGui.QPaintEvent) -> None:
+        """Paint fold indicators."""
+        painter = QtGui.QPainter(self.fold_area)
+        painter.fillRect(event.rect(), QtGui.QColor(21, 21, 21))
+
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        height = self.fontMetrics().height()
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                # Check if block has a fold region
+                if block_number in self._fold_regions:
+                    region = self._fold_regions[block_number]
+
+                    # Draw fold tri
+                    center_y = int(top + height / 2)
+                    center_x = self.fold_area_width // 2
+                    size = 6
+
+                    painter.setPen(QtGui.QPen(QtGui.QColor('lightGray'), 1))
+                    painter.setBrush(QtGui.QColor('lightGray'))
+
+                    if region.is_folded:
+                        # Folded tri
+                        triangle = [
+                            QtCore.QPoint(
+                                center_x - size // 2,
+                                center_y - size // 2
+                            ),
+                            QtCore.QPoint(
+                                center_x - size // 2,
+                                center_y + size // 2
+                            ),
+                            QtCore.QPoint(center_x + size // 2, center_y),
+                        ]
+                    else:
+                        # Unfolded tri
+                        triangle = [
+                            QtCore.QPoint(
+                                center_x - size // 2,
+                                center_y - size // 2
+                            ),
+                            QtCore.QPoint(
+                                center_x + size // 2,
+                                center_y - size // 2
+                            ),
+                            QtCore.QPoint(center_x, center_y + size // 2),
+                        ]
+
+                    painter.drawPolygon(triangle)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            block_number += 1
+
+    def get_block_number_at_pos(self, y_pos: int) -> int:
+        """Get block number at a given Y position."""
+        block = self.firstVisibleBlock()
+        top = self.blockBoundingGeometry(block).translated(
+            self.contentOffset()).top()
+
+        while block.isValid():
+            bottom = top + self.blockBoundingRect(block).height()
+            if top <= y_pos < bottom:
+                return block.blockNumber()
+            block = block.next()
+            top = bottom
+
+        return -1
+
+    # -----Paint/Colors--------------------------------------------------------
 
     def line_number_area_paint_event(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter(self.line_number_area)
@@ -217,6 +447,8 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         selection.cursor.clearSelection()
         extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
+
+    # -----Code Formatting-----------------------------------------------------
 
     def add_line_prefix(self, prefix: str, line: int) -> None:
         """
