@@ -5,7 +5,7 @@ from PySide6TK import QtWrappers
 
 class TestToolbar(QtWrappers.Toolbar):
     def __init__(self) -> None:
-        super().__init__('Example Toolbar')
+        super().__init__('Example Toolbar', default_button_resolution=[40, 40])
 
     def build(self) -> None:
         self._add_show_button()
@@ -118,7 +118,7 @@ class TestToolbar(QtWrappers.Toolbar):
         self.add_toolbar_command('Select', image_path=QtWrappers.BUTTON_ORANGE_40X40)
 
     def _asset_scripts_section(self) -> None:
-        model_submenu = self.add_menu('Anim\nScripts', QtWrappers.BUTTON_PURPLE_40X40)
+        model_submenu = self.add_menu('Anim\nScripts', image_path=QtWrappers.BUTTON_PURPLE_40X40)
         self.add_menu_command(model_submenu, 'Poly Wireframe')
         self.add_menu_command(model_submenu, 'Extract Face')
         self.add_menu_command(model_submenu, 'Component Scaler')
@@ -130,13 +130,13 @@ class TestToolbar(QtWrappers.Toolbar):
         self.add_menu_command(model_submenu, 'Floor')
         self.add_menu_command(model_submenu, 'Mirror Helper')
 
-        texture_submenu = self.add_menu('Texture', QtWrappers.BUTTON_PURPLE_40X40)
+        texture_submenu = self.add_menu('Texture', image_path=QtWrappers.BUTTON_PURPLE_40X40)
         self.add_menu_command(texture_submenu, 'Make Zoetrope')
         self.add_menu_command(texture_submenu, 'File Texture Manager')
         self.add_menu_command(texture_submenu, 'Gradient Card')
         self.add_menu_command(texture_submenu, 'Edit Texture Size')
 
-        effects_submenu = self.add_menu('Effects', QtWrappers.BUTTON_PURPLE_40X40)
+        effects_submenu = self.add_menu('Effects', image_path=QtWrappers.BUTTON_PURPLE_40X40)
         self.add_menu_command(effects_submenu, 'KF Lightning Tools')
         self.add_menu_command(effects_submenu, 'KF Tracer Emitter')
         self.add_menu_command(effects_submenu, 'KF Sword Swipe')
@@ -146,13 +146,13 @@ class TestToolbar(QtWrappers.Toolbar):
         self.add_menu_command(effects_submenu, 'Ninja Fracture')
 
     def _measure_section(self) -> None:
-        measure_submenu = self.add_menu('Measure', QtWrappers.BUTTON_RED_40X40)
+        measure_submenu = self.add_menu('Measure', image_path=QtWrappers.BUTTON_RED_40X40)
         self.add_menu_command(measure_submenu, 'Measure Tool')
         self.add_menu_command(measure_submenu, 'Import Scale Model')
         self.add_menu_command(measure_submenu, 'Speed Locator New')
 
     def _rename_script_section(self) -> None:
-        submenu = self.add_menu('Rename', QtWrappers.BUTTON_RED_40X40)
+        submenu = self.add_menu('Rename', image_path=QtWrappers.BUTTON_RED_40X40)
         self.add_menu_command(submenu, 'Comet Renamer')
         self.add_menu_command(submenu, 'Name Shader Networks From Selected Materials')
 

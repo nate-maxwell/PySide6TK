@@ -57,6 +57,8 @@ class Toolbar(QtWidgets.QToolBar):
             toolbar buttons, in pixels. Defaults to ``[40, 40]``.
         icon_brightness (float): The brightness factor applied to icons to
             normalize their appearance. Defaults to ``0.2``.
+        submenu_tear_off (bool): Are submenus able to be torn off. Defaults to
+            False.
 
     Notes:
         - The ``build`` method **must** be overridden in subclasses.
@@ -69,13 +71,15 @@ class Toolbar(QtWidgets.QToolBar):
             self,
             toolbar_name: str,
             parent: Optional[QtWidgets.QWidget] = None,
-            default_button_resolution: list[int] = None
+            default_button_resolution: list[int] = None,
+            submenu_tear_off: bool = False
     ) -> None:
         super().__init__(parent=parent)
-        if default_button_resolution is None:
-            self.default_button_resolution = [40, 40]
-        else:
+        self.default_button_resolution: Optional[list] = None
+        if default_button_resolution is not None:
             self.default_button_resolution = default_button_resolution
+
+        self.submenu_tear_off: bool = submenu_tear_off
 
         self.icon_brightness: float = 0.2
 
@@ -96,12 +100,14 @@ class Toolbar(QtWidgets.QToolBar):
         """
         tool_button = QtWidgets.QToolButton()
         tool_button.setContentsMargins(0, 0, 0, 0)
-        x = self.default_button_resolution[0]
-        if x > 0:
-            tool_button.setFixedWidth(x)
-        y = self.default_button_resolution[1]
-        if y > 0:
-            tool_button.setFixedHeight(y)
+        if self.default_button_resolution is not None:
+            x = self.default_button_resolution[0]
+            if x > 0:
+                tool_button.setFixedWidth(x)
+            y = self.default_button_resolution[1]
+            if y > 0:
+                tool_button.setFixedHeight(y)
+
         if button_image is None:
             tool_button.setToolButtonStyle(
                 QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
@@ -111,10 +117,10 @@ class Toolbar(QtWidgets.QToolBar):
         tool_button.setStyleSheet(f"""
             QToolButton {{
                 background: url('{button_image.as_posix()}');
-                background-position: center;                /* Center the image */
-                background-repeat: no-repeat;               /* Prevent tiling */
-                background-size: cover;                     /* Scale the image to fill the button */
-                background-color: rgba(0, 0, 0, 0.1);       /* Add a semi-transparent black overlay */
+                background-position: center;            /* Center the image */
+                background-repeat: no-repeat;           /* Prevent tiling */
+                background-size: cover;                 /* Scale the image to fill the button */
+                background-color: rgba(0, 0, 0, 0.1);   /* Add a semi-transparent black overlay */
                 font-size: 10px;
             }}
         """)
@@ -161,7 +167,9 @@ class Toolbar(QtWidgets.QToolBar):
             QtWidgets.QMenu: The created menu, incase further submenus need
               to be added to the created menu.
         """
-        submenu = QtWidgets.QMenu(f'{label}_submenu', self)
+        submenu = QtWidgets.QMenu(label, self)
+        submenu.setTearOffEnabled(self.submenu_tear_off)
+        submenu.setObjectName(f'{label}_submenu')
 
         action = QtGui.QAction(label, self)  # The actual label on the dropdown
         action.setMenu(submenu)
@@ -189,11 +197,9 @@ class Toolbar(QtWidgets.QToolBar):
             QtWidgets.QMenu: The created submenu, incase further submenus need
                 to be added to the created submenu.
         """
-        submenu = QtWidgets.QMenu(f'{label}_submenu', self)
-        action = QtGui.QAction(label, self)  # The actual label on the dropdown
-        action.setMenu(submenu)
+        submenu = QtWidgets.QMenu(label, self)
+        submenu.setTearOffEnabled(self.submenu_tear_off)
         parent.addMenu(submenu)
-
         return submenu
 
     @staticmethod
