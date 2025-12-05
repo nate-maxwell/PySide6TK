@@ -317,8 +317,11 @@ class CodeMiniMap(QtWidgets.QWidget):
         if not visible_blocks:
             return
 
-        # Simple direct mapping: Y position in minimap -> visible block index
+        # Clamp Y to minimap bounds
         minimap_height = self.height()
+        y = max(0, min(int(y), minimap_height))
+
+        # Simple direct mapping: Y position in minimap -> visible block index
         total_visible_lines = len(visible_blocks)
 
         # Calculate which visible block was clicked based on Y position
@@ -347,4 +350,5 @@ class CodeMiniMap(QtWidgets.QWidget):
         self.update()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """Forward scroll events to editor"""
         self.editor.wheelEvent(event)
