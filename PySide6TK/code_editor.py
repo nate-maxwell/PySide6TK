@@ -181,8 +181,8 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.textChanged.connect(self.analyze_fold_regions)
 
-    def resizeEvent(self, e: QtGui.QResizeEvent) -> None:
-        super().resizeEvent(e)
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
         cr = self.contentsRect()
 
         self.line_number_area.setGeometry(
@@ -575,15 +575,15 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         else:
             self.insertPlainText(opening)
 
-    def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         """Enable shortcuts in keypress event."""
         # Toggle comment with Ctrl+/
-        if e.key() == QtCore.Qt.Key.Key_Slash and e.modifiers() == QtCore.Qt.KeyboardModifier.ControlModifier:
+        if event.key() == QtCore.Qt.Key.Key_Slash and event.modifiers() == QtCore.Qt.KeyboardModifier.ControlModifier:
             self.toggle_comment()
             return
 
         # Should text be wrapped?
-        typed_char = e.text()
+        typed_char = event.text()
         if self.textCursor().hasSelection() and typed_char in _WRAPPING_PAIRS:
             self.wrap_selection(typed_char, _WRAPPING_PAIRS[typed_char])
             return
@@ -591,24 +591,24 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
         first_line, last_line = self._get_selection_range()
 
         # Multi-line indent
-        if e.key() == QtCore.Qt.Key.Key_Tab and last_line - first_line:
+        if event.key() == QtCore.Qt.Key.Key_Tab and last_line - first_line:
             lines = range(first_line, last_line + 1)
             self.indented.emit(lines)
             return
 
         # Multi-line unindent
-        if e.key() == QtCore.Qt.Key.Key_Backtab:
+        if event.key() == QtCore.Qt.Key.Key_Backtab:
             lines = range(first_line, last_line + 1)
             self.unindented.emit(lines)
             return
 
         # Tab as 4 spaces
-        if e.key() == QtCore.Qt.Key.Key_Tab:
+        if event.key() == QtCore.Qt.Key.Key_Tab:
             self.insertPlainText(_INDENT)
             return
 
         # Enter indentation preservation.
-        if e.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter):
+        if event.key() in (QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Enter):
             # This is rather primitive - it checks there are any number of
             # spaces preceding the cursor and then newlines to that column.
             # More complex indenting requires knowledge of the written
@@ -623,8 +623,8 @@ class CodeEditor(QtWidgets.QPlainTextEdit):
             indent = ' ' * indent_count
 
             # Insert newline and indentation
-            super(CodeEditor, self).keyPressEvent(e)
+            super(CodeEditor, self).keyPressEvent(event)
             self.insertPlainText(indent)
             return
 
-        super(CodeEditor, self).keyPressEvent(e)
+        super(CodeEditor, self).keyPressEvent(event)
