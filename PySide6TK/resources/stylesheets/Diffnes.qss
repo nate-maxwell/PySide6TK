@@ -161,7 +161,7 @@ QToolButton:checked
 /*-----QPushButton-----*/
 QPushButton
 {
-	background-color: #4891b4;
+	background-color: #333333;
 	color: #fff;
 	border-radius: 4px;
 	padding: 5px;
@@ -180,7 +180,7 @@ QPushButton::flat
 
 QPushButton::disabled
 {
-	background-color: #333333;
+	background-color: #606060;
 	color: #959595;
 	border-color: #051a39;
 
