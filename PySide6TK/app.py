@@ -145,7 +145,7 @@ def exec_single_instance_app(
     return code
 
 
-def exec_app(window_cls: Type[QtWidgets.QMainWindow], app_name: str) -> None:
+def exec_app(window_cls: Type[QtWidgets.QMainWindow], app_name: str) -> int:
     """Run a QApplication for a given main window (basic).
 
     Args:
@@ -156,4 +156,4 @@ def exec_app(window_cls: Type[QtWidgets.QMainWindow], app_name: str) -> None:
     app = init_application('MyOrg', app_name)
     win = window_cls()
     win.show()
-    app.exec()
+    return app.exec()
