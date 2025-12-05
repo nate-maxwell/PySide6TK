@@ -275,13 +275,27 @@ class CodeMiniMap(QtWidgets.QWidget):
             visible_block_list
         )
 
-        # Calculate position in minimap coordinates
-        rect_y = (first_visible_index - scroll_offset) * self.line_height
-        rect_height = visible_blocks * self.line_height
+        # Use direct linear mapping like _scroll_to_position does
+        minimap_height = self.height()
+        total_visible_blocks = len(visible_block_list)
+
+        # If viewport shows all blocks, just fill the whole minimap
+        if visible_blocks >= total_visible_blocks:
+            painter.setPen(QtGui.QPen(QtGui.QColor(100, 100, 100), 1))
+            painter.setBrush(QtGui.QColor(255, 255, 255, 30))
+            painter.drawRect(0, 0, self.width(), minimap_height)
+            return
+
+        # Calculate Y position based on which visible block is at top of viewport
+        # Map from [0, total_visible_blocks] to [0, minimap_height]
+        rect_y = (first_visible_index / total_visible_blocks) * minimap_height
+
+        # Calculate height based on how many blocks are visible in viewport
+        rect_height = (visible_blocks / total_visible_blocks) * minimap_height
 
         # Clamp to minimap bounds
-        rect_y = max(0, min(int(rect_y), self.height() - int(rect_height)))
-        rect_height = min(int(rect_height), self.height())
+        rect_y = max(0, min(int(rect_y), minimap_height - int(rect_height)))
+        rect_height = min(int(rect_height), minimap_height)
 
         # View rect overlay
         painter.setPen(QtGui.QPen(QtGui.QColor(100, 100, 100), 1))
@@ -303,42 +317,34 @@ class CodeMiniMap(QtWidgets.QWidget):
         if not visible_blocks:
             return
 
-        first_visible = self.editor.firstVisibleBlock().blockNumber()
+        # Simple direct mapping: Y position in minimap -> visible block index
+        minimap_height = self.height()
+        total_visible_lines = len(visible_blocks)
+
+        # Calculate which visible block was clicked based on Y position
+        # Map Y from [0, minimap_height] to [0, total_visible_lines]
+        ratio = y / minimap_height
+        clicked_visible_idx = int(ratio * total_visible_lines)
+        clicked_visible_idx = max(0, min(clicked_visible_idx, total_visible_lines - 1))
+
+        clicked_block_num = visible_blocks[clicked_visible_idx]
+
+        # Calculate how many blocks fit in viewport
         viewport_height = self.editor.viewport().height()
         block_height = self.editor.fontMetrics().height()
         visible_blocks_count = viewport_height // block_height + 1
 
-        center_index = self._find_block_index_in_visible(
-            first_visible,
-            visible_blocks
-        )
-        lines_in_minimap = self.height() // self.line_height
-        center_pos = center_index - lines_in_minimap
-        scroll_offset = max(
-            0,
-            min(center_pos // 2, len(visible_blocks) - lines_in_minimap)
-        )
-
-        # Calculate clicked visible block index
-        cur_pos = int((y / self.line_height) * self.scroll_sensitivity)
-        clicked_idx = max(
-            0,
-            min(cur_pos + int(scroll_offset), len(visible_blocks) - 1)
-        )
-        clicked_block_num = visible_blocks[clicked_idx]
-
-        # Center viewport on that block
-        centered_scroll_line = clicked_block_num - visible_blocks_count // 2
+        # Center viewport on the clicked block
+        target_scroll_line = clicked_block_num - visible_blocks_count // 2
 
         scrollbar = self.editor.verticalScrollBar()
-        centered_scroll_line = max(
+        target_scroll_line = max(
             scrollbar.minimum(),
-            min(centered_scroll_line, scrollbar.maximum())
+            min(target_scroll_line, scrollbar.maximum())
         )
-        scrollbar.setValue(int(centered_scroll_line))
+        scrollbar.setValue(int(target_scroll_line))
 
         self.update()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        """Forward scroll events to editor"""
         self.editor.wheelEvent(event)
