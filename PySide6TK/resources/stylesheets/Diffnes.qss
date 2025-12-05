@@ -180,7 +180,7 @@ QPushButton::flat
 
 QPushButton::disabled
 {
-	background-color: #606060;
+	background-color: #333333;
 	color: #959595;
 	border-color: #051a39;
 
