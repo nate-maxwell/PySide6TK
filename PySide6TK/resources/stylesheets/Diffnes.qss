@@ -161,7 +161,7 @@ QToolButton:checked
 /*-----QPushButton-----*/
 QPushButton
 {
-	background-color: #333333;
+	background-color: #242424;
 	color: #fff;
 	border-radius: 4px;
 	padding: 5px;
