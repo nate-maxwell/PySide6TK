@@ -990,3 +990,65 @@ QSizeGrip
 	border: none;
 
 }
+
+
+/*-----QTabWidget-----*/
+QTabWidget
+{
+	background-color: transparent;
+	border: none;
+
+}
+
+
+QTabWidget::pane
+{
+	background-color: #242424;
+	border: 1px solid #1d1d1d;
+	border-top: none;
+
+}
+
+
+QTabWidget::tab-bar
+{
+	left: 5px;
+
+}
+
+
+QTabBar::tab
+{
+	background-color: #4a5157;
+	color: #fff;
+	border: 1px solid #1d1d1d;
+	border-bottom: none;
+	padding: 5px 15px;
+	margin-right: 2px;
+
+}
+
+
+QTabBar::tab:selected
+{
+	background-color: #242424;
+	color: #fff;
+	border: 1px solid #1d1d1d;
+	border-bottom: none;
+
+}
+
+
+QTabBar::tab:hover
+{
+	background-color: #5e5e5e;
+	color: #fff;
+
+}
+
+
+QTabBar::tab:!selected
+{
+	margin-top: 2px;
+
+}
