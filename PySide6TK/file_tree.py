@@ -40,17 +40,17 @@ class FileTreeWidget(QtWidgets.QTreeView):
         self.model.setRootPath('')
 
         self.model.setNameFilters([
-            "*.py", "*.pyw",  # Python
-            "*.js", "*.jsx", "*.ts", "*.tsx",  # JavaScript/TypeScript
-            "*.html", "*.css", "*.scss", "*.sass",  # Web
-            "*.cpp", "*.c", "*.h", "*.hpp",  # C/C++
-            "*.java",  # Java
-            "*.go",  # Go
-            "*.rs",  # Rust
-            "*.json", "*.xml", "*.yaml", "*.yml", "*.toml",  # Config
-            "*.md", "*.txt", "*.rst",  # Documentation
-            "*.sh", "*.bat", "*.ps1",  # Scripts
-            "*"  # Show all files by default
+            '*.py', '*.pyw',  # Python
+            '*.js', '*.jsx', '*.ts', '*.tsx',  # JavaScript/TypeScript
+            '*.html', '*.css', '*.scss', '*.sass',  # Web
+            '*.cpp', '*.c', '*.h', '*.hpp',  # C/C++
+            '*.java',  # Java
+            '*.go',  # Go
+            '*.rs',  # Rust
+            '*.json', '*.xml', '*.yaml', '*.yml', '*.toml',  # Config
+            '*.md', '*.txt', '*.rst',  # Documentation
+            '*.sh', '*.bat', '*.ps1',  # Scripts
+            '*'  # Show all files by default
         ])
         self.model.setNameFilterDisables(False)
         self.setModel(self.model)
