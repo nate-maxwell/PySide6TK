@@ -136,6 +136,12 @@ class CodeMiniMap(QtWidgets.QWidget):
             if i >= len(lines) or y_offset >= minimap_height:
                 break
 
+            # Skip invisible blocks
+            block = self.editor.document().findBlockByNumber(i)
+            if block.isValid() and not block.isVisible():
+                char_position += len(lines[i]) + 1
+                continue
+
             line = lines[i]
             left_margin = 5
 
