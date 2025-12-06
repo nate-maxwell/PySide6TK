@@ -6,6 +6,7 @@ A comprehensive file browser with icons, context menus, and file filtering.
 
 import os
 import platform
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional, List
@@ -78,11 +79,14 @@ class FileTreeWidget(QtWidgets.QTreeView):
         self.expandToDepth(0)
 
     def set_root_path(self, path: Path) -> bool:
-        """Set the root directory for the file tree."""
+        """Set the root directory for the file tree.
+        If the directory exists, a directory_changed signal is emitted after
+        the tree root has been updated.
+        """
         if path.exists():
-            index = self.model.setRootPath(str(path))
+            index = self.model.setRootPath(path.as_posix())
             self.setRootIndex(index)
-            self.directory_changed.emit(str(path))
+            self.directory_changed.emit(path.as_posix())
             return True
         return False
 
@@ -123,30 +127,35 @@ class FileTreeWidget(QtWidgets.QTreeView):
         if file_path.is_file():
             open_action = QtGui.QAction('Open', self)
             open_action.triggered.connect(
-                lambda: self.file_opened.emit(str(file_path)))
+                lambda: self.file_opened.emit(str(file_path))
+            )
             menu.addAction(open_action)
 
             menu.addSeparator()
 
             rename_action = QtGui.QAction('Rename', self)
             rename_action.triggered.connect(
-                lambda: self.rename_item(file_path))
+                lambda: self.rename_item(file_path)
+            )
             menu.addAction(rename_action)
 
             delete_action = QtGui.QAction('Delete', self)
             delete_action.triggered.connect(
-                lambda: self.delete_item(file_path))
+                lambda: self.delete_item(file_path)
+            )
             menu.addAction(delete_action)
 
         elif file_path.is_dir():
             new_file_action = QtGui.QAction('New File', self)
             new_file_action.triggered.connect(
-                lambda: self.create_new_file(file_path))
+                lambda: self.create_new_file(file_path)
+            )
             menu.addAction(new_file_action)
 
             new_folder_action = QtGui.QAction('New Folder', self)
             new_folder_action.triggered.connect(
-                lambda: self.create_new_folder(file_path))
+                lambda: self.create_new_folder(file_path)
+            )
             menu.addAction(new_folder_action)
 
             menu.addSeparator()
@@ -158,7 +167,8 @@ class FileTreeWidget(QtWidgets.QTreeView):
 
             delete_action = QtGui.QAction('Delete', self)
             delete_action.triggered.connect(
-                lambda: self.delete_item(file_path))
+                lambda: self.delete_item(file_path)
+            )
             menu.addAction(delete_action)
 
         menu.addSeparator()
@@ -166,13 +176,15 @@ class FileTreeWidget(QtWidgets.QTreeView):
         # Reveal in system file manager
         reveal_action = QtGui.QAction('Reveal in File Manager', self)
         reveal_action.triggered.connect(
-            lambda: self.reveal_in_file_manager(file_path))
+            lambda: self.reveal_in_file_manager(file_path)
+        )
         menu.addAction(reveal_action)
 
         # Copy path
         copy_path_action = QtGui.QAction('Copy Path', self)
         copy_path_action.triggered.connect(
-            lambda: self.copy_path_to_clipboard(file_path))
+            lambda: self.copy_path_to_clipboard(file_path)
+        )
         menu.addAction(copy_path_action)
 
         menu.exec_(self.viewport().mapToGlobal(position))
@@ -245,7 +257,6 @@ class FileTreeWidget(QtWidgets.QTreeView):
                 if path.is_file():
                     path.unlink()
                 elif path.is_dir():
-                    import shutil
                     shutil.rmtree(path)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
@@ -279,7 +290,7 @@ class FileTreeWidget(QtWidgets.QTreeView):
     def set_file_filters(self, filters: List[str]) -> None:
         """
         Set custom file filters.
-
+        Wrapper for FileTreeWidget.model.setNameFilters(filters)
         Args:
             filters: List of file patterns (e.g., ['*.py', '*.txt'])
         """
