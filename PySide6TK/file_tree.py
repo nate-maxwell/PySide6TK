@@ -43,7 +43,7 @@ class FileTreeWidget(QtWidgets.QTreeView):
             '*.py', '*.pyw',  # Python
             '*.js', '*.jsx', '*.ts', '*.tsx',  # JavaScript/TypeScript
             '*.html', '*.css', '*.scss', '*.sass',  # Web
-            '*.cpp', '*.c', '*.h', '*.hpp',  # C/C++
+            '*.cpp', '*.c', '*.cs', '*.h', '*.hpp',  # C/C++
             '*.java',  # Java
             '*.go',  # Go
             '*.rs',  # Rust
