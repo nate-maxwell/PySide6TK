@@ -31,6 +31,7 @@ from PySide6TK.dialogs import MultiLineTextDialog
 from PySide6TK.dialogs import SingleLineTextDialog
 from PySide6TK.dict_viewer import DictViewer
 from PySide6TK.enums import Orient
+from PySide6TK.file_explorer import FileTreeWidget
 from PySide6TK.file_selector import FileSelector
 from PySide6TK.grid_layout import GridLayout
 from PySide6TK.groupbox import GroupBox
