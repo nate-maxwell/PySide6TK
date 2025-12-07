@@ -232,7 +232,9 @@ class Toolbar(QtWidgets.QToolBar):
         """Adds a horizontal spacer to the toolbar of the given width.
         Width defaults to 10.
         """
-        self.addWidget(PySide6TK.shapes.HorizontalSpacer(width))
+        spacer_action = QtWidgets.QWidgetAction(self)
+        spacer_action.setDefaultWidget(PySide6TK.shapes.HorizontalSpacer(width))
+        self.addAction(spacer_action)
 
     def build(self) -> None:
         """The derived class's constructor.
