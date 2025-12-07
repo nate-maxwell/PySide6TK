@@ -27,7 +27,7 @@ class VerticalLine(QtWidgets.QFrame):
 
 
 class HorizontalSpacer(QtWidgets.QWidget):
-    def __init__(self, width: int) -> None:
+    def __init__(self, width: int = 0) -> None:
         super().__init__()
         self.setFixedWidth(width)
         if width > 0:
@@ -43,7 +43,7 @@ class HorizontalSpacer(QtWidgets.QWidget):
 
 
 class VerticalSpacer(QtWidgets.QWidget):
-    def __init__(self, height: int) -> None:
+    def __init__(self, height: int = 0) -> None:
         super().__init__()
         self.setFixedHeight(height)
         if height > 0:
