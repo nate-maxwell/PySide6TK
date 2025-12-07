@@ -155,7 +155,7 @@ QToolButton
 QToolButton:hover
 {
 	background-color: rgba(183, 134, 32, 20%);
-	border: 1px solid #b78620;
+	// border: 1px solid #b78620;
 	color: #fff;
 
 }
