@@ -71,7 +71,7 @@ class CodeMiniMap(QtWidgets.QWidget):
         self._fallback_color = self._adjust_color_brightness(QtGui.QColor(212, 212, 212))
 
         self.editor.textChanged.connect(self._on_text_changed)
-        self.editor.document().contentsChanged.connect(self._on_text_changed())
+        self.editor.document().contentsChanged.connect(self._on_text_changed)
         if hasattr(self.editor, 'foldingChanged'):
             self.editor.foldingChanged.connect(self.update)
 
@@ -253,6 +253,10 @@ class CodeMiniMap(QtWidgets.QWidget):
         if event.buttons() & QtCore.Qt.MouseButton.LeftButton:
             self._scroll_to_position(event.position().y())
 
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """Forward scroll events to editor"""
+        self.editor.wheelEvent(event)
+
     def _scroll_to_position(self, y: float) -> None:
         """Scroll editor to clicked position in minimap"""
         if not self._cached_lines:
@@ -290,7 +294,3 @@ class CodeMiniMap(QtWidgets.QWidget):
         scrollbar.setValue(int(centered_scroll_line))
 
         self.update()
-
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        """Forward scroll events to editor"""
-        self.editor.wheelEvent(event)
