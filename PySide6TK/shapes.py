@@ -53,6 +53,6 @@ class VerticalSpacer(QtWidgets.QWidget):
             )
         else:
             self.setSizePolicy(
-                QtWidgets.QSizePolicy.Policy.Expanding,
-                QtWidgets.QSizePolicy.Policy.Fixed
+                QtWidgets.QSizePolicy.Policy.Preferred,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
