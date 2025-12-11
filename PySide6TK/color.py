@@ -274,3 +274,35 @@ class ColorPickerPanel(QtWidgets.QWidget):
     def get_color(self) -> QtGui.QColor:
         """Get the current color."""
         return self.rect_picker.get_color()
+
+
+class ColorButton(QtWidgets.QPushButton):
+    colorChanged = QtCore.Signal(QtGui.QColor)
+
+    def __init__(
+            self,
+            color: str = '#ffffff',
+            parent: Optional[QtWidgets.QWidget] = None
+    ) -> None:
+        super().__init__(parent)
+        self._color = QtGui.QColor(color)
+        self.setFixedSize(32, 18)
+        self._update_style()
+        self.clicked.connect(self.choose_color)
+
+    def _update_style(self) -> None:
+        self.setStyleSheet(
+            f'background-color: {self._color.name()}; border: 1px solid #333;'
+        )
+
+    def choose_color(self) -> None:
+        color = QtWidgets.QColorDialog.getColor(
+            self._color, self, 'Choose Color'
+        )
+        if color.isValid():
+            self._color = color
+            self._update_style()
+            self.colorChanged.emit(color)
+
+    def color(self) -> QtGui.QColor:
+        return self._color

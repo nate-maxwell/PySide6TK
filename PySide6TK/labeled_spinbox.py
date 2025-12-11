@@ -53,9 +53,10 @@ class LabeledSpinBox(QtWidgets.QWidget):
 
         if double:
             self.spinbox = QtWidgets.QDoubleSpinBox()
+            self.spinbox.setMaximum(1e100)
         else:
             self.spinbox = QtWidgets.QSpinBox()
-        self.spinbox.setMaximum(2 ** 31 - 1)
+            self.spinbox.setMaximum(2 ** 31 - 1)
 
         self.label = QtWidgets.QLabel(text)
 
@@ -93,3 +94,9 @@ class LabeledSpinBox(QtWidgets.QWidget):
         else:
             policy = QtWidgets.QSizePolicy.Policy.Preferred
         self.label.setSizePolicy(policy, QtWidgets.QSizePolicy.Policy.Preferred)
+
+    def set_maximum(self, val: Union[int, float]) -> None:
+        self.spinbox.setMaximum(val)
+
+    def set_minimum(self, val: Union[int, float]) -> None:
+        self.spinbox.setMinimum(val)
