@@ -24,6 +24,7 @@ from PySide6TK.app import set_windows_app_user_model_id
 from PySide6TK.app import single_instance_lock
 from PySide6TK.code_editor import CodeEditor
 from PySide6TK.code_minimap import CodeMiniMap
+from PySide6TK.color import ColorButton
 from PySide6TK.color import ColorPickerPanel
 from PySide6TK.color import RectangularColorPicker
 from PySide6TK.column_browser import ColumnBrowser
