@@ -55,6 +55,7 @@ class LabeledSpinBox(QtWidgets.QWidget):
             self.spinbox = QtWidgets.QDoubleSpinBox()
         else:
             self.spinbox = QtWidgets.QSpinBox()
+        self.spinbox.setMaximum(2 ** 31 - 1)
 
         self.label = QtWidgets.QLabel(text)
 
