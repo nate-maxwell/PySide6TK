@@ -66,7 +66,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         self.tri_single = (QtCore.QRegularExpression(r"[']{3}"), 1, _color_scheme.string2)
         self.tri_double = (QtCore.QRegularExpression(r'["]{3}'), 2, _color_scheme.string2)
 
-        # Track triple quotes that occur inside single-line strings so we can]
+        # Track triple quotes that occur inside single-line strings so we can
         # skip them in block highlighting.
         self.trip_quote_within_strings: list[int] = []
 
