@@ -7,6 +7,7 @@
     by a developer to create the PySide like namespaces.
 """
 
+
 import ast
 import sys
 from pathlib import Path

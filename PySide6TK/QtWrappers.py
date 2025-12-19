@@ -22,6 +22,7 @@ from PySide6TK.app import exec_single_instance_app
 from PySide6TK.app import init_application
 from PySide6TK.app import set_windows_app_user_model_id
 from PySide6TK.app import single_instance_lock
+from PySide6TK.button import ImageButton
 from PySide6TK.code_editor import CodeEditor
 from PySide6TK.code_minimap import CodeMiniMap
 from PySide6TK.color import ColorButton
