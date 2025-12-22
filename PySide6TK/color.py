@@ -297,7 +297,9 @@ class ColorButton(QtWidgets.QPushButton):
 
     def choose_color(self) -> None:
         color = QtWidgets.QColorDialog.getColor(
-            self._color, self, 'Choose Color'
+            QtGui.QColor('#ffffff'),
+            self,
+            'Choose Color'
         )
         if color.isValid():
             self._color = color
