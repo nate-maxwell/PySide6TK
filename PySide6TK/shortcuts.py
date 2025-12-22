@@ -7,6 +7,7 @@
 """
 
 
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Callable
 from typing import Optional
@@ -18,6 +19,7 @@ from PySide6 import QtWidgets
 import PySide6TK.layout
 import PySide6TK.shapes
 import PySide6TK.scroll_area
+import PySide6TK.groupbox
 
 
 MODIFIER_KEYS = (
@@ -40,11 +42,13 @@ class _Shortcut(object):
             (e.g., "Ctrl+N").
         callback (Callable): Function to execute when the shortcut is activated.
         description (str): Human-readable description of what the shortcut does.
+        category (str): The shortcut category for menu organization.
     """
     shortcut: QtGui.QShortcut
     key_sequence: str
     callback: Callable
-    description: str = ""
+    description: str = ''
+    category: str = ''
 
 
 class KeyShortcutManager(object):
@@ -75,7 +79,8 @@ class KeyShortcutManager(object):
             action_name: str,
             key_sequence: str,
             callback: Callable,
-            description: str = ''
+            description: str = '',
+            category: str = ''
     ) -> None:
         """
         Add a keyboard shortcut.
@@ -85,6 +90,7 @@ class KeyShortcutManager(object):
             key_sequence (str): String like "Ctrl+N" or QKeySequence
             callback (Callable): Function to call when shortcut is activated
             description (str): Human-readable description
+            category (str): The shortcut category for menu organization
         """
         if action_name in self.shortcuts:
             self.remove_shortcut(action_name)
@@ -99,7 +105,8 @@ class KeyShortcutManager(object):
             new_shortcut,
             key_sequence,
             callback,
-            description
+            description,
+            category
         )
 
     def remove_shortcut(self, action_name: str) -> None:
@@ -126,12 +133,12 @@ class KeyShortcutManager(object):
             return self.shortcuts[action_name].key_sequence
         return None
 
-    def list_shortcuts(self) -> list[tuple[str, str, str]]:
+    def list_shortcuts(self) -> list[tuple[str, str, str, str]]:
         """Returns a list of all shortcuts as
-        list[tuple[action_name, key_sequence, description]].
+        list[tuple[action_name, key_sequence, description, category]].
         """
         return [
-            (action_name, entry.key_sequence, entry.description)
+            (action_name, entry.key_sequence, entry.description, entry.category)
             for action_name, entry in self.shortcuts.items()
         ]
 
@@ -200,11 +207,13 @@ class _ShortcutEditorDialog(QtWidgets.QDialog):
 
     def load_shortcuts(self) -> None:
         shortcuts = self.manager.list_shortcuts()
+
         if len(shortcuts) == 0:
             msg = 'Application has no shortcuts!'
             self.sa_rows.add_widget(QtWidgets.QLabel(msg))
 
-        for action, key, description in shortcuts:
+        categories: dict[str, list[_ShortcutRow]] = defaultdict(list)
+        for action, key, description, category in shortcuts:
             row_wid = _ShortcutRow(
                 self.manager,
                 action,
@@ -212,7 +221,14 @@ class _ShortcutEditorDialog(QtWidgets.QDialog):
                 description,
                 self
             )
-            self.sa_rows.add_widget(row_wid)
+            categories[category].append(row_wid)
+
+        for cat, wids in categories.items():
+            group_box = PySide6TK.groupbox.GroupBox(cat)
+            for i in wids:
+                group_box.add_widget(i)
+
+            self.sa_rows.add_widget(group_box)
 
         self.sa_rows.add_stretch()
 

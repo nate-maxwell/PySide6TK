@@ -28,27 +28,27 @@ class Example(QtWrappers.MainWindow):
 
         desc = 'Create a new file.'
         self.shortcut_manager.add_shortcut(
-            'new_file', 'Ctrl+N', new_file, desc
+            'new_file', 'Ctrl+N', new_file, desc, 'File'
         )
 
         desc = 'Open an existing file.'
         self.shortcut_manager.add_shortcut(
-            'open_file', 'Ctrl+O', open_file, desc
+            'open_file', 'Ctrl+O', open_file, desc, 'File'
         )
 
         desc = 'Save the current file.'
         self.shortcut_manager.add_shortcut(
-            'save_file', 'Ctrl+S', save_file, desc
+            'save_file', 'Ctrl+S', save_file, desc, 'File'
         )
 
         desc = 'Quit the application'
         self.shortcut_manager.add_shortcut(
-            'quit_app', 'Ctrl+Q', self.close, desc
+            'quit_app', 'Ctrl+Q', self.close, desc, 'App'
         )
 
         desc = 'Show help documentation.'
         self.shortcut_manager.add_shortcut(
-            'show_help', 'F1', show_help, desc
+            'show_help', 'F1', show_help, desc, 'Help'
         )
 
         self.btn_open_shortcuts = QtWidgets.QPushButton('Open Shortcuts')
