@@ -296,11 +296,18 @@ class ColorButton(QtWidgets.QPushButton):
         )
 
     def choose_color(self) -> None:
+        # Caching and clearing the stylesheet is a hack because QT has this
+        # ridiculous idea that color dialog's default style sheet should be the
+        # previously stored color instead of the inherited one.
+        old_style = self.styleSheet()
+        self.setStyleSheet('')
+
         color = QtWidgets.QColorDialog.getColor(
-            QtGui.QColor('#ffffff'),
-            self,
-            'Choose Color'
+            self._color, self, 'Choose Color'
         )
+
+        self.setStyleSheet(old_style)
+
         if color.isValid():
             self._color = color
             self._update_style()
