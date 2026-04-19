@@ -1,0 +1,6 @@
+name: PySide6TK
+authors:
+  - Nate Maxwell
+description: A collection of PySide6 helpers and style-sheets.
+version: 1.20.9
+env: {}
