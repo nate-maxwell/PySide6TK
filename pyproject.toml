@@ -6,7 +6,7 @@ where = ["."]
 include = ["PySide6TK*"]
 
 [tool.setuptools.package-data]
-"PySide6TK" = ["resources/stylesheets/*.qss"]
+"PySide6TK" = ["resources/stylesheets/*.qss", "resources/icons/*.png"]
 
 [project]
 name = "PySide6TK"
