@@ -2,6 +2,7 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
+from PySide6TK.Nodes.node import BaseNode
 from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.port import Port
 from PySide6TK.Nodes.wire import Wire
@@ -165,8 +166,6 @@ class GraphView(QtWidgets.QGraphicsView):
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.key() in (QtCore.Qt.Key.Key_Backspace, QtCore.Qt.Key.Key_Delete):
             for item in list(self.scene.selectedItems()):
-                from catena.core.graph.node import BaseNode
-
                 if isinstance(item, BaseNode):
                     self.remove_node(item)
             return
