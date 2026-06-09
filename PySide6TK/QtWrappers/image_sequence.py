@@ -12,7 +12,6 @@
     otherwise it will endlessly loop.
 """
 
-
 import os
 from pathlib import Path
 from typing import Optional
@@ -20,7 +19,7 @@ from typing import Optional
 from PySide6 import QtGui
 from PySide6 import QtCore
 
-import PySide6TK.regx
+import PySide6TK.Core.regx
 
 
 class ImageSequence(QtCore.QObject):
@@ -78,8 +77,7 @@ class ImageSequence(QtCore.QObject):
 
         self._timer = QtCore.QTimer(self.parent())
         self._timer.setSingleShot(False)
-        self._timer.timeout.connect(self._frame_changed)\
-
+        self._timer.timeout.connect(self._frame_changed)
         self._frame = 0
         self._frames = []
         self._directory = None
@@ -98,7 +96,7 @@ class ImageSequence(QtCore.QObject):
         """
         if self._frames:
             return self._frames[0]
-        return Path('/does/not/exist')
+        return Path("/does/not/exist")
 
     def set_path(self, path: Path) -> None:
         """
@@ -122,8 +120,11 @@ class ImageSequence(QtCore.QObject):
         """
         self._directory = directory
         if directory.is_dir():
-            self._frames = [Path(directory, filename).as_posix() for filename in os.listdir(directory)]
-            PySide6TK.regx.natural_sort_strings(self._frames)
+            self._frames = [
+                Path(directory, filename).as_posix()
+                for filename in os.listdir(directory)
+            ]
+            PySide6TK.Core.regx.natural_sort_strings(self._frames)
 
     @property
     def dirname(self) -> Path:
@@ -225,7 +226,7 @@ class ImageSequence(QtCore.QObject):
         try:
             return self._frames[self.current_frame_number]
         except IndexError:
-            return Path('does/not/exist')
+            return Path("does/not/exist")
 
     @property
     def current_frame_number(self) -> Optional[int]:

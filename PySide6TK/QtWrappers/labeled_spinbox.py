@@ -12,7 +12,7 @@ from typing import Union
 
 from PySide6 import QtWidgets
 
-from PySide6TK.enums import Orient
+from PySide6TK.Core.enums import Orient
 
 
 class LabeledSpinBox(QtWidgets.QWidget):
@@ -47,8 +47,9 @@ class LabeledSpinBox(QtWidgets.QWidget):
             Defaults to ``Left``.
     """
 
-    def __init__(self, text: str, double: bool = False,
-                 label_pos: Orient = Orient.Left) -> None:
+    def __init__(
+        self, text: str, double: bool = False, label_pos: Orient = Orient.Left
+    ) -> None:
         super().__init__()
 
         if double:
@@ -56,7 +57,7 @@ class LabeledSpinBox(QtWidgets.QWidget):
             self.spinbox.setMaximum(1e100)
         else:
             self.spinbox = QtWidgets.QSpinBox()
-            self.spinbox.setMaximum(2 ** 31 - 1)
+            self.spinbox.setMaximum(2**31 - 1)
 
         self.label = QtWidgets.QLabel(text)
 

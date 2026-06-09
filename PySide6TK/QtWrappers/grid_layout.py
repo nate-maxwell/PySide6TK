@@ -10,7 +10,7 @@
 
 from PySide6 import QtWidgets
 
-import PySide6TK
+import PySide6TK.Core
 
 
 class GridLayout(QtWidgets.QGridLayout):
@@ -81,7 +81,7 @@ class GridLayout(QtWidgets.QGridLayout):
 
         return last_column
 
-    def add_to_new_row(self, item: PySide6TK.QT_COMMON_TYPE) -> None:
+    def add_to_new_row(self, item: PySide6TK.Core.QT_COMMON_TYPE) -> None:
         """Adds item to a new row in the given layout.
 
         Args:
@@ -96,9 +96,9 @@ class GridLayout(QtWidgets.QGridLayout):
         elif isinstance(item, QtWidgets.QLayout):
             self.addLayout(item, next_row, 0)
         else:
-            raise ValueError('item is not a layout or widget!')
+            raise ValueError("item is not a layout or widget!")
 
-    def add_to_last_row(self, item: PySide6TK.QT_COMMON_TYPE) -> None:
+    def add_to_last_row(self, item: PySide6TK.Core.QT_COMMON_TYPE) -> None:
         """Adds item to a new column of the last occupied row of the given
          layout.
 
@@ -116,4 +116,4 @@ class GridLayout(QtWidgets.QGridLayout):
         elif isinstance(item, QtWidgets.QLayout):
             self.addLayout(item, last_row, next_column)
         else:
-            raise ValueError('item is not a layout or widget!')
+            raise ValueError("item is not a layout or widget!")

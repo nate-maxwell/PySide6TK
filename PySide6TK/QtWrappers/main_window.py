@@ -7,7 +7,6 @@
     setting, saving a few lines...
 """
 
-
 import ctypes
 import platform
 from pathlib import Path
@@ -21,12 +20,13 @@ from PySide6.QtCore import QStandardPaths
 from PySide6 import QtWidgets
 
 import PySide6TK
-import PySide6TK.icons
+import PySide6TK.Resources.icons
 
 
 _optional_window = Optional[QtWidgets.QMainWindow]
-_appdata_path = Path(QStandardPaths.writableLocation(
-    QStandardPaths.StandardLocation.AppDataLocation))
+_appdata_path = Path(
+    QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+)
 
 
 def get_main_window_parent(widget: QtWidgets.QWidget) -> _optional_window:
@@ -65,7 +65,7 @@ def set_window_icon(window: QtWidgets.QMainWindow, icon: Union[str, Path]) -> No
         be called within the window's constructor and should pass self through, although
         it can be called through some icon manager/function.
 
-        icon(str): The name to the icon if it lives in the mythos.resources folder,
+        icon(str): The name to the icon if it lives in the mythos.Resources folder,
             or the path to it.
     """
     if type(icon) is str:  # Not sure that I like this...
@@ -74,8 +74,8 @@ def set_window_icon(window: QtWidgets.QMainWindow, icon: Union[str, Path]) -> No
         icon_path = icon
     window.setWindowIcon(QtGui.QIcon(icon_path.as_posix()))
 
-    if platform.system() == 'Windows':
-        my_app_id = f'QtToolkit.MainWindow.{type(window).__name__}'
+    if platform.system() == "Windows":
+        my_app_id = f"QtToolkit.MainWindow.{type(window).__name__}"
         # noinspection PyUnresolvedReferences
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(my_app_id)
 
@@ -87,9 +87,9 @@ def restore_window(window: QtWidgets.QMainWindow, settings: QtCore.QSettings) ->
         window (QtWidgets.QMainWindow): The main window to restore.
         settings (QtCore.QSettings): The settings store to read from.
     """
-    settings.beginGroup('main_window')
-    geom_any = settings.value('geometry', None)
-    state_any = settings.value('windowState', None)
+    settings.beginGroup("main_window")
+    geom_any = settings.value("geometry", None)
+    state_any = settings.value("windowState", None)
     settings.endGroup()
 
     geom: QtCore.QByteArray = _as_bytearray(geom_any)
@@ -115,7 +115,7 @@ def _as_bytearray(value: Any) -> QtCore.QByteArray:
     if isinstance(value, (bytes, bytearray, memoryview)):
         return QtCore.QByteArray(bytes(value))
     if isinstance(value, str):
-        return QtCore.QByteArray(value.encode('utf-8'))
+        return QtCore.QByteArray(value.encode("utf-8"))
     return QtCore.QByteArray()
 
 
@@ -126,9 +126,9 @@ def save_window(window: QtWidgets.QMainWindow, settings: QtCore.QSettings) -> No
         window (QtWidgets.QMainWindow): The main window to persist.
         settings (QtCore.QSettings): The settings store to write to.
     """
-    settings.beginGroup('main_window')
-    settings.setValue('geometry', window.saveGeometry())
-    settings.setValue('windowState', window.saveState())
+    settings.beginGroup("main_window")
+    settings.setValue("geometry", window.saveGeometry())
+    settings.setValue("windowState", window.saveState())
     settings.endGroup()
     settings.sync()
 
@@ -180,25 +180,28 @@ class MainWindow(QtWidgets.QMainWindow):
             closing.
     """
 
-    def __init__(self,
-                 window_name: str,
-                 min_size: Optional[tuple[int, int]] = None,
-                 max_size: Optional[tuple[int, int]] = None,
-                 parent: Optional[QtWidgets.QWidget] = None,
-                 icon_path: Optional[Path] = None) -> None:
+    def __init__(
+        self,
+        window_name: str,
+        min_size: Optional[tuple[int, int]] = None,
+        max_size: Optional[tuple[int, int]] = None,
+        parent: Optional[QtWidgets.QWidget] = None,
+        icon_path: Optional[Path] = None,
+    ) -> None:
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle(window_name)
         if icon_path is not None and icon_path.exists():
             set_window_icon(self, icon_path)
 
-        ini_name = window_name.replace(' ', '_')
-        _settings_path: Path = Path(_appdata_path, f'{PySide6TK.MODULE_NAME}/{ini_name}.ini')
+        ini_name = window_name.replace(" ", "_")
+        _settings_path: Path = Path(
+            _appdata_path, f"{PySide6TK.MODULE_NAME}/{ini_name}.ini"
+        )
         if not _settings_path.parent.exists():
             _settings_path.parent.mkdir(parents=True, exist_ok=True)
 
         self.settings: QtCore.QSettings = QtCore.QSettings(
-            _settings_path.as_posix(),
-            QtCore.QSettings.Format.IniFormat
+            _settings_path.as_posix(), QtCore.QSettings.Format.IniFormat
         )
 
         if min_size is None:

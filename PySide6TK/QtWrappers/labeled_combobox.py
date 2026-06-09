@@ -13,9 +13,9 @@ from typing import Optional
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
-import PySide6TK.regx
-import PySide6TK.dialogs
-from PySide6TK.enums import Orient
+import PySide6TK.Core.regx
+import PySide6TK.QtWrappers.dialogs
+from PySide6TK.Core.enums import Orient
 
 
 class LabeledComboBox(QtWidgets.QWidget):
@@ -61,18 +61,21 @@ class LabeledComboBox(QtWidgets.QWidget):
           after being added.
     """
 
-    def __init__(self,
-                 text: str,
-                 contents: Optional[list[str]] = None,
-                 appendable: bool = False,
-                 label_pos: Orient = Orient.Left) -> None:
+    def __init__(
+        self,
+        text: str,
+        contents: Optional[list[str]] = None,
+        appendable: bool = False,
+        label_pos: Orient = Orient.Left,
+    ) -> None:
         super().__init__()
 
         self.label = QtWidgets.QLabel(text)
-        self.new_item_text: str = 'Name:'
+        self.new_item_text: str = "Name:"
         self.cmb_box = QtWidgets.QComboBox()
-        self.cmb_box.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                                   QtWidgets.QSizePolicy.Policy.Fixed)
+        self.cmb_box.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         self.hlayout_box = QtWidgets.QHBoxLayout()  # for box + button
 
         match label_pos:
@@ -102,7 +105,7 @@ class LabeledComboBox(QtWidgets.QWidget):
             self.cmb_box.addItems(contents)
 
         if appendable:
-            self.btn_add = QtWidgets.QPushButton('+')
+            self.btn_add = QtWidgets.QPushButton("+")
             self.hlayout_box.addWidget(self.btn_add)
             self.btn_add.clicked.connect(self._add_button_connection)
 
@@ -121,8 +124,7 @@ class LabeledComboBox(QtWidgets.QWidget):
         """Returns whether the current item does not contain non-alpha-numeric
         or non-underscore characters.
         """
-        return PySide6TK.regx.validation_no_special_chars(
-            self.cmb_box.currentText())
+        return PySide6TK.regx.validation_no_special_chars(self.cmb_box.currentText())
 
     def clear(self) -> None:
         """Shortened namespace way to clear items."""
@@ -150,10 +152,10 @@ class LabeledComboBox(QtWidgets.QWidget):
         pass
 
     def _append_item(self) -> bool:
-        dlg = PySide6TK.dialogs.SingleLineTextDialog('New Item', self.new_item_text)
+        dlg = PySide6TK.dialogs.SingleLineTextDialog("New Item", self.new_item_text)
         if dlg.exec():
             new_item = self.append_item_formatter(dlg.text())
-            if new_item == '':
+            if new_item == "":
                 return False
 
             self.add_unique(new_item)

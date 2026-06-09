@@ -7,10 +7,9 @@
     setting, saving a few lines.
 """
 
-
 from PySide6 import QtWidgets
 
-import PySide6TK.layout
+import PySide6TK.QtWrappers.layout
 
 
 class GroupBox(QtWidgets.QGroupBox):
@@ -43,17 +42,16 @@ class GroupBox(QtWidgets.QGroupBox):
     Notes:
         - When ``collapsible`` is enabled, the group box height dynamically
           adjusts to its collapsed or expanded state.
-        - The helper function :func:`PySide6TK.layout.clear_layout` is used
+        - The helper function :func:`PySide6TK.QtWrappers.layout.clear_layout` is used
           to remove existing layout contents in :meth:`clear`.
         - Visibility changes are recursively applied via
-          :func:`PySide6TK.layout.set_layout_visibility` in
+          :func:`PySide6TK.QtWrappers.layout.set_layout_visibility` in
           :meth:`on_toggle`.
     """
 
-    def __init__(self,
-                 label: str = '',
-                 collapsible: bool = False,
-                 horizontal: bool = False) -> None:
+    def __init__(
+        self, label: str = "", collapsible: bool = False, horizontal: bool = False
+    ) -> None:
         super().__init__(label)
         if horizontal:
             self.layout = QtWidgets.QHBoxLayout()
@@ -68,7 +66,7 @@ class GroupBox(QtWidgets.QGroupBox):
         self.setLayout(self.layout)
 
     def clear(self) -> None:
-        PySide6TK.layout.clear_layout(self.layout)
+        PySide6TK.QtWrappers.layout.clear_layout(self.layout)
 
     def add_widget(self, widget: QtWidgets.QWidget) -> None:
         self.layout.addWidget(widget)
@@ -81,7 +79,9 @@ class GroupBox(QtWidgets.QGroupBox):
 
     def on_toggle(self, expanded: bool) -> None:
         """Recursively sets the visibility of items in the layout."""
-        PySide6TK.layout.set_layout_visibility(self.layout, expanded)
-        self.setMaximumHeight(self.sizeHint().height() if expanded else self.fontMetrics().height() * 2)
+        PySide6TK.QtWrappers.layout.set_layout_visibility(self.layout, expanded)
+        self.setMaximumHeight(
+            self.sizeHint().height() if expanded else self.fontMetrics().height() * 2
+        )
         self.layout.invalidate()
         self.updateGeometry()

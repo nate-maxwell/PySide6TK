@@ -8,10 +8,9 @@
     contains a line edit.
 """
 
-
 from PySide6 import QtWidgets
 
-from PySide6TK.enums import Orient
+from PySide6TK.Core.enums import Orient
 
 
 class LabeledLineEdit(QtWidgets.QWidget):

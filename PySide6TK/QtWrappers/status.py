@@ -10,7 +10,6 @@
     on windows.
 """
 
-
 import ctypes
 import ctypes.wintypes
 import time
@@ -21,27 +20,27 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
-import PySide6TK.shapes
+import PySide6TK.QtWrappers.shapes
 
 
 class _MemoryStatus(ctypes.Structure):
     _fields_ = [
-        ('dwLength', ctypes.wintypes.DWORD),
-        ('dwMemoryLoad', ctypes.wintypes.DWORD),
-        ('ullTotalPhys', ctypes.c_ulonglong),
-        ('ullAvailPhys', ctypes.c_ulonglong),
-        ('ullTotalPageFile', ctypes.c_ulonglong),
-        ('ullAvailPageFile', ctypes.c_ulonglong),
-        ('ullTotalVirtual', ctypes.c_ulonglong),
-        ('ullAvailVirtual', ctypes.c_ulonglong),
-        ('ullAvailExtendedVirtual', ctypes.c_ulonglong),
+        ("dwLength", ctypes.wintypes.DWORD),
+        ("dwMemoryLoad", ctypes.wintypes.DWORD),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
 
 class _FileTime(ctypes.Structure):
     _fields_ = [
-        ('dwLowDateTime', ctypes.wintypes.DWORD),
-        ('dwHighDateTime', ctypes.wintypes.DWORD),
+        ("dwLowDateTime", ctypes.wintypes.DWORD),
+        ("dwHighDateTime", ctypes.wintypes.DWORD),
     ]
 
 
@@ -98,11 +97,11 @@ class UsageBar(QtWidgets.QWidget):
     """
 
     def __init__(
-            self,
-            label_text: str,
-            color: QtGui.QColor,
-            height: int = 20,
-            parent: QtWidgets.QWidget | None = None
+        self,
+        label_text: str,
+        color: QtGui.QColor,
+        height: int = 20,
+        parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self.label_text: str = label_text
@@ -111,8 +110,7 @@ class UsageBar(QtWidgets.QWidget):
         self.percentage: float = 0
 
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Fixed
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
         )
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
@@ -132,13 +130,9 @@ class UsageBar(QtWidgets.QWidget):
 
         # Text
         painter.setPen(QtCore.Qt.GlobalColor.black)
-        font = QtGui.QFont(
-            'Arial',
-            self.height() * 8 // 20,
-            QtGui.QFont.Weight.Bold
-        )
+        font = QtGui.QFont("Arial", self.height() * 8 // 20, QtGui.QFont.Weight.Bold)
         painter.setFont(font)
-        text = f'{self.label_text}: {self.percentage:.1f}%'
+        text = f"{self.label_text}: {self.percentage:.1f}%"
         painter.drawText(self.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, text)
 
     def set_percentage(self, percentage: float) -> None:
@@ -166,16 +160,9 @@ class CPUUsageBar(UsageBar):
     """
 
     def __init__(
-            self,
-            height: int = 20,
-            parent: Optional[QtWidgets.QWidget] = None
+        self, height: int = 20, parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
-        super().__init__(
-            'CPU',
-            QtGui.QColor(52, 152, 219),
-            height,
-            parent
-        )
+        super().__init__("CPU", QtGui.QColor(52, 152, 219), height, parent)
         self.last_idle_time: int = 0
         self.last_kernel_time: int = 0
         self.last_user_time: int = 0
@@ -194,7 +181,7 @@ class CPUUsageBar(UsageBar):
             result = ctypes.windll.kernel32.GetSystemTimes(
                 ctypes.byref(idle_time),
                 ctypes.byref(kernel_time),
-                ctypes.byref(user_time)
+                ctypes.byref(user_time),
             )
 
             if not result:
@@ -239,17 +226,11 @@ class MemoryUsageBar(UsageBar):
     Methods:
         refresh() : Will update the bar.
     """
+
     def __init__(
-            self,
-            height: int = 20,
-            parent: Optional[QtWidgets.QWidget] = None
+        self, height: int = 20, parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
-        super().__init__(
-            'Memory',
-            QtGui.QColor(46, 204, 113),
-            height,
-            parent
-        )
+        super().__init__("Memory", QtGui.QColor(46, 204, 113), height, parent)
 
     def refresh(self) -> None:
         self.set_percentage(get_memory_usage())
@@ -285,8 +266,8 @@ class ResourceMonitor(QtWidgets.QWidget):
 
     def __init__(self, bar_height: int = 20, horizontal: bool = True) -> None:
         super().__init__()
-        self.setWindowTitle('System Monitor')
-        self.setMinimumHeight(bar_height+2)
+        self.setWindowTitle("System Monitor")
+        self.setMinimumHeight(bar_height + 2)
         self.bar_height = bar_height
         self.horizontal = horizontal
 
@@ -326,10 +307,10 @@ class ResourceMonitor(QtWidgets.QWidget):
 
 
 def check_connection(
-        url: str = 'https://www.google.com',
-        great: int = 100,
-        good: int = 300,
-        fair: int = 600
+    url: str = "https://www.google.com",
+    great: int = 100,
+    good: int = 300,
+    fair: int = 600,
 ) -> int:
     """Check actual network connection strength based on latency.
 
@@ -444,12 +425,14 @@ class ConnectionStrengthWidget(QtWidgets.QWidget):
 class BasicStatusBar(QtWidgets.QStatusBar):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        self.addPermanentWidget(PySide6TK.shapes.HorizontalSpacer(0))
+        self.addPermanentWidget(PySide6TK.QtWrappers.shapes.HorizontalSpacer(0))
         self.addPermanentWidget(ResourceMonitor())
         self.addPermanentWidget(ConnectionStrengthWidget(self))
 
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QStatusBar::item {
                 border: none;
             }
-        """)
+        """
+        )

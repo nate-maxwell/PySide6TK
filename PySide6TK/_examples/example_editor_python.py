@@ -11,7 +11,7 @@ from PySide6 import QtGui
 from PySide6 import QtWidgets
 
 from PySide6TK import QtWrappers
-from PySide6TK import dict_viewer
+from PySide6TK import Resources
 
 
 example_code = """import os
@@ -33,9 +33,7 @@ result: Union[list, dict] = values
 class ExamplePythonEditor(QtWrappers.MainWindow):
     def __init__(self) -> None:
         super().__init__(
-            'Example Python Editor',
-            (1200, 800),
-            icon_path=QtWrappers.BUTTON_BLACK_40X40
+            "Example Python Editor", (1200, 800), icon_path=Resources.BUTTON_BLACK_40X40
         )
         QtWrappers.set_style(self, QtWrappers.QSS_COMBINEAR)
 
@@ -44,25 +42,17 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
 
         self.toolbar = QtWrappers.HelpToolbar(
             parent=self,
-            description='Example code editor with dict viewer',
-            version='1.0.0',
-            author='Nate Maxwell',
-            repo_url='https://github.com/nate-maxwell/PySide6TK',
-            documentation_url='https://github.com/nate-maxwell/PySide6TK',
-            reload_modules=[
-                dict_viewer
-            ],
-            shortcut_manager=self.shortcut_manager
+            description="Example code editor with dict viewer",
+            version="1.0.0",
+            author="Nate Maxwell",
+            repo_url="https://github.com/nate-maxwell/PySide6TK",
+            documentation_url="https://github.com/nate-maxwell/PySide6TK",
+            reload_modules=[QtWrappers.dict_viewer],
+            shortcut_manager=self.shortcut_manager,
         )
-        self.toolbar.add_menu_command(
-            self.toolbar.file_submenu, 'New', self.new_file
-        )
-        self.toolbar.add_menu_command(
-            self.toolbar.file_submenu, 'Save', self.save_file
-        )
-        self.toolbar.add_menu_command(
-            self.toolbar.file_submenu, 'Open', self.open_file
-        )
+        self.toolbar.add_menu_command(self.toolbar.file_submenu, "New", self.new_file)
+        self.toolbar.add_menu_command(self.toolbar.file_submenu, "Save", self.save_file)
+        self.toolbar.add_menu_command(self.toolbar.file_submenu, "Open", self.open_file)
 
         self._create_widgets()
         self._create_layout()
@@ -77,11 +67,11 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.splitter_code = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
         self.splitter_results = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
 
-        font = QtGui.QFont('Courier')
+        font = QtGui.QFont("Courier")
         font.setPointSize(10)
 
         # -----Code Editor-----
-        self.grp_code = QtWrappers.GroupBox('Query Code:')
+        self.grp_code = QtWrappers.GroupBox("Query Code:")
 
         self.hlayout_code_editor = QtWidgets.QHBoxLayout()
         self.code_editor = QtWrappers.CodeEditor()
@@ -92,19 +82,19 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
 
         self.hlayout_query_button = QtWidgets.QHBoxLayout()
         self.btn_execute_query = QtWidgets.QPushButton(
-            text='Run',
+            text="Run",
             icon=self.style().standardIcon(
                 QtWidgets.QStyle.StandardPixmap.SP_MediaPlay
-            )
+            ),
         )
 
         # -----Message/Errors-----
-        self.grp_traceback = QtWrappers.GroupBox('Messages / Errors:')
+        self.grp_traceback = QtWrappers.GroupBox("Messages / Errors:")
 
         self.traceback_display = QtWidgets.QTextEdit()
         self.traceback_display.setReadOnly(True)
         self.traceback_display.setPlaceholderText(
-            'Error messages and tracebacks will appear here...'
+            "Error messages and tracebacks will appear here..."
         )
         self.traceback_display.setFont(font)
         self.traceback_display.setMinimumHeight(50)
@@ -112,7 +102,7 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.status_bar = QtWrappers.BasicStatusBar()
 
         # -----Results-----
-        self.grp_result = QtWrappers.GroupBox('Results:')
+        self.grp_result = QtWrappers.GroupBox("Results:")
 
         self.results_table = QtWidgets.QTableWidget()
         self.results_table.setMinimumHeight(200)
@@ -154,35 +144,25 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         self.btn_execute_query.clicked.connect(self.btn_execute_query_connection)
 
     def _create_shortcuts(self) -> None:
-        desc = 'Clear the current code.'
+        desc = "Clear the current code."
+        self.shortcut_manager.add_shortcut("new_file", "Ctrl+N", self.new_file, desc)
+
+        desc = "Open an existing file."
+        self.shortcut_manager.add_shortcut("open_file", "Ctrl+O", self.open_file, desc)
+
+        desc = "Save the current file."
+        self.shortcut_manager.add_shortcut("save_file", "Ctrl+S", self.save_file, desc)
+
+        desc = "Quit the application."
+        self.shortcut_manager.add_shortcut("quit_app", "Ctrl+Q", self.close, desc)
+
+        desc = "Run code."
         self.shortcut_manager.add_shortcut(
-            'new_file', 'Ctrl+N', self.new_file, desc
+            "run_code", "Ctrl+Return", self.btn_execute_query_connection, desc
         )
 
-        desc = 'Open an existing file.'
-        self.shortcut_manager.add_shortcut(
-            'open_file', 'Ctrl+O', self.open_file, desc
-        )
-
-        desc = 'Save the current file.'
-        self.shortcut_manager.add_shortcut(
-            'save_file', 'Ctrl+S', self.save_file, desc
-        )
-
-        desc = 'Quit the application.'
-        self.shortcut_manager.add_shortcut(
-            'quit_app', 'Ctrl+Q', self.close, desc
-        )
-
-        desc = 'Run code.'
-        self.shortcut_manager.add_shortcut(
-            'run_code', 'Ctrl+Return', self.btn_execute_query_connection, desc
-        )
-
-        self.btn_open_shortcuts = QtWidgets.QPushButton('Open Shortcuts')
-        self.btn_open_shortcuts.clicked.connect(
-            self.shortcut_manager.show_editor
-        )
+        self.btn_open_shortcuts = QtWidgets.QPushButton("Open Shortcuts")
+        self.btn_open_shortcuts.clicked.connect(self.shortcut_manager.show_editor)
 
     def btn_execute_query_connection(self) -> None:
         self.traceback_display.clear()
@@ -193,52 +173,50 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         code = self.code_editor.toPlainText()
 
         if not code.strip():
-            self.traceback_display.setPlainText('Error: No code to execute.')
+            self.traceback_display.setPlainText("Error: No code to execute.")
             return
 
         try:
-            namespace = {'sg': self.sg, 'result': None}
+            namespace = {"sg": self.sg, "result": None}
             before = time.perf_counter()
             exec(code, namespace)
             after = time.perf_counter()
             elapsed = after - before
-            elapsed_str = f'Executed in {elapsed:.3f} seconds.'
+            elapsed_str = f"Executed in {elapsed:.3f} seconds."
 
-            result = namespace.get('result')
+            result = namespace.get("result")
             if result is None:
                 self.traceback_display.setPlainText(
                     'Query executed successfully, but no "result" variable found.\n'
                     'Make sure to assign your query result to a variable named "result".\n'
-                    f'\n{elapsed_str}'
+                    f"\n{elapsed_str}"
                 )
                 return
 
             if isinstance(result, list):
                 self.traceback_display.setPlainText(
-                    f'Query executed successfully!\n'
-                    f'Retrieved {len(result)} record(s).\n'
-                    f'\n{elapsed_str}'
+                    f"Query executed successfully!\n"
+                    f"Retrieved {len(result)} record(s).\n"
+                    f"\n{elapsed_str}"
                 )
                 self.display_results(result)
             elif isinstance(result, dict):
                 self.traceback_display.setPlainText(
-                    'Query executed successfully!\n'
-                    'Retrieved 1 record.\n'
-                    f'\n{elapsed_str}'
+                    "Query executed successfully!\n"
+                    "Retrieved 1 record.\n"
+                    f"\n{elapsed_str}"
                 )
                 self.display_results([result])
             else:
                 self.traceback_display.setPlainText(
-                    'Query executed successfully!\n'
-                    f'Result type: {type(result).__name__}\n'
-                    f'Result: {result}\n'
-                    f'\n{elapsed_str}'
+                    "Query executed successfully!\n"
+                    f"Result type: {type(result).__name__}\n"
+                    f"Result: {result}\n"
+                    f"\n{elapsed_str}"
                 )
 
         except Exception as e:
-            self.traceback_display.setPlainText(
-                f'Error executing query:\n\n{e}'
-            )
+            self.traceback_display.setPlainText(f"Error executing query:\n\n{e}")
 
     def display_results(self, results: list = None) -> None:
         if not results:
@@ -260,8 +238,8 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         for row, item in enumerate(results):
             if isinstance(item, dict):
                 for col, key in enumerate(all_keys):
-                    value = item.get(key, '')
-                    display_value = str(value) if value is not None else ''
+                    value = item.get(key, "")
+                    display_value = str(value) if value is not None else ""
                     table_item = QtWidgets.QTableWidgetItem(display_value)
                     self.results_table.setItem(row, col, table_item)
 
@@ -276,36 +254,36 @@ class ExamplePythonEditor(QtWrappers.MainWindow):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
         dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
-        dialog.setNameFilter('Python Script (*.py)')
-        dialog.setDefaultSuffix('py')
+        dialog.setNameFilter("Python Script (*.py)")
+        dialog.setDefaultSuffix("py")
         dialog.setDirectory("/home/user/Documents")
 
         if dialog.exec():
             file_paths = dialog.selectedFiles()
             if file_paths:
                 file_path = file_paths[0]
-                with open(file_path, 'w') as f:
+                with open(file_path, "w") as f:
                     f.write(self.code_editor.toPlainText())
 
     def open_file(self) -> None:
         dialog = QtWidgets.QFileDialog(self)
         dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptOpen)
         dialog.setFileMode(QtWidgets.QFileDialog.FileMode.ExistingFile)
-        dialog.setNameFilter('Python Script (*.py)')
-        dialog.setDirectory('/home/user/Documents')
+        dialog.setNameFilter("Python Script (*.py)")
+        dialog.setDirectory("/home/user/Documents")
         dialog.setViewMode(QtWidgets.QFileDialog.ViewMode.Detail)
 
         if dialog.exec():
             file_paths = dialog.selectedFiles()
             if file_paths:
                 file_path = file_paths[0]
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     self.code_editor.setPlainText(f.read())
 
 
 def main() -> None:
-    QtWrappers.exec_app(ExamplePythonEditor, 'ExamplePythonEditor')
+    QtWrappers.exec_app(ExamplePythonEditor, "ExamplePythonEditor")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

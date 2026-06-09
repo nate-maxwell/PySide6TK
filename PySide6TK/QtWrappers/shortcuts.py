@@ -6,7 +6,6 @@
     Shortcut widgets and helper functions.
 """
 
-
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Callable
@@ -16,17 +15,17 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
-import PySide6TK.layout
-import PySide6TK.shapes
-import PySide6TK.scroll_area
-import PySide6TK.groupbox
+import PySide6TK.QtWrappers.layout
+import PySide6TK.QtWrappers.shapes
+import PySide6TK.QtWrappers.scroll_area
+import PySide6TK.QtWrappers.groupbox
 
 
 MODIFIER_KEYS = (
     QtCore.Qt.Key.Key_Control,
     QtCore.Qt.Key.Key_Shift,
     QtCore.Qt.Key.Key_Alt,
-    QtCore.Qt.Key.Key_Meta
+    QtCore.Qt.Key.Key_Meta,
 )
 
 
@@ -44,11 +43,12 @@ class _Shortcut(object):
         description (str): Human-readable description of what the shortcut does.
         category (str): The shortcut category for menu organization.
     """
+
     shortcut: QtGui.QShortcut
     key_sequence: str
     callback: Callable
-    description: str = ''
-    category: str = ''
+    description: str = ""
+    category: str = ""
 
 
 class KeyShortcutManager(object):
@@ -75,12 +75,12 @@ class KeyShortcutManager(object):
         self.shortcuts: dict[str, _Shortcut] = {}
 
     def add_shortcut(
-            self,
-            action_name: str,
-            key_sequence: str,
-            callback: Callable,
-            description: str = '',
-            category: str = ''
+        self,
+        action_name: str,
+        key_sequence: str,
+        callback: Callable,
+        description: str = "",
+        category: str = "",
     ) -> None:
         """
         Add a keyboard shortcut.
@@ -95,18 +95,11 @@ class KeyShortcutManager(object):
         if action_name in self.shortcuts:
             self.remove_shortcut(action_name)
 
-        new_shortcut = QtGui.QShortcut(
-            QtGui.QKeySequence(key_sequence),
-            self.parent
-        )
+        new_shortcut = QtGui.QShortcut(QtGui.QKeySequence(key_sequence), self.parent)
         new_shortcut.activated.connect(callback)
 
         self.shortcuts[action_name] = _Shortcut(
-            new_shortcut,
-            key_sequence,
-            callback,
-            description,
-            category
+            new_shortcut, key_sequence, callback, description, category
         )
 
     def remove_shortcut(self, action_name: str) -> None:
@@ -120,7 +113,7 @@ class KeyShortcutManager(object):
     def update_shortcut(self, action_name: str, new_key_sequence: str) -> None:
         """Update an existing shortcut with a new key sequence."""
         if action_name not in self.shortcuts:
-            raise KeyError(f'Shortcut action {action_name} not found.')
+            raise KeyError(f"Shortcut action {action_name} not found.")
 
         entry = self.shortcuts[action_name]
         callback = entry.callback
@@ -167,14 +160,12 @@ class _ShortcutEditorDialog(QtWidgets.QDialog):
     """
 
     def __init__(
-            self,
-            manager: KeyShortcutManager,
-            parent: Optional[QtWidgets.QWidget] = None
+        self, manager: KeyShortcutManager, parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.manager = manager
         self.parent = parent
-        self.setWindowTitle('Keyboard Shortcuts')
+        self.setWindowTitle("Keyboard Shortcuts")
         self.setMinimumSize(800, 400)
         self._create_widgets()
         self._create_layout()
@@ -183,11 +174,11 @@ class _ShortcutEditorDialog(QtWidgets.QDialog):
 
     def _create_widgets(self) -> None:
         # Rows
-        self.sa_rows = PySide6TK.scroll_area.ScrollArea()
+        self.sa_rows = PySide6TK.QtWrappers.scroll_area.ScrollArea()
 
         # Buttons
         self.hlayout_buttons = QtWidgets.QHBoxLayout()
-        self.btn_close = QtWidgets.QPushButton('Close')
+        self.btn_close = QtWidgets.QPushButton("Close")
 
         # Main
         self.layout_main = QtWidgets.QVBoxLayout()
@@ -209,22 +200,16 @@ class _ShortcutEditorDialog(QtWidgets.QDialog):
         shortcuts = self.manager.list_shortcuts()
 
         if len(shortcuts) == 0:
-            msg = 'Application has no shortcuts!'
+            msg = "Application has no shortcuts!"
             self.sa_rows.add_widget(QtWidgets.QLabel(msg))
 
         categories: dict[str, list[_ShortcutRow]] = defaultdict(list)
         for action, key, description, category in shortcuts:
-            row_wid = _ShortcutRow(
-                self.manager,
-                action,
-                key,
-                description,
-                self
-            )
+            row_wid = _ShortcutRow(self.manager, action, key, description, self)
             categories[category].append(row_wid)
 
         for cat, wids in categories.items():
-            group_box = PySide6TK.groupbox.GroupBox(cat)
+            group_box = PySide6TK.QtWrappers.groupbox.GroupBox(cat)
             for i in wids:
                 group_box.add_widget(i)
 
@@ -250,13 +235,14 @@ class _ShortcutRow(QtWidgets.QWidget):
         le_desc (QtWidgets.QLineEdit): Line edit displaying the description.
         btn_edit (QtWidgets.QPushButton): Button to open the key capture dialog.
     """
+
     def __init__(
-            self,
-            manager: KeyShortcutManager,
-            action: str,
-            key: str,
-            description: str,
-            parent: Optional[QtWidgets.QWidget] = None
+        self,
+        manager: KeyShortcutManager,
+        action: str,
+        key: str,
+        description: str,
+        parent: Optional[QtWidgets.QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.manager = manager
@@ -267,16 +253,16 @@ class _ShortcutRow(QtWidgets.QWidget):
 
         self.le_act = self._make_line_edit(action)
         self.layout_main.addWidget(self.le_act)
-        self.layout_main.addWidget(PySide6TK.shapes.VerticalLine())
+        self.layout_main.addWidget(PySide6TK.QtWrappers.shapes.VerticalLine())
 
         self.le_key = self._make_line_edit(key, 200)
         self.layout_main.addWidget(self.le_key)
-        self.layout_main.addWidget(PySide6TK.shapes.VerticalLine())
+        self.layout_main.addWidget(PySide6TK.QtWrappers.shapes.VerticalLine())
 
         self.le_desc = self._make_line_edit(description, 0)
         self.layout_main.addWidget(self.le_desc)
 
-        self.btn_edit = QtWidgets.QPushButton('Edit')
+        self.btn_edit = QtWidgets.QPushButton("Edit")
         self.btn_edit.clicked.connect(self._edit_shortcut)
 
         self.layout_main.addWidget(self.btn_edit)
@@ -300,9 +286,7 @@ class _ShortcutRow(QtWidgets.QWidget):
                 self.le_key.setText(new_key)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self,
-                    'Error',
-                    f'Failed to update shortcut: {str(e)}'
+                    self, "Error", f"Failed to update shortcut: {str(e)}"
                 )
 
 
@@ -325,14 +309,12 @@ class _KeyCaptureDialog(QtWidgets.QDialog):
     """
 
     def __init__(
-            self,
-            current_key: str,
-            parent: Optional[QtWidgets.QWidget] = None
+        self, current_key: str, parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.current_key = current_key
         self.new_key: Optional[str] = None
-        self.setWindowTitle('Press New Shortcut')
+        self.setWindowTitle("Press New Shortcut")
         self._create_widgets()
         self._create_layout()
         self._create_connections()
@@ -340,13 +322,13 @@ class _KeyCaptureDialog(QtWidgets.QDialog):
     def _create_widgets(self) -> None:
         self.layout_main = QtWidgets.QVBoxLayout()
         self.label = QtWidgets.QLabel(
-            f'Current: {self.current_key}\n\nPress new key combination...'
+            f"Current: {self.current_key}\n\nPress new key combination..."
         )
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setMinimumHeight(80)
 
         self.hlayout_button = QtWidgets.QHBoxLayout()
-        self.btn_cancel = QtWidgets.QPushButton('Cancel')
+        self.btn_cancel = QtWidgets.QPushButton("Cancel")
 
     def _create_layout(self) -> None:
         self.setLayout(self.layout_main)

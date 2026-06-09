@@ -1,0 +1,4 @@
+from PySide6TK.Languages.json_syntax import JsonHighlighter
+from PySide6TK.Languages.json_syntax import JsonSyntaxColors
+from PySide6TK.Languages.python_syntax import PythonHighlighter
+from PySide6TK.Languages.python_syntax import PythonSyntaxColors

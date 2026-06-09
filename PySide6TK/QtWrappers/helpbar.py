@@ -7,7 +7,6 @@
     convenience.
 """
 
-
 import importlib
 import os
 import webbrowser
@@ -20,34 +19,34 @@ from typing import Optional
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
-from PySide6TK import styles
-from PySide6TK import toolbar
-from PySide6TK import shortcuts
+from PySide6TK.QtWrappers import styles
+from PySide6TK.QtWrappers import toolbar
+from PySide6TK.QtWrappers import shortcuts
 
 
 class _AboutWidget(QtWidgets.QWidget):
     def __init__(
-            self,
-            description: Optional[str],
-            version: Optional[str],
-            author: Optional[str],
+        self,
+        description: Optional[str],
+        version: Optional[str],
+        author: Optional[str],
     ) -> None:
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
-        self.setWindowTitle('About')
+        self.setWindowTitle("About")
         self.setMinimumSize(200, 200)
 
-        text = ''
+        text = ""
         if description:
-            text += f'[Description]\n{description}\n\n'
+            text += f"[Description]\n{description}\n\n"
         if version:
-            text += f'[Version]\n{version}\n\n'
+            text += f"[Version]\n{version}\n\n"
         if author:
-            text += f'[Author]\n{author}\n\n'
+            text += f"[Author]\n{author}\n\n"
 
         if not text:
-            text = 'Nothing about ¯\\_(ツ)_/¯'
+            text = "Nothing about ¯\\_(ツ)_/¯"
 
         self.label = QtWidgets.QLabel(text)
         self.layout.addWidget(self.label)
@@ -109,20 +108,20 @@ class HelpToolbar(toolbar.Toolbar):
         - The toolbar sets its own button height using ``default_button_resolution``.
         - The parent UI will close and a new instance will be constructed when
           selecting "Reload UI".
-        """
+    """
 
     def __init__(
-            self,
-            parent: QtWidgets.QMainWindow,
-            description: Optional[str] = None,
-            version: Optional[str] = None,
-            author: Optional[str] = None,
-            repo_url: Optional[str] = None,
-            documentation_url: Optional[str] = None,
-            reload_modules: list[ModuleType] = None,
-            logs_dir: Optional[Path] = None,
-            open_console_func: Callable = toolbar.null,
-            shortcut_manager: Optional[shortcuts.KeyShortcutManager] = None
+        self,
+        parent: QtWidgets.QMainWindow,
+        description: Optional[str] = None,
+        version: Optional[str] = None,
+        author: Optional[str] = None,
+        repo_url: Optional[str] = None,
+        documentation_url: Optional[str] = None,
+        reload_modules: list[ModuleType] = None,
+        logs_dir: Optional[Path] = None,
+        open_console_func: Callable = toolbar.null,
+        shortcut_manager: Optional[shortcuts.KeyShortcutManager] = None,
     ) -> None:
         self.parent = parent
 
@@ -137,7 +136,7 @@ class HelpToolbar(toolbar.Toolbar):
         self.repo_url: Optional[str] = repo_url
         self.documentation_url: Optional[str] = documentation_url
 
-        super().__init__('Test Toolbar', default_button_resolution=[0, 20])
+        super().__init__("Test Toolbar", default_button_resolution=[0, 20])
         self.setMovable(False)
         parent.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, self)
 
@@ -148,19 +147,19 @@ class HelpToolbar(toolbar.Toolbar):
         self._help_section()
 
     def _file_section(self) -> None:
-        self.file_submenu = self.add_menu('File', image_path=None)
+        self.file_submenu = self.add_menu("File", image_path=None)
 
         if self.shortcut_manager is not None:
             self.add_menu_command(
-                self.file_submenu, 'Shortcuts', self.shortcut_manager.show_editor
+                self.file_submenu, "Shortcuts", self.shortcut_manager.show_editor
             )
 
     def _developer_section(self) -> None:
-        self.developer_submenu = self.add_menu('Developer', image_path=None)
+        self.developer_submenu = self.add_menu("Developer", image_path=None)
 
         if len(self.reload_modules) > 0:
             self.add_menu_command(
-                self.developer_submenu, 'Reload Module', self._reload_modules
+                self.developer_submenu, "Reload Module", self._reload_modules
             )
 
         def reload_ui() -> None:
@@ -169,48 +168,50 @@ class HelpToolbar(toolbar.Toolbar):
             new_wid.show()
             self.parent.close()
 
-        self.add_menu_command(self.developer_submenu, 'Reload UI', reload_ui)
+        self.add_menu_command(self.developer_submenu, "Reload UI", reload_ui)
 
         if self.logs_dir is not None:
             self.add_menu_command(
-                self.developer_submenu, 'Show Logs', lambda: os.startfile(self.logs_dir.as_posix())
+                self.developer_submenu,
+                "Show Logs",
+                lambda: os.startfile(self.logs_dir.as_posix()),
             )
         if self.open_console != toolbar.null:
             self.add_menu_command(
-                self.developer_submenu, 'Open Console', self.open_console
+                self.developer_submenu, "Open Console", self.open_console
             )
 
     def _theme_section(self) -> None:
-        self.theme_submenu = self.add_menu('Theme', image_path=None)
+        self.theme_submenu = self.add_menu("Theme", image_path=None)
 
         for k, v in styles.__dict__.items():
-            if not k.startswith('QSS_'):
+            if not k.startswith("QSS_"):
                 continue
-            name = k.replace('QSS_', '').title()
+            name = k.replace("QSS_", "").title()
             self.add_menu_command(
                 self.theme_submenu,
                 name,
                 # I cannot stand python's late-binding closures with lambdas...
-                partial(styles.set_style, self.parent, v)
+                partial(styles.set_style, self.parent, v),
             )
 
     def _help_section(self) -> None:
-        self.help_submenu = self.add_menu('Help', image_path=None)
+        self.help_submenu = self.add_menu("Help", image_path=None)
         self.add_menu_command(
-            self.help_submenu, 'About', lambda: self.about_widget.show()
+            self.help_submenu, "About", lambda: self.about_widget.show()
         )
 
         if self.repo_url is not None:
             self.add_menu_command(
                 self.help_submenu,
-                'Repo',
-                lambda: webbrowser.open_new_tab(self.repo_url)
+                "Repo",
+                lambda: webbrowser.open_new_tab(self.repo_url),
             )
         if self.documentation_url is not None:
             self.add_menu_command(
                 self.help_submenu,
-                'Documentation',
-                lambda: webbrowser.open_new_tab(self.documentation_url)
+                "Documentation",
+                lambda: webbrowser.open_new_tab(self.documentation_url),
             )
 
     def _reload_modules(self) -> None:

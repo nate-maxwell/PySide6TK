@@ -3,13 +3,12 @@ PySide6 File Tree Widget for Code IDE.
 A comprehensive file browser with icons, context menus, and file filtering.
 """
 
-
 import os
 import platform
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
 from PySide6 import QtCore
 from PySide6 import QtGui
@@ -31,28 +30,49 @@ class FileTreeWidget(QtWidgets.QTreeView):
     directory_changed = QtCore.Signal(str)
 
     def __init__(
-            self,
-            root_path: Optional[Path] = None,
-            parent: Optional[QtWidgets.QWidget] = None
+        self,
+        root_path: Optional[Path] = None,
+        parent: Optional[QtWidgets.QWidget] = None,
     ) -> None:
         super().__init__(parent)
 
         self.model = QtWidgets.QFileSystemModel()
-        self.model.setRootPath('')
+        self.model.setRootPath("")
 
-        self.model.setNameFilters([
-            '*.py', '*.pyw',  # Python
-            '*.js', '*.jsx', '*.ts', '*.tsx',  # JavaScript/TypeScript
-            '*.html', '*.css', '*.scss', '*.sass',  # Web
-            '*.cpp', '*.c', '*.cs', '*.h', '*.hpp',  # C/C++
-            '*.java',  # Java
-            '*.go',  # Go
-            '*.rs',  # Rust
-            '*.json', '*.xml', '*.yaml', '*.yml', '*.toml',  # Config
-            '*.md', '*.txt', '*.rst',  # Documentation
-            '*.sh', '*.bat', '*.ps1',  # Scripts
-            '*'  # Show all files by default
-        ])
+        self.model.setNameFilters(
+            [
+                "*.py",
+                "*.pyw",  # Python
+                "*.js",
+                "*.jsx",
+                "*.ts",
+                "*.tsx",  # JavaScript/TypeScript
+                "*.html",
+                "*.css",
+                "*.scss",
+                "*.sass",  # Web
+                "*.cpp",
+                "*.c",
+                "*.cs",
+                "*.h",
+                "*.hpp",  # C/C++
+                "*.java",  # Java
+                "*.go",  # Go
+                "*.rs",  # Rust
+                "*.json",
+                "*.xml",
+                "*.yaml",
+                "*.yml",
+                "*.toml",  # Config
+                "*.md",
+                "*.txt",
+                "*.rst",  # Documentation
+                "*.sh",
+                "*.bat",
+                "*.ps1",  # Scripts
+                "*",  # Show all files by default
+            ]
+        )
         self.model.setNameFilterDisables(False)
         self.setModel(self.model)
 
@@ -125,34 +145,26 @@ class FileTreeWidget(QtWidgets.QTreeView):
 
         # Actions based on whether it's a file or directory
         if file_path.is_file():
-            open_action = QtGui.QAction('Open', self)
-            open_action.triggered.connect(
-                lambda: self.file_opened.emit(str(file_path))
-            )
+            open_action = QtGui.QAction("Open", self)
+            open_action.triggered.connect(lambda: self.file_opened.emit(str(file_path)))
             menu.addAction(open_action)
 
             menu.addSeparator()
 
-            rename_action = QtGui.QAction('Rename', self)
-            rename_action.triggered.connect(
-                lambda: self.rename_item(file_path)
-            )
+            rename_action = QtGui.QAction("Rename", self)
+            rename_action.triggered.connect(lambda: self.rename_item(file_path))
             menu.addAction(rename_action)
 
-            delete_action = QtGui.QAction('Delete', self)
-            delete_action.triggered.connect(
-                lambda: self.delete_item(file_path)
-            )
+            delete_action = QtGui.QAction("Delete", self)
+            delete_action.triggered.connect(lambda: self.delete_item(file_path))
             menu.addAction(delete_action)
 
         elif file_path.is_dir():
-            new_file_action = QtGui.QAction('New File', self)
-            new_file_action.triggered.connect(
-                lambda: self.create_new_file(file_path)
-            )
+            new_file_action = QtGui.QAction("New File", self)
+            new_file_action.triggered.connect(lambda: self.create_new_file(file_path))
             menu.addAction(new_file_action)
 
-            new_folder_action = QtGui.QAction('New Folder', self)
+            new_folder_action = QtGui.QAction("New Folder", self)
             new_folder_action.triggered.connect(
                 lambda: self.create_new_folder(file_path)
             )
@@ -160,28 +172,23 @@ class FileTreeWidget(QtWidgets.QTreeView):
 
             menu.addSeparator()
 
-            rename_action = QtGui.QAction('Rename', self)
-            rename_action.triggered.connect(
-                lambda: self.rename_item(file_path))
+            rename_action = QtGui.QAction("Rename", self)
+            rename_action.triggered.connect(lambda: self.rename_item(file_path))
             menu.addAction(rename_action)
 
-            delete_action = QtGui.QAction('Delete', self)
-            delete_action.triggered.connect(
-                lambda: self.delete_item(file_path)
-            )
+            delete_action = QtGui.QAction("Delete", self)
+            delete_action.triggered.connect(lambda: self.delete_item(file_path))
             menu.addAction(delete_action)
 
         menu.addSeparator()
 
         # Reveal in system file manager
-        reveal_action = QtGui.QAction('Reveal in File Manager', self)
-        reveal_action.triggered.connect(
-            lambda: self.reveal_in_file_manager(file_path)
-        )
+        reveal_action = QtGui.QAction("Reveal in File Manager", self)
+        reveal_action.triggered.connect(lambda: self.reveal_in_file_manager(file_path))
         menu.addAction(reveal_action)
 
         # Copy path
-        copy_path_action = QtGui.QAction('Copy Path', self)
+        copy_path_action = QtGui.QAction("Copy Path", self)
         copy_path_action.triggered.connect(
             lambda: self.copy_path_to_clipboard(file_path)
         )
@@ -192,7 +199,7 @@ class FileTreeWidget(QtWidgets.QTreeView):
     def create_new_file(self, parent_dir: Path) -> None:
         """Create a new file in the specified directory."""
         file_name, ok = QtWidgets.QInputDialog.getText(
-            self, 'New File', 'Enter file name:'
+            self, "New File", "Enter file name:"
         )
 
         if ok and file_name:
@@ -205,13 +212,13 @@ class FileTreeWidget(QtWidgets.QTreeView):
 
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self, 'Error', f'Could not create file: {str(e)}'
+                    self, "Error", f"Could not create file: {str(e)}"
                 )
 
     def create_new_folder(self, parent_dir: Path) -> None:
         """Create a new folder in the specified directory."""
         folder_name, ok = QtWidgets.QInputDialog.getText(
-            self, 'New Folder', 'Enter folder name:'
+            self, "New Folder", "Enter folder name:"
         )
 
         if ok and folder_name:
@@ -220,14 +227,14 @@ class FileTreeWidget(QtWidgets.QTreeView):
                 new_folder_path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self, 'Error', f'Could not create folder: {str(e)}'
+                    self, "Error", f"Could not create folder: {str(e)}"
                 )
 
     def rename_item(self, path: Path) -> None:
         """Rename a file or directory."""
         old_name = path.name
         new_name, ok = QtWidgets.QInputDialog.getText(
-            self, 'Rename', 'Enter new name:', text=old_name
+            self, "Rename", "Enter new name:", text=old_name
         )
 
         if ok and new_name and new_name != old_name:
@@ -236,20 +243,20 @@ class FileTreeWidget(QtWidgets.QTreeView):
                 path.rename(new_path)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self, 'Error', f'Could not rename: {str(e)}'
+                    self, "Error", f"Could not rename: {str(e)}"
                 )
 
     def delete_item(self, path: Path) -> None:
         """Delete a file or directory."""
-        item_type = 'folder' if path.is_dir() else 'file'
+        item_type = "folder" if path.is_dir() else "file"
 
         reply = QtWidgets.QMessageBox.question(
             self,
-            'Confirm Delete',
-            f'Are you sure you want to delete this {item_type}?\n\n{path}',
-            QtWidgets.QMessageBox.StandardButton.Yes |
+            "Confirm Delete",
+            f"Are you sure you want to delete this {item_type}?\n\n{path}",
+            QtWidgets.QMessageBox.StandardButton.Yes
+            | QtWidgets.QMessageBox.StandardButton.No,
             QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No
         )
 
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
@@ -260,8 +267,7 @@ class FileTreeWidget(QtWidgets.QTreeView):
                     shutil.rmtree(path)
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self, 'Error',
-                    f'Could not delete: {str(e)}'
+                    self, "Error", f"Could not delete: {str(e)}"
                 )
 
     def reveal_in_file_manager(self, path: Path) -> None:
@@ -269,16 +275,15 @@ class FileTreeWidget(QtWidgets.QTreeView):
         directory = path if path.is_dir() else path.parent
 
         try:
-            if platform.system() == 'Windows':
+            if platform.system() == "Windows":
                 os.startfile(str(directory))
-            elif platform.system() == 'Darwin':  # macOS
-                subprocess.run(['open', str(directory)])
+            elif platform.system() == "Darwin":  # macOS
+                subprocess.run(["open", str(directory)])
             else:  # Linux
-                subprocess.run(['xdg-open', str(directory)])
+                subprocess.run(["xdg-open", str(directory)])
         except Exception as e:
             QtWidgets.QMessageBox.warning(
-                self, 'Warning',
-                f'Could not open file manager: {str(e)}'
+                self, "Warning", f"Could not open file manager: {str(e)}"
             )
 
     @staticmethod
@@ -287,10 +292,11 @@ class FileTreeWidget(QtWidgets.QTreeView):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(str(path))
 
-    def set_file_filters(self, filters: List[str]) -> None:
+    def set_file_filters(self, filters: list[str]) -> None:
         """
         Set custom file filters.
         Wrapper for FileTreeWidget.model.setNameFilters(filters)
+
         Args:
             filters: List of file patterns (e.g., ['*.py', '*.txt'])
         """

@@ -6,7 +6,6 @@
     This is a maya shelf-like toolbar for use in various applications.
 """
 
-
 from pathlib import Path
 from typing import Callable
 from typing import Optional
@@ -15,8 +14,8 @@ from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
-import PySide6TK.icons
-import PySide6TK.shapes
+import PySide6TK.Resources.icons
+import PySide6TK.QtWrappers.shapes
 
 
 def null(*args) -> None:
@@ -26,7 +25,7 @@ def null(*args) -> None:
     pass
 
 
-_SEP = '---------------'
+_SEP = "---------------"
 """Submenu separator via text insert."""
 
 
@@ -67,12 +66,13 @@ class Toolbar(QtWidgets.QToolBar):
         - Submenus can be nested indefinitely using
           ``add_submenu_submenu``.
     """
+
     def __init__(
-            self,
-            toolbar_name: str,
-            parent: Optional[QtWidgets.QWidget] = None,
-            default_button_resolution: list[int] = None,
-            submenu_tear_off: bool = False
+        self,
+        toolbar_name: str,
+        parent: Optional[QtWidgets.QWidget] = None,
+        default_button_resolution: list[int] = None,
+        submenu_tear_off: bool = False,
     ) -> None:
         super().__init__(parent=parent)
         self.default_button_resolution: Optional[list] = None
@@ -83,14 +83,13 @@ class Toolbar(QtWidgets.QToolBar):
 
         self.icon_brightness: float = 0.2
 
-        self.setObjectName(toolbar_name.replace(' ', '_'))
+        self.setObjectName(toolbar_name.replace(" ", "_"))
         self.setWindowTitle(toolbar_name)
         self.setMovable(False)
         self.build()
 
     def _make_toolbar_button(
-            self,
-            button_image: Optional[Path] = None
+        self, button_image: Optional[Path] = None
     ) -> QtWidgets.QToolButton:
         """
         Boilerplate for making a toolbar button with an icon. If button_image
@@ -109,12 +108,11 @@ class Toolbar(QtWidgets.QToolBar):
                 tool_button.setFixedHeight(y)
 
         if button_image is None:
-            tool_button.setToolButtonStyle(
-                QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
-            )
+            tool_button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
             return tool_button
 
-        tool_button.setStyleSheet(f"""
+        tool_button.setStyleSheet(
+            f"""
             QToolButton {{
                 background: url('{button_image.as_posix()}');
                 background-position: center;            /* Center the image */
@@ -123,15 +121,13 @@ class Toolbar(QtWidgets.QToolBar):
                 background-color: rgba(0, 0, 0, 0.1);   /* Add a semi-transparent black overlay */
                 font-size: 10px;
             }}
-        """)
+        """
+        )
 
         return tool_button
 
     def add_toolbar_command(
-            self,
-            label: str,
-            command: Callable = null,
-            image_path: Optional[Path] = None
+        self, label: str, command: Callable = null, image_path: Optional[Path] = None
     ) -> None:
         """Adds a toolbar button that is connected to the given command.
 
@@ -151,9 +147,7 @@ class Toolbar(QtWidgets.QToolBar):
         self.addWidget(tool_button)
 
     def add_menu(
-            self,
-            label: str,
-            image_path: Optional[Path] = None
+        self, label: str, image_path: Optional[Path] = None
     ) -> QtWidgets.QMenu:
         """Adds a menu, a collapsable list of options, to the toolbar.
 
@@ -169,7 +163,7 @@ class Toolbar(QtWidgets.QToolBar):
         """
         submenu = QtWidgets.QMenu(label, self)
         submenu.setTearOffEnabled(self.submenu_tear_off)
-        submenu.setObjectName(f'{label}_submenu')
+        submenu.setObjectName(f"{label}_submenu")
 
         action = QtGui.QAction(label, self)  # The actual label on the dropdown
         action.setMenu(submenu)
@@ -182,11 +176,7 @@ class Toolbar(QtWidgets.QToolBar):
 
         return submenu
 
-    def add_submenu(
-            self,
-            label: str,
-            parent: QtWidgets.QMenu
-    ) -> QtWidgets.QMenu:
+    def add_submenu(self, label: str, parent: QtWidgets.QMenu) -> QtWidgets.QMenu:
         """Adds a nested submenu to the given menu parent.
 
         Args:
@@ -204,9 +194,7 @@ class Toolbar(QtWidgets.QToolBar):
 
     @staticmethod
     def add_menu_command(
-            submenu: QtWidgets.QMenu,
-            cmd_name: str,
-            cmd: Callable = null
+        submenu: QtWidgets.QMenu, cmd_name: str, cmd: Callable = null
     ) -> None:
         """Adds an item to the given submenu connected to the given command.
 
@@ -218,11 +206,7 @@ class Toolbar(QtWidgets.QToolBar):
         item = submenu.addAction(cmd_name)
         item.triggered.connect(cmd)
 
-    def add_menu_separator(
-            self,
-            submenu: QtWidgets.QMenu,
-            label: str = _SEP
-    ) -> None:
+    def add_menu_separator(self, submenu: QtWidgets.QMenu, label: str = _SEP) -> None:
         """Adds a dummy item to the given submenu, with the given label.
         Label defaults to '---------------'.
         """
@@ -233,7 +217,9 @@ class Toolbar(QtWidgets.QToolBar):
         Width defaults to 10.
         """
         spacer_action = QtWidgets.QWidgetAction(self)
-        spacer_action.setDefaultWidget(PySide6TK.shapes.HorizontalSpacer(width))
+        spacer_action.setDefaultWidget(
+            PySide6TK.QtWrappers.shapes.HorizontalSpacer(width)
+        )
         self.addAction(spacer_action)
 
     def build(self) -> None:

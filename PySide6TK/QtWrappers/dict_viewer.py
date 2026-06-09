@@ -13,9 +13,9 @@ from typing import Any
 
 from PySide6 import QtWidgets
 
-from PySide6TK import shapes
-from PySide6TK.groupbox import GroupBox
-from PySide6TK.labeled_line_edit import LabeledLineEdit
+from PySide6TK.QtWrappers import shapes
+from PySide6TK.QtWrappers.groupbox import GroupBox
+from PySide6TK.QtWrappers.labeled_line_edit import LabeledLineEdit
 
 
 class DictViewer(GroupBox):
@@ -57,10 +57,9 @@ class DictViewer(GroupBox):
           visual clarity.
     """
 
-    def __init__(self,
-                 menu_title: str,
-                 data: Mapping,
-                 default_closed: bool = False) -> None:
+    def __init__(
+        self, menu_title: str, data: Mapping, default_closed: bool = False
+    ) -> None:
         super().__init__(menu_title, True)
         self.default_closed = default_closed
         self.setMinimumWidth(250)
@@ -102,12 +101,14 @@ class DictViewer(GroupBox):
         group_box = GroupBox(label)
         for i in data:
             if isinstance(i, Mapping):
-                self._add_row_mapping('', i)
+                self._add_row_mapping("", i)
             else:
                 line_edit = QtWidgets.QLineEdit(str(i))
                 line_edit.setReadOnly(True)
-                line_edit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                                        QtWidgets.QSizePolicy.Policy.Preferred)
+                line_edit.setSizePolicy(
+                    QtWidgets.QSizePolicy.Policy.Expanding,
+                    QtWidgets.QSizePolicy.Policy.Preferred,
+                )
                 group_box.add_widget(line_edit)
 
         if group_box.layout.count():

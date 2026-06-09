@@ -4,26 +4,29 @@ An example file browser using PySide6TK.column_browser.ColumnBrowser
 Toggle STATIC and run this file to see examples, found at bottom.
 """
 
-
 import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
 
-import PySide6TK.app
-from PySide6TK.column_browser import ColumnBrowser
+from PySide6TK import QtWrappers
 
 
 def list_folder_contents(path: Path) -> list[str]:
-    return [p.name for p in path.glob('*')]
+    return [p.name for p in path.glob("*")]
 
 
-class ExampleStaticBrowser(ColumnBrowser):
+class ExampleStaticBrowser(QtWrappers.ColumnBrowser):
     def __init__(self):
-        super().__init__('Example Static Browser', (950, 550), (950, 550), ['first', 'second', 'third', 'fourth'])
+        super().__init__(
+            "Example Static Browser",
+            (950, 550),
+            (950, 550),
+            ["first", "second", "third", "fourth"],
+        )
 
         # Default values
-        self.default_path = Path('C:/')
+        self.default_path = Path("C:/")
 
         self.columns[0].populate_column(list_folder_contents(self.default_path))
 
@@ -56,7 +59,7 @@ class ExampleStaticBrowser(ColumnBrowser):
             self.fill_column_at_index(index + 1)
 
     def fill_column_at_index(self, index: int):
-        if '.' not in self.tokens[index - 1]:
+        if "." not in self.tokens[index - 1]:
             self.clear_columns_right_of(index - 1)
             path = self.default_path
             for i in range(index + 1):
@@ -66,12 +69,12 @@ class ExampleStaticBrowser(ColumnBrowser):
                 self.columns[index].populate_column(list_folder_contents(path))
 
 
-class ExampleDynamicBrowser(ColumnBrowser):
+class ExampleDynamicBrowser(QtWrappers.ColumnBrowser):
     def __init__(self):
-        super().__init__('Example Dynamic Browser', (950, 550), (950, 950), ['shows'])
+        super().__init__("Example Dynamic Browser", (950, 550), (950, 950), ["shows"])
 
         # Default values
-        self.default_path = Path('C:/')
+        self.default_path = Path("C:/")
 
         self.columns[0].populate_column(list_folder_contents(self.default_path))
 
@@ -88,7 +91,7 @@ class ExampleDynamicBrowser(ColumnBrowser):
         self.main_widget.setLayout(self.main_layout)
 
     def column_action(self, index: int):
-        if not '.' in self.tokens[index]:
+        if not "." in self.tokens[index]:
             self.remove_columns_to_right_of(index)
             self.add_column_to_right(self.tokens[index])
             self.fill_column_at_index(len(self.columns) - 1)
@@ -105,7 +108,7 @@ class ExampleDynamicBrowser(ColumnBrowser):
             self.columns[index].populate_column(list_folder_contents(path))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     STATIC = True
 
     if STATIC:
@@ -113,4 +116,4 @@ if __name__ == '__main__':
     else:
         browser_window = ExampleDynamicBrowser
 
-    PySide6TK.app.exec_app(browser_window, 'ExampleColumnBrowser')
+    QtWrappers.app.exec_app(browser_window, "ExampleColumnBrowser")

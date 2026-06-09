@@ -1,11 +1,12 @@
 from PySide6 import QtWidgets
 
 from PySide6TK import QtWrappers
+from PySide6TK import Resources
 
 
 class TestToolbar(QtWrappers.Toolbar):
     def __init__(self) -> None:
-        super().__init__('Example Toolbar', default_button_resolution=[40, 40])
+        super().__init__("Example Toolbar", default_button_resolution=[40, 40])
 
     def build(self) -> None:
         self._add_show_button()
@@ -28,143 +29,164 @@ class TestToolbar(QtWrappers.Toolbar):
         self._rename_script_section()
 
     def _add_show_button(self) -> None:
-        show_button = QtWidgets.QPushButton(f'Show: [  SOMEVIZ  ]\t')
+        show_button = QtWidgets.QPushButton(f"Show: [  SOMEVIZ  ]\t")
         show_button.setStyleSheet("background-color: black;")
         show_button.setFixedWidth(200)
         show_button.setFixedHeight(25)
         self.addWidget(show_button)
 
     def _file_io_section(self) -> None:
-        self.add_toolbar_command('Save\nVersn', image_path=QtWrappers.BUTTON_ORANGE_40X40)
+        self.add_toolbar_command(
+            "Save\nVersn", image_path=Resources.BUTTON_ORANGE_40X40
+        )
         self.add_toolbar_separator()
-        self.add_toolbar_command('Asset\nBrowsr', image_path=QtWrappers.BUTTON_BLUE_40X40)
-        self.add_toolbar_command('Ast Wrk\nBrowsr', image_path=QtWrappers.BUTTON_BLUE_40X40)
-        self.add_toolbar_command('Butter\nBrowsr', image_path=QtWrappers.BUTTON_BLUE_40X40)
-        self.add_toolbar_command('Asset\nPub', image_path=QtWrappers.BUTTON_BLUE_40X40)
+        self.add_toolbar_command(
+            "Asset\nBrowsr", image_path=Resources.BUTTON_BLUE_40X40
+        )
+        self.add_toolbar_command(
+            "Ast Wrk\nBrowsr", image_path=Resources.BUTTON_BLUE_40X40
+        )
+        self.add_toolbar_command(
+            "Butter\nBrowsr", image_path=Resources.BUTTON_BLUE_40X40
+        )
+        self.add_toolbar_command("Asset\nPub", image_path=Resources.BUTTON_BLUE_40X40)
         self.add_toolbar_separator()
-        self.add_toolbar_command('Shot\nBrowsr', image_path=QtWrappers.BUTTON_BLUE_40X40)
-        self.add_toolbar_command('Shot\nPub', image_path=QtWrappers.BUTTON_BLUE_40X40)
+        self.add_toolbar_command("Shot\nBrowsr", image_path=Resources.BUTTON_BLUE_40X40)
+        self.add_toolbar_command("Shot\nPub", image_path=Resources.BUTTON_BLUE_40X40)
 
     def _shot_section(self) -> None:
-        self.add_toolbar_command('ShotX', image_path=QtWrappers.BUTTON_YELLOW_40X40)
-        self.add_toolbar_command('Render', image_path=QtWrappers.BUTTON_YELLOW_40X40)
+        self.add_toolbar_command("ShotX", image_path=Resources.BUTTON_YELLOW_40X40)
+        self.add_toolbar_command("Render", image_path=Resources.BUTTON_YELLOW_40X40)
 
     def _shader_section(self) -> None:
-        submenu = self.add_menu('Shader', image_path=QtWrappers.BUTTON_CYAN_40X40)
-        self.add_menu_command(submenu, 'Shader Browser')
-        self.add_menu_command(submenu, 'Shader Publisher')
-        self.add_menu_command(submenu, 'Random Lambert')
-        self.add_menu_command(submenu, 'KF Material Assign')
+        submenu = self.add_menu("Shader", image_path=Resources.BUTTON_CYAN_40X40)
+        self.add_menu_command(submenu, "Shader Browser")
+        self.add_menu_command(submenu, "Shader Publisher")
+        self.add_menu_command(submenu, "Random Lambert")
+        self.add_menu_command(submenu, "KF Material Assign")
 
     def _rig_section(self) -> None:
-        self.add_toolbar_command('Rig Re\nName', image_path=QtWrappers.BUTTON_BLACK_40X40)
+        self.add_toolbar_command(
+            "Rig Re\nName", image_path=Resources.BUTTON_BLACK_40X40
+        )
 
-        submenu = self.add_menu('Rig', image_path=QtWrappers.BUTTON_BLACK_40X40)
-        self.add_menu_command(submenu, 'Attribute Man')
-        self.add_menu_command(submenu, 'Export Realtime Rig')
-        self.add_menu_command(submenu, 'Zoo Weight Save')
-        self.add_menu_command(submenu, 'rig101writeControllers')
+        submenu = self.add_menu("Rig", image_path=Resources.BUTTON_BLACK_40X40)
+        self.add_menu_command(submenu, "Attribute Man")
+        self.add_menu_command(submenu, "Export Realtime Rig")
+        self.add_menu_command(submenu, "Zoo Weight Save")
+        self.add_menu_command(submenu, "rig101writeControllers")
 
     def _plugins_section(self) -> None:
-        self.add_toolbar_command('Anim\nBot', image_path=QtWrappers.BUTTON_GREEN_40X40)
-        self.add_toolbar_command('Studio\nLib', image_path=QtWrappers.BUTTON_GREEN_40X40)
+        self.add_toolbar_command("Anim\nBot", image_path=Resources.BUTTON_GREEN_40X40)
+        self.add_toolbar_command("Studio\nLib", image_path=Resources.BUTTON_GREEN_40X40)
 
-        submenu = self.add_menu('Adv\nSkel', image_path=QtWrappers.BUTTON_GREEN_40X40)
-        self.add_menu_command(submenu, 'Main Menu')
-        self.add_menu_command(submenu, 'Biped Selector')
-        self.add_menu_command(submenu, 'Face Selector')
-        self.add_menu_command(submenu, 'Picker')
+        submenu = self.add_menu("Adv\nSkel", image_path=Resources.BUTTON_GREEN_40X40)
+        self.add_menu_command(submenu, "Main Menu")
+        self.add_menu_command(submenu, "Biped Selector")
+        self.add_menu_command(submenu, "Face Selector")
+        self.add_menu_command(submenu, "Picker")
 
     def _anim_script_section(self) -> None:
-        anim_submenu = self.add_menu('Anim', image_path=QtWrappers.BUTTON_ORANGE_40X40)
-        self.add_menu_command(anim_submenu, 'SPconstMaker')
-        self.add_menu_command(anim_submenu, 'KF Key Tools')
-        self.add_menu_command(anim_submenu, 'KF Attract Disperse')
-        self.add_menu_command(anim_submenu, 'KF Stream Animation')
-        self.add_menu_command(anim_submenu, 'KF Wheel Rotation')
-        self.add_menu_command(anim_submenu, 'KW Bake Keys')
-        self.add_menu_command(anim_submenu, 'KW Anim helper')
-        self.add_menu_command(anim_submenu, 'The Sato Selector')
-        self.add_menu_command(anim_submenu, 'Replace Motion Path')
+        anim_submenu = self.add_menu("Anim", image_path=Resources.BUTTON_ORANGE_40X40)
+        self.add_menu_command(anim_submenu, "SPconstMaker")
+        self.add_menu_command(anim_submenu, "KF Key Tools")
+        self.add_menu_command(anim_submenu, "KF Attract Disperse")
+        self.add_menu_command(anim_submenu, "KF Stream Animation")
+        self.add_menu_command(anim_submenu, "KF Wheel Rotation")
+        self.add_menu_command(anim_submenu, "KW Bake Keys")
+        self.add_menu_command(anim_submenu, "KW Anim helper")
+        self.add_menu_command(anim_submenu, "The Sato Selector")
+        self.add_menu_command(anim_submenu, "Replace Motion Path")
 
-        xform_submenu = self.add_menu('XForm', image_path=QtWrappers.BUTTON_ORANGE_40X40)
-        self.add_menu_command(xform_submenu, 'Create Placer Locator')
-        self.add_menu_command(xform_submenu, 'Random Motion')
-        self.add_menu_command(xform_submenu, 'Scatter')
-        self.add_menu_command(xform_submenu, 'Shaker')
+        xform_submenu = self.add_menu("XForm", image_path=Resources.BUTTON_ORANGE_40X40)
+        self.add_menu_command(xform_submenu, "Create Placer Locator")
+        self.add_menu_command(xform_submenu, "Random Motion")
+        self.add_menu_command(xform_submenu, "Scatter")
+        self.add_menu_command(xform_submenu, "Shaker")
 
-        snappers_submenu = self.add_menu('Snappr', image_path=QtWrappers.BUTTON_ORANGE_40X40)
-        self.add_menu_command(snappers_submenu, 'Translate and Rotate')
-        self.add_menu_command(snappers_submenu, 'Translate Only')
-        self.add_menu_command(snappers_submenu, 'Rotate Only')
-        self.add_menu_command(snappers_submenu, 'Point and Orient Constraint')
-        self.add_menu_command(snappers_submenu, 'Point Constraint')
-        self.add_menu_command(snappers_submenu, 'Parent Constraint')
-        self.add_menu_command(snappers_submenu, 'Create Locator')
-        self.add_menu_command(snappers_submenu, 'Constraint Finder')
-        self.add_menu_command(snappers_submenu, 'Move to Pivot')
-        self.add_menu_command(snappers_submenu, 'Snap Transform to Mesh')
+        snappers_submenu = self.add_menu(
+            "Snappr", image_path=Resources.BUTTON_ORANGE_40X40
+        )
+        self.add_menu_command(snappers_submenu, "Translate and Rotate")
+        self.add_menu_command(snappers_submenu, "Translate Only")
+        self.add_menu_command(snappers_submenu, "Rotate Only")
+        self.add_menu_command(snappers_submenu, "Point and Orient Constraint")
+        self.add_menu_command(snappers_submenu, "Point Constraint")
+        self.add_menu_command(snappers_submenu, "Parent Constraint")
+        self.add_menu_command(snappers_submenu, "Create Locator")
+        self.add_menu_command(snappers_submenu, "Constraint Finder")
+        self.add_menu_command(snappers_submenu, "Move to Pivot")
+        self.add_menu_command(snappers_submenu, "Snap Transform to Mesh")
 
-        motion_path_submenu = self.add_menu('Motn\nPath', image_path=QtWrappers.BUTTON_ORANGE_40X40)
-        self.add_menu_command(motion_path_submenu, 'Motion Path Extender')
+        motion_path_submenu = self.add_menu(
+            "Motn\nPath", image_path=Resources.BUTTON_ORANGE_40X40
+        )
+        self.add_menu_command(motion_path_submenu, "Motion Path Extender")
 
-        timer_submenu = self.add_menu('Time', image_path=QtWrappers.BUTTON_ORANGE_40X40)
-        self.add_menu_command(timer_submenu, 'Time Warp Tool')
-        self.add_menu_command(timer_submenu, 'Offset Animation Window')
-        self.add_menu_command(timer_submenu, 'Time Offsetter Pro Window')
-        self.add_menu_command(timer_submenu, 'KW Timer')
-        self.add_menu_command(timer_submenu, 'Set Range From Selection')
+        timer_submenu = self.add_menu("Time", image_path=Resources.BUTTON_ORANGE_40X40)
+        self.add_menu_command(timer_submenu, "Time Warp Tool")
+        self.add_menu_command(timer_submenu, "Offset Animation Window")
+        self.add_menu_command(timer_submenu, "Time Offsetter Pro Window")
+        self.add_menu_command(timer_submenu, "KW Timer")
+        self.add_menu_command(timer_submenu, "Set Range From Selection")
 
-        self.add_toolbar_command('Select', image_path=QtWrappers.BUTTON_ORANGE_40X40)
+        self.add_toolbar_command("Select", image_path=Resources.BUTTON_ORANGE_40X40)
 
     def _asset_scripts_section(self) -> None:
-        model_submenu = self.add_menu('Anim\nScripts', image_path=QtWrappers.BUTTON_PURPLE_40X40)
-        self.add_menu_command(model_submenu, 'Poly Wireframe')
-        self.add_menu_command(model_submenu, 'Extract Face')
-        self.add_menu_command(model_submenu, 'Component Scaler')
-        self.add_menu_command(model_submenu, 'Zero Pivots')
-        self.add_menu_command(model_submenu, 'Detach Separate')
-        self.add_menu_command(model_submenu, 'Center X')
-        self.add_menu_command(model_submenu, 'Center Y')
-        self.add_menu_command(model_submenu, 'Center Z')
-        self.add_menu_command(model_submenu, 'Floor')
-        self.add_menu_command(model_submenu, 'Mirror Helper')
+        model_submenu = self.add_menu(
+            "Anim\nScripts", image_path=Resources.BUTTON_PURPLE_40X40
+        )
+        self.add_menu_command(model_submenu, "Poly Wireframe")
+        self.add_menu_command(model_submenu, "Extract Face")
+        self.add_menu_command(model_submenu, "Component Scaler")
+        self.add_menu_command(model_submenu, "Zero Pivots")
+        self.add_menu_command(model_submenu, "Detach Separate")
+        self.add_menu_command(model_submenu, "Center X")
+        self.add_menu_command(model_submenu, "Center Y")
+        self.add_menu_command(model_submenu, "Center Z")
+        self.add_menu_command(model_submenu, "Floor")
+        self.add_menu_command(model_submenu, "Mirror Helper")
 
-        texture_submenu = self.add_menu('Texture', image_path=QtWrappers.BUTTON_PURPLE_40X40)
-        self.add_menu_command(texture_submenu, 'Make Zoetrope')
-        self.add_menu_command(texture_submenu, 'File Texture Manager')
-        self.add_menu_command(texture_submenu, 'Gradient Card')
-        self.add_menu_command(texture_submenu, 'Edit Texture Size')
+        texture_submenu = self.add_menu(
+            "Texture", image_path=Resources.BUTTON_PURPLE_40X40
+        )
+        self.add_menu_command(texture_submenu, "Make Zoetrope")
+        self.add_menu_command(texture_submenu, "File Texture Manager")
+        self.add_menu_command(texture_submenu, "Gradient Card")
+        self.add_menu_command(texture_submenu, "Edit Texture Size")
 
-        effects_submenu = self.add_menu('Effects', image_path=QtWrappers.BUTTON_PURPLE_40X40)
-        self.add_menu_command(effects_submenu, 'KF Lightning Tools')
-        self.add_menu_command(effects_submenu, 'KF Tracer Emitter')
-        self.add_menu_command(effects_submenu, 'KF Sword Swipe')
-        self.add_menu_command(effects_submenu, 'SAG Instance To Geo')
-        self.add_menu_command(effects_submenu, 'Light Ribbon Window')
-        self.add_menu_command(effects_submenu, 'Disc Ribbon Window')
-        self.add_menu_command(effects_submenu, 'Ninja Fracture')
+        effects_submenu = self.add_menu(
+            "Effects", image_path=Resources.BUTTON_PURPLE_40X40
+        )
+        self.add_menu_command(effects_submenu, "KF Lightning Tools")
+        self.add_menu_command(effects_submenu, "KF Tracer Emitter")
+        self.add_menu_command(effects_submenu, "KF Sword Swipe")
+        self.add_menu_command(effects_submenu, "SAG Instance To Geo")
+        self.add_menu_command(effects_submenu, "Light Ribbon Window")
+        self.add_menu_command(effects_submenu, "Disc Ribbon Window")
+        self.add_menu_command(effects_submenu, "Ninja Fracture")
 
     def _measure_section(self) -> None:
-        measure_submenu = self.add_menu('Measure', image_path=QtWrappers.BUTTON_RED_40X40)
-        self.add_menu_command(measure_submenu, 'Measure Tool')
-        self.add_menu_command(measure_submenu, 'Import Scale Model')
-        self.add_menu_command(measure_submenu, 'Speed Locator New')
+        measure_submenu = self.add_menu(
+            "Measure", image_path=Resources.BUTTON_RED_40X40
+        )
+        self.add_menu_command(measure_submenu, "Measure Tool")
+        self.add_menu_command(measure_submenu, "Import Scale Model")
+        self.add_menu_command(measure_submenu, "Speed Locator New")
 
     def _rename_script_section(self) -> None:
-        submenu = self.add_menu('Rename', image_path=QtWrappers.BUTTON_RED_40X40)
-        self.add_menu_command(submenu, 'Comet Renamer')
-        self.add_menu_command(submenu, 'Name Shader Networks From Selected Materials')
+        submenu = self.add_menu("Rename", image_path=Resources.BUTTON_RED_40X40)
+        self.add_menu_command(submenu, "Comet Renamer")
+        self.add_menu_command(submenu, "Name Shader Networks From Selected Materials")
 
 
 class TestWindow(QtWrappers.MainWindow):
     def __init__(self) -> None:
-        super().__init__('Style Library Viewer',
-                         (0, 0), (0, 0))
+        super().__init__("Style Library Viewer", (0, 0), (0, 0))
         self.toolbar = TestToolbar()
         self.setCentralWidget(self.toolbar)
         self.resize(1350, 50)
 
 
-if __name__ == '__main__':
-    QtWrappers.exec_app(TestWindow, 'ExampleToolbar')
+if __name__ == "__main__":
+    QtWrappers.exec_app(TestWindow, "ExampleToolbar")

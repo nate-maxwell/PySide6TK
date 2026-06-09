@@ -7,7 +7,6 @@
     Typically meant to sort items or paths.
 """
 
-
 import re
 
 
@@ -20,7 +19,7 @@ def natural_sort_strings(items: list[str]):
     """
     # Copied from studio library
     convert = lambda text: int(text) if text.isdigit() else text
-    alphanum_key = lambda key: [convert(c) for c in re.split(r'([0-9]+)', key)]
+    alphanum_key = lambda key: [convert(c) for c in re.split(r"([0-9]+)", key)]
     items.sort(key=alphanum_key)
 
 
@@ -39,7 +38,7 @@ def validation_no_special_chars(string: str) -> bool:
     Notes:
         A common gotcha is that whitespace counts as a special character.
     """
-    m = re.match(r'^[a-zA-Z0-9_]*$', string)
-    if m and string != '':
+    m = re.match(r"^[a-zA-Z0-9_]*$", string)
+    if m and string != "":
         return True
     return False

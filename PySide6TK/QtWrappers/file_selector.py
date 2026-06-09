@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PySide6 import QtWidgets
 
-from PySide6TK.labeled_line_edit import LabeledLineEdit
+from PySide6TK.QtWrappers.labeled_line_edit import LabeledLineEdit
 
 
 class FileSelector(QtWidgets.QWidget):
@@ -60,9 +60,11 @@ class FileSelector(QtWidgets.QWidget):
     def _create_widgets(self) -> None:
         self.hlayout_main = QtWidgets.QHBoxLayout()
         self.le_path = LabeledLineEdit(self.name)
-        self.le_path.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                                   QtWidgets.QSizePolicy.Policy.Preferred)
-        self.btn_exe = QtWidgets.QPushButton('Open')
+        self.le_path.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        self.btn_exe = QtWidgets.QPushButton("Open")
 
     def _create_layout(self) -> None:
         self.hlayout_main.addWidget(self.le_path)
@@ -73,10 +75,12 @@ class FileSelector(QtWidgets.QWidget):
         self.btn_exe.clicked.connect(self.find_path)
 
     def find_path(self) -> None:
-        directory = ''
+        directory = ""
         if self.le_path.text():
             directory = self.le_path.text()
-        location, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File', directory)
+        location, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open File", directory
+        )
         if location:
             self.le_path.set_text(location)
 
