@@ -10,6 +10,7 @@ from PySide6TK.Nodes.node import BaseNode
 from PySide6TK.Nodes.port import Port
 from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.wire import Wire
+from PySide6TK.Nodes.comment import CommentBox
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -76,6 +77,22 @@ class GraphView(QtWidgets.QGraphicsView):
         self.nodes_in_view: list[BaseNode] = []
 
         self.customContextMenuRequested.connect(self._on_context_menu)
+
+    def add_comment(self, x: float, y: float, label: str = "Comment") -> CommentBox:
+        """
+        Add a comment box to the scene at the given scene coordinates.
+
+        Args:
+            x (float): Scene x position.
+            y (float): Scene y position.
+            label (str): Initial comment label.
+        Returns:
+            CommentBox: The created comment box.
+        """
+        box = CommentBox(label)
+        self.scene.addItem(box)
+        box.setPos(x, y)
+        return box
 
     def register_node(self, category: str, node_type: type[BaseNode]) -> None:
         """
@@ -144,9 +161,6 @@ class GraphView(QtWidgets.QGraphicsView):
         ]
 
     def _on_context_menu(self, viewport_pos: QtCore.QPoint) -> None:
-        if not self.node_registry:
-            return
-
         item = self.itemAt(viewport_pos)
         if item is not None:
             return
@@ -154,17 +168,26 @@ class GraphView(QtWidgets.QGraphicsView):
         scene_pos = self.mapToScene(viewport_pos)
         menu = QtWidgets.QMenu(self)
 
+        comment_action = menu.addAction("Add Comment")
+        comment_action.setData(("comment", scene_pos))
+        menu.addSeparator()
+
         for category, node_types in sorted(self.node_registry.items()):
             submenu = menu.addMenu(category)
             for node_type in node_types:
                 action = submenu.addAction(node_type.__name__)
-                action.setData((node_type, scene_pos))
+                action.setData(("node", node_type, scene_pos))
 
         chosen = menu.exec(self.viewport().mapToGlobal(viewport_pos))
-        if chosen is not None:
-            node_type, pos = chosen.data()
-            node = node_type()
-            self.add_node(node, pos.x(), pos.y())
+        if chosen is None:
+            return
+
+        data = chosen.data()
+        if data[0] == "comment":
+            self.add_comment(data[1].x(), data[1].y())
+        elif data[0] == "node":
+            node = data[1]()
+            self.add_node(node, data[2].x(), data[2].y())
 
     def _port_at(self, scene_pos: QtCore.QPointF) -> Port | None:
         for item in self.scene.items(scene_pos):

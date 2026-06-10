@@ -1,3 +1,4 @@
+from PySide6TK.Nodes.comment import CommentBox
 from PySide6TK.Nodes.graph import GraphView
 from PySide6TK.Nodes.node import BaseNode
 from PySide6TK.Nodes.node import FieldDefinition
