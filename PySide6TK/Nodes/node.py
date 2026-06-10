@@ -356,15 +356,6 @@ class BaseNode(QtWidgets.QGraphicsItem):
         painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(rect, self._CORNER_RADIUS, self._CORNER_RADIUS)
 
-    def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        """
-        Called when the node is double-clicked.
-
-        Args:
-            event (QtWidgets.QGraphicsSceneMouseEvent): The mouse event.
-        """
-        super().mouseDoubleClickEvent(event)
-
     def itemChange(
         self,
         change: QtWidgets.QGraphicsItem.GraphicsItemChange,
