@@ -1,10 +1,14 @@
+from __future__ import annotations
+
+from collections import defaultdict
+
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
 from PySide6TK.Nodes.node import BaseNode
-from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.port import Port
+from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.wire import Wire
 
 
@@ -14,17 +18,23 @@ class GraphView(QtWidgets.QGraphicsView):
 
     Owns a ``QGraphicsScene`` that Nodes are added to. Supports middle-mouse
     pan, scroll-wheel zoom, and a multi-level grid that scales with zoom.
+    Right-clicking the background opens a context menu populated from
+    ``registered_nodes``, allowing nodes to be created at the click position.
 
     Args:
         parent (QtWidgets.QWidget | None): Optional parent widget.
 
     Attributes:
         scene (QtWidgets.QGraphicsScene): The scene Nodes are added to.
+        registered_nodes (dict[str, list[type[BaseNode]]]): Map of category
+            name to node types registered under that category.
 
-    Example:
+    Example::
+
         view = GraphView()
-        node = MyNode("My Node")
-        view.add_node(node, 0, 0)
+        view.register_node("Math", AddNode)
+        view.register_node("Math", MultiplyNode)
+        view.register_node("IO", InputNode)
     """
 
     _GRID_SMALL: int = 20
@@ -53,11 +63,27 @@ class GraphView(QtWidgets.QGraphicsView):
         )
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         self.setBackgroundBrush(QtGui.QBrush(self._COLOR_BG))
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
         self._zoom: float = 1.0
         self._pan_active: bool = False
         self._pan_origin: QtCore.QPoint = QtCore.QPoint()
         self._drag_wire: Wire | None = None
+
+        self.registered_nodes: dict[str, list[type[BaseNode]]] = defaultdict(list)
+
+        self.customContextMenuRequested.connect(self._on_context_menu)
+
+    def register_node(self, category: str, node_type: type[BaseNode]) -> None:
+        """
+        Register a node type under a category for the right-click context menu.
+
+        Args:
+            category (str): The category name to group the node under.
+            node_type (type[BaseNode]): The node class to register.
+        """
+        self.registered_nodes[category].append(node_type)
 
     def add_node(self, node: object, x: float, y: float) -> None:
         """
@@ -111,6 +137,29 @@ class GraphView(QtWidgets.QGraphicsView):
             for item in self.scene.items()
             if isinstance(item, Wire) and item.is_connected()
         ]
+
+    def _on_context_menu(self, viewport_pos: QtCore.QPoint) -> None:
+        if not self.registered_nodes:
+            return
+
+        item = self.itemAt(viewport_pos)
+        if item is not None:
+            return
+
+        scene_pos = self.mapToScene(viewport_pos)
+        menu = QtWidgets.QMenu(self)
+
+        for category, node_types in sorted(self.registered_nodes.items()):
+            submenu = menu.addMenu(category)
+            for node_type in node_types:
+                action = submenu.addAction(node_type.__name__)
+                action.setData((node_type, scene_pos))
+
+        chosen = menu.exec(self.viewport().mapToGlobal(viewport_pos))
+        if chosen is not None:
+            node_type, pos = chosen.data()
+            node = node_type()
+            self.add_node(node, pos.x(), pos.y())
 
     def _port_at(self, scene_pos: QtCore.QPointF) -> Port | None:
         for item in self.scene.items(scene_pos):

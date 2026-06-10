@@ -154,6 +154,7 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
         self.graph = Nodes.GraphView(self)
         self.setCentralWidget(self.graph)
 
+        self._register()
         self._populate()
 
     def _populate(self) -> None:
@@ -183,6 +184,12 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
             self.node_transition.port_out, self.node_pane_c.port_in
         )
         self.graph.connect_ports(self.node_pane_c.port_out, self.node_outro.port_in)
+
+    def _register(self) -> None:
+        self.graph.register_node("Main", PanelNode)
+        self.graph.register_node("Main", TransitionNode)
+        self.graph.register_node("IO", StartNode)
+        self.graph.register_node("IO", OutroNode)
 
 
 class ExampleWindow(QtWrappers.MainWindow):
