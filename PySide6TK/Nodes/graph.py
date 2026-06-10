@@ -71,7 +71,6 @@ class GraphView(QtWidgets.QGraphicsView):
         self._pan_active: bool = False
         self._pan_origin: QtCore.QPoint = QtCore.QPoint()
         self._drag_wire: Wire | None = None
-        self.nodes_in_view: list[BaseNode] = []
         self._node_refs: list[BaseNode] = []
         self.node_registry: dict[str, list[type[BaseNode]]] = defaultdict(list)
 
