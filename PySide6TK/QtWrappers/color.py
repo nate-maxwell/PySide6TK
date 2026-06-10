@@ -286,8 +286,8 @@ class ColorButton(QtWidgets.QPushButton):
             f"background-color: {self._color.name()}; border: 1px solid #333;"
         )
 
-    def set_color(self, color_tuple: tuple[int, int, int, int]) -> None:
-        self._color = QtGui.QColor(*color_tuple)
+    def set_color(self, hex_color: str) -> None:
+        self._color = QtGui.QColor(hex_color)
         self._update_style()
 
     def choose_color(self) -> None:
