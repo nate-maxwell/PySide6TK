@@ -83,16 +83,6 @@ class GraphView(QtWidgets.QGraphicsView):
         self.commands: CommandStack = CommandStack()
 
         self.customContextMenuRequested.connect(self._on_context_menu)
-        self._create_shortcuts()
-
-    def _create_shortcuts(self) -> None:
-        std_key = QtGui.QKeySequence.StandardKey
-        QtGui.QShortcut(std_key.Delete, self).activated.connect(self._delete_selected)
-        QtGui.QShortcut(std_key.Backspace, self).activated.connect(
-            self._delete_selected
-        )
-        QtGui.QShortcut(std_key.Undo, self).activated.connect(self.commands.undo)
-        QtGui.QShortcut(std_key.Redo, self).activated.connect(self.commands.redo)
 
     def add_comment(self, x: float, y: float, label: str = "Comment") -> CommentBox:
         """
