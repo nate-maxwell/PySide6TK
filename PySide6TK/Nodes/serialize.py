@@ -47,8 +47,11 @@ def serialize(view: GraphView) -> dict[str, Any]:
             {
                 "id": node_id,
                 "type": type(node).__name__,
+                "title": node.title,
                 "x": pos.x(),
                 "y": pos.y(),
+                "width": getattr(node, "_box_width", None),
+                "height": getattr(node, "_box_height", None),
                 "fields": {
                     name: _serialize_value(value)
                     for name, value in node._field_values.items()
@@ -121,6 +124,10 @@ def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
             continue
 
         node = node_type()
+        if node_data.get("width") is not None:
+            node._box_width = node_data["width"]
+        if node_data.get("height") is not None:
+            node._box_height = node_data["height"]
         node.title = node_data.get("title", node.title)
         for name, value in node_data["fields"].items():
             if name in node._fields:
