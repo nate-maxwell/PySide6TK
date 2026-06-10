@@ -281,6 +281,7 @@ class ColorButton(QtWidgets.QPushButton):
         self._update_style()
         self.clicked.connect(self.choose_color)
 
+        self.setMaximumWidth(16777215)
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Fixed,
