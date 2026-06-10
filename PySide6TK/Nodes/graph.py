@@ -73,7 +73,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self._drag_wire: Wire | None = None
         self.nodes_in_view: list[BaseNode] = []
         self._node_refs: list[BaseNode] = []
-        self.registered_nodes: dict[str, list[type[BaseNode]]] = defaultdict(list)
+        self.node_registry: dict[str, list[type[BaseNode]]] = defaultdict(list)
 
         self.customContextMenuRequested.connect(self._on_context_menu)
 
