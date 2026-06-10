@@ -6,7 +6,6 @@
     A library of color utilities and color picker widgets.
 """
 
-
 from typing import Optional
 
 from PySide6 import QtWidgets
@@ -25,9 +24,7 @@ class RectangularColorPicker(QtWidgets.QWidget):
         self._saturation = 255
         self._value = 255
         self._current_color = QtGui.QColor.fromHsv(
-            self._hue,
-            self._saturation,
-            self._value
+            self._hue, self._saturation, self._value
         )
 
         self._rect_width = 360
@@ -42,9 +39,7 @@ class RectangularColorPicker(QtWidgets.QWidget):
     def _render_hs_gradient(self) -> None:
         """Pre-render the hue/saturation gradient image."""
         self._hs_image = QtGui.QImage(
-            self._rect_width,
-            self._rect_height,
-            QtGui.QImage.Format.Format_RGB32
+            self._rect_width, self._rect_height, QtGui.QImage.Format.Format_RGB32
         )
 
         for y in range(self._rect_height):
@@ -121,9 +116,7 @@ class RectangularColorPicker(QtWidgets.QWidget):
     def _update_color(self) -> None:
         """Update the current color and emit signal."""
         self._current_color = QtGui.QColor.fromHsv(
-            self._hue,
-            self._saturation,
-            self._value
+            self._hue, self._saturation, self._value
         )
         self.update()
         self.colorChanged.emit(self._current_color)
@@ -172,7 +165,7 @@ class ColorPickerPanel(QtWidgets.QWidget):
         self.slider_value.setRange(0, 255)
         self.slider_value.setValue(255)
 
-        self.value_label = QtWidgets.QLabel('255')
+        self.value_label = QtWidgets.QLabel("255")
         self.value_label.setFixedWidth(40)
 
         # Color info panel
@@ -187,34 +180,34 @@ class ColorPickerPanel(QtWidgets.QWidget):
 
         # RGB Display
         self.hlayout_rgb = QtWidgets.QHBoxLayout()
-        self.lbl_rgb = QtWidgets.QLabel('(255, 0, 0)')
+        self.lbl_rgb = QtWidgets.QLabel("(255, 0, 0)")
 
         # HSV Display
         self.hlayout_hsv = QtWidgets.QHBoxLayout()
-        self.lbl_hsv = QtWidgets.QLabel('(0, 255, 255)')
+        self.lbl_hsv = QtWidgets.QLabel("(0, 255, 255)")
 
         # Hex Display
         self.hlayout_hex = QtWidgets.QHBoxLayout()
-        self.lbl_hex = QtWidgets.QLabel('#FF0000')
+        self.lbl_hex = QtWidgets.QLabel("#FF0000")
 
     def _create_layout(self) -> None:
         # Value slider
-        self.hlayout_value.addWidget(QtWidgets.QLabel('Value:'))
+        self.hlayout_value.addWidget(QtWidgets.QLabel("Value:"))
         self.hlayout_value.addWidget(self.slider_value)
         self.hlayout_value.addWidget(self.value_label)
 
         # RGB Display
-        self.hlayout_rgb.addWidget(QtWidgets.QLabel('RGB:'))
+        self.hlayout_rgb.addWidget(QtWidgets.QLabel("RGB:"))
         self.hlayout_rgb.addWidget(self.lbl_rgb)
         self.hlayout_rgb.addStretch()
 
         # HSV Display
-        self.hlayout_hsv.addWidget(QtWidgets.QLabel('HSV:'))
+        self.hlayout_hsv.addWidget(QtWidgets.QLabel("HSV:"))
         self.hlayout_hsv.addWidget(self.lbl_hsv)
         self.hlayout_hsv.addStretch()
 
         # Hex Display
-        self.hlayout_hex.addWidget(QtWidgets.QLabel('Hex:'))
+        self.hlayout_hex.addWidget(QtWidgets.QLabel("Hex:"))
         self.hlayout_hex.addWidget(self.lbl_hex)
         self.hlayout_hex.addStretch()
 
@@ -223,7 +216,7 @@ class ColorPickerPanel(QtWidgets.QWidget):
         self.vlayout_values.addLayout(self.hlayout_hex)
 
         # Color info panel
-        self.hlayout_preview.addWidget(QtWidgets.QLabel('Preview:'))
+        self.hlayout_preview.addWidget(QtWidgets.QLabel("Preview:"))
         self.hlayout_preview.addWidget(self.color_preview)
         self.hlayout_preview.addLayout(self.vlayout_values)
         self.hlayout_preview.addStretch()
@@ -249,13 +242,13 @@ class ColorPickerPanel(QtWidgets.QWidget):
 
     def _update_displays(self, color: QtGui.QColor) -> None:
         """Update all color displays."""
-        self.color_preview.setStyleSheet(f'background-color: {color.name()};')
+        self.color_preview.setStyleSheet(f"background-color: {color.name()};")
 
         r, g, b = color.red(), color.green(), color.blue()
-        self.lbl_rgb.setText(f'({r}, {g}, {b})')
+        self.lbl_rgb.setText(f"({r}, {g}, {b})")
 
         h, s, v, _ = color.getHsv()
-        self.lbl_hsv.setText(f'({h}, {s}, {v})')
+        self.lbl_hsv.setText(f"({h}, {s}, {v})")
 
         self.lbl_hex.setText(color.name().upper())
 
@@ -280,9 +273,7 @@ class ColorButton(QtWidgets.QPushButton):
     colorChanged = QtCore.Signal(QtGui.QColor)
 
     def __init__(
-            self,
-            color: str = '#ffffff',
-            parent: Optional[QtWidgets.QWidget] = None
+        self, color: str = "#ffffff", parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         self._color = QtGui.QColor(color)
@@ -292,19 +283,21 @@ class ColorButton(QtWidgets.QPushButton):
 
     def _update_style(self) -> None:
         self.setStyleSheet(
-            f'background-color: {self._color.name()}; border: 1px solid #333;'
+            f"background-color: {self._color.name()}; border: 1px solid #333;"
         )
+
+    def set_color(self, color_tuple: tuple[int, int, int, int]) -> None:
+        self._color = QtGui.QColor(*color_tuple)
+        self._update_style()
 
     def choose_color(self) -> None:
         # Caching and clearing the stylesheet is a hack because QT has this
         # ridiculous idea that color dialog's default style sheet should be the
         # previously stored color instead of the inherited one.
         old_style = self.styleSheet()
-        self.setStyleSheet('')
+        self.setStyleSheet("")
 
-        color = QtWidgets.QColorDialog.getColor(
-            self._color, self, 'Choose Color'
-        )
+        color = QtWidgets.QColorDialog.getColor(self._color, self, "Choose Color")
 
         self.setStyleSheet(old_style)
 
