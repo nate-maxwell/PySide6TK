@@ -188,8 +188,8 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
     def _register(self) -> None:
         self.graph.register_node("Main", PanelNode)
         self.graph.register_node("Main", TransitionNode)
-        self.graph.register_node("IO", StartNode)
-        self.graph.register_node("IO", OutroNode)
+        self.graph.register_node("Main", StartNode)
+        self.graph.register_node("Main", OutroNode)
 
 
 class ExampleWindow(QtWrappers.MainWindow):

@@ -65,6 +65,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setBackgroundBrush(QtGui.QBrush(self._COLOR_BG))
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 
         self._zoom: float = 1.0
         self._pan_active: bool = False
@@ -94,6 +95,7 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position.
             y (float): Scene y position.
         """
+        node._grid_size = self._GRID_SMALL
         self.scene.addItem(node)
         node.setPos(x, y)
 
@@ -220,30 +222,6 @@ class GraphView(QtWidgets.QGraphicsView):
             return
         super().keyPressEvent(event)
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        scene_pos = self.mapToScene(event.position().toPoint())
-
-        if event.button() == QtCore.Qt.MouseButton.MiddleButton:
-            self._pan_active = True
-            self._pan_origin = event.position().toPoint()
-            self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
-            return
-
-        if event.button() == QtCore.Qt.MouseButton.LeftButton:
-            port = self._port_at(scene_pos)
-            if port is not None:
-                if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-                    for wire in list(port.wires):
-                        self._destroy_wire(wire)
-                    return
-                self._drag_wire = Wire(port)
-                self._drag_wire.reverse = port.port_type == PortType.INPUT
-                self.scene.addItem(self._drag_wire)
-                self._drag_wire.update_path()
-                return
-
-        super().mousePressEvent(event)
-
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         scene_pos = self.mapToScene(event.position().toPoint())
 
@@ -263,6 +241,36 @@ class GraphView(QtWidgets.QGraphicsView):
             return
 
         super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        scene_pos = self.mapToScene(event.position().toPoint())
+
+        if event.button() == QtCore.Qt.MouseButton.MiddleButton:
+            self._pan_active = True
+            self._pan_origin = event.position().toPoint()
+            self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
+            return
+
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            port = self._port_at(scene_pos)
+            if port is not None:
+                if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
+                    for wire in list(port.wires):
+                        self._destroy_wire(wire)
+                    return
+                self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+                self._drag_wire = Wire(port)
+                self._drag_wire.reverse = port.port_type == PortType.INPUT
+                self.scene.addItem(self._drag_wire)
+                self._drag_wire.update_path()
+                return
+            item = self.itemAt(event.position().toPoint())
+            if item is None:
+                self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+            else:
+                self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         scene_pos = self.mapToScene(event.position().toPoint())
@@ -289,6 +297,8 @@ class GraphView(QtWidgets.QGraphicsView):
             else:
                 self.scene.removeItem(self._drag_wire)
             self._drag_wire = None
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
             return
 
+        self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         super().mouseReleaseEvent(event)

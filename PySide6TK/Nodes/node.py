@@ -107,12 +107,14 @@ class BaseNode(QtWidgets.QGraphicsItem):
         title: str,
         width: int = 180,
         body_height: int = 80,
+        grid_size: int = 20,
         parent: QtWidgets.QGraphicsItem | None = None,
     ) -> None:
         super().__init__(parent)
         self.title = title
         self.width = width
         self.body_height = body_height
+        self._grid_size = grid_size
         self._ports: list[Port] = []
         self._fields: dict[str, FieldDefinition] = {}
         self._field_values: dict[str, Any] = {}
@@ -371,3 +373,17 @@ class BaseNode(QtWidgets.QGraphicsItem):
             event (QtWidgets.QGraphicsSceneMouseEvent): The mouse event.
         """
         super().mouseDoubleClickEvent(event)
+
+    def itemChange(
+        self,
+        change: QtWidgets.QGraphicsItem.GraphicsItemChange,
+        value: object,
+    ) -> object:
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            point = value
+            x = round(point.x() / self._grid_size) * self._grid_size
+            y = round(point.y() / self._grid_size) * self._grid_size
+            value = QtCore.QPointF(x, y)
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
+            self._update_wires()
+        return super().itemChange(change, value)
