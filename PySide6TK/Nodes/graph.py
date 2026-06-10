@@ -66,15 +66,14 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setBackgroundBrush(QtGui.QBrush(self._COLOR_BG))
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
-        self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 
         self._zoom: float = 1.0
         self._pan_active: bool = False
         self._pan_origin: QtCore.QPoint = QtCore.QPoint()
         self._drag_wire: Wire | None = None
-
-        self.node_registry: dict[str, list[type[BaseNode]]] = defaultdict(list)
         self.nodes_in_view: list[BaseNode] = []
+        self._node_refs: list[BaseNode] = []
+        self.registered_nodes: dict[str, list[type[BaseNode]]] = defaultdict(list)
 
         self.customContextMenuRequested.connect(self._on_context_menu)
 
@@ -113,11 +112,11 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position.
             y (float): Scene y position.
         """
-        node.setParent(None)
+        self._node_refs.append(node)
+        self.nodes_in_view.append(node)
         self.scene.addItem(node)
         node.setPos(x, y)
         node._grid_size = self._GRID_SMALL
-        self.nodes_in_view.append(node)
 
     def remove_node(self, node: BaseNode) -> None:
         """
@@ -129,10 +128,11 @@ class GraphView(QtWidgets.QGraphicsView):
         for port in self._ports_of(node):
             for wire in list(port.wires):
                 self._destroy_wire(wire)
-
         self.scene.removeItem(node)
         if node in self.nodes_in_view:
             self.nodes_in_view.remove(node)
+        if node in self._node_refs:
+            self._node_refs.remove(node)
 
     def connect_ports(self, source: Port, target: Port) -> None:
         """
