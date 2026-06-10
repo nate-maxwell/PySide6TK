@@ -78,6 +78,9 @@ class GraphView(QtWidgets.QGraphicsView):
 
         self.customContextMenuRequested.connect(self._on_context_menu)
 
+        # temp
+        self._node_refs: list[BaseNode] = []
+
     def add_comment(self, x: float, y: float, label: str = "Comment") -> CommentBox:
         """
         Add a comment box to the scene at the given scene coordinates.
@@ -113,11 +116,11 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position.
             y (float): Scene y position.
         """
-        node.setParent(None)
+        self._node_refs.append(node)
+        self.nodes_in_view.append(node)
         self.scene.addItem(node)
         node.setPos(x, y)
         node._grid_size = self._GRID_SMALL
-        self.nodes_in_view.append(node)
 
     def remove_node(self, node: BaseNode) -> None:
         """
