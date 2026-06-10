@@ -11,6 +11,12 @@ from PySide6TK.Nodes.port import Port
 from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.wire import Wire
 from PySide6TK.Nodes.comment import CommentBox
+from PySide6TK.Nodes.commands import AddNodeCommand
+from PySide6TK.Nodes.commands import AddCommentCommand
+from PySide6TK.Nodes.commands import RemoveNodeCommand
+from PySide6TK.Nodes.commands import ConnectPortsCommand
+from PySide6TK.Nodes.commands import MoveNodeCommand
+from PySide6TK.Nodes.commands import CommandStack
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -20,7 +26,11 @@ class GraphView(QtWidgets.QGraphicsView):
     Owns a ``QGraphicsScene`` that Nodes are added to. Supports middle-mouse
     pan, scroll-wheel zoom, and a multi-level grid that scales with zoom.
     Right-clicking the background opens a context menu populated from
-    ``registered_nodes``, allowing nodes to be created at the click position.
+    ``node_registry``, allowing nodes to be created at the click position.
+
+    Undo and Redo shortcuts can be mapped to GraphView.commands.undo / redo.
+    The tracked commands are node creation, deletion, movement, comment box
+    creation and deletion, and wire adjustment.
 
     Args:
         parent (QtWidgets.QWidget | None): Optional parent widget.
@@ -29,13 +39,7 @@ class GraphView(QtWidgets.QGraphicsView):
         scene (QtWidgets.QGraphicsScene): The scene Nodes are added to.
         node_registry (dict[str, list[type[BaseNode]]]): Map of category
             name to node types registered under that category.
-
-    Example::
-
-        view = GraphView()
-        view.register_node("Math", AddNode)
-        view.register_node("Math", MultiplyNode)
-        view.register_node("IO", InputNode)
+        commands (CommandStack): The undo/redo command stack.
     """
 
     _GRID_SMALL: int = 20
@@ -71,12 +75,24 @@ class GraphView(QtWidgets.QGraphicsView):
         self._pan_active: bool = False
         self._pan_origin: QtCore.QPoint = QtCore.QPoint()
         self._drag_wire: Wire | None = None
+        self._move_origins: dict[int, QtCore.QPointF] = {}
 
         self._node_refs: list[BaseNode] = []
         self.node_registry: dict[str, list[type[BaseNode]]] = defaultdict(list)
         self.comment_type: type[CommentBox] = CommentBox
+        self.commands: CommandStack = CommandStack()
 
         self.customContextMenuRequested.connect(self._on_context_menu)
+        self._create_shortcuts()
+
+    def _create_shortcuts(self) -> None:
+        std_key = QtGui.QKeySequence.StandardKey
+        QtGui.QShortcut(std_key.Delete, self).activated.connect(self._delete_selected)
+        QtGui.QShortcut(std_key.Backspace, self).activated.connect(
+            self._delete_selected
+        )
+        QtGui.QShortcut(std_key.Undo, self).activated.connect(self.commands.undo)
+        QtGui.QShortcut(std_key.Redo, self).activated.connect(self.commands.redo)
 
     def add_comment(self, x: float, y: float, label: str = "Comment") -> CommentBox:
         """
@@ -89,10 +105,8 @@ class GraphView(QtWidgets.QGraphicsView):
         Returns:
             CommentBox: The created comment box.
         """
-        box = CommentBox(label)
-        self.scene.addItem(box)
-        box.setPos(x, y)
-        self._node_refs.append(box)
+        box = self.comment_type(label)
+        self.commands.push(AddCommentCommand(self, box, x, y))
         return box
 
     def register_node(self, category: str, node_type: type[BaseNode]) -> None:
@@ -114,10 +128,7 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position.
             y (float): Scene y position.
         """
-        self._node_refs.append(node)
-        self.scene.addItem(node)
-        node.setPos(x, y)
-        node._grid_size = self._GRID_SMALL
+        self.commands.push(AddNodeCommand(self, node, x, y))
 
     def remove_node(self, node: BaseNode) -> None:
         """
@@ -126,12 +137,7 @@ class GraphView(QtWidgets.QGraphicsView):
         Args:
             node (BaseNode): The node graphics item to remove.
         """
-        for port in self._ports_of(node):
-            for wire in list(port.wires):
-                self._destroy_wire(wire)
-        self.scene.removeItem(node)
-        if node in self._node_refs:
-            self._node_refs.remove(node)
+        self.commands.push(RemoveNodeCommand(self, node))
 
     def connect_ports(self, source: Port, target: Port) -> None:
         """
@@ -141,11 +147,7 @@ class GraphView(QtWidgets.QGraphicsView):
             source (Port): The output port to connect from.
             target (Port): The input port to connect to.
         """
-        wire = Wire(source, target)
-        source.add_wire(wire)
-        target.add_wire(wire)
-        wire.update_path()
-        self.scene.addItem(wire)
+        self.commands.push(ConnectPortsCommand(self, source, target))
 
     def get_wires(self) -> list[Wire]:
         """
@@ -159,6 +161,29 @@ class GraphView(QtWidgets.QGraphicsView):
             for item in self.scene.items()
             if isinstance(item, Wire) and item.is_connected()
         ]
+
+    # -----Command tracking for undo/redo--------------------------------------
+
+    def add_node_internal(self, node: BaseNode, x: float, y: float) -> None:
+        self._node_refs.append(node)
+        self.scene.addItem(node)
+        node.setPos(x, y)
+        node._grid_size = self._GRID_SMALL
+
+    def remove_node_internal(self, node: BaseNode) -> None:
+        self.scene.removeItem(node)
+        if node in self._node_refs:
+            self._node_refs.remove(node)
+
+    def connect_ports_internal(self, source: Port, target: Port) -> Wire:
+        wire = Wire(source, target)
+        source.add_wire(wire)
+        target.add_wire(wire)
+        wire.update_path()
+        self.scene.addItem(wire)
+        return wire
+
+    # -------------------------------------------------------------------------
 
     def _on_context_menu(self, viewport_pos: QtCore.QPoint) -> None:
         item = self.itemAt(viewport_pos)
@@ -240,33 +265,10 @@ class GraphView(QtWidgets.QGraphicsView):
             self._zoom = new_zoom
             self.scale(factor, factor)
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.key() in (QtCore.Qt.Key.Key_Backspace, QtCore.Qt.Key.Key_Delete):
-            for item in list(self.scene.selectedItems()):
-                if isinstance(item, BaseNode):
-                    self.remove_node(item)
-            return
-        super().keyPressEvent(event)
-
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        scene_pos = self.mapToScene(event.position().toPoint())
-
-        if self._pan_active:
-            delta = event.position().toPoint() - self._pan_origin
-            self._pan_origin = event.position().toPoint()
-            self.horizontalScrollBar().setValue(
-                self.horizontalScrollBar().value() - delta.x()
-            )
-            self.verticalScrollBar().setValue(
-                self.verticalScrollBar().value() - delta.y()
-            )
-            return
-
-        if self._drag_wire is not None:
-            self._drag_wire.set_drag_end(scene_pos)
-            return
-
-        super().mouseMoveEvent(event)
+    def _delete_selected(self) -> None:
+        for item in list(self.scene.selectedItems()):
+            if isinstance(item, BaseNode):
+                self.remove_node(item)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         scene_pos = self.mapToScene(event.position().toPoint())
@@ -290,13 +292,40 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.scene.addItem(self._drag_wire)
                 self._drag_wire.update_path()
                 return
+
             item = self.itemAt(event.position().toPoint())
             if item is None:
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
             else:
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+                if isinstance(item, BaseNode):
+                    self._move_origins[id(item)] = item.pos()
+                else:
+                    parent = item.parentItem()
+                    if isinstance(parent, BaseNode):
+                        self._move_origins[id(parent)] = parent.pos()
 
         super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        scene_pos = self.mapToScene(event.position().toPoint())
+
+        if self._pan_active:
+            delta = event.position().toPoint() - self._pan_origin
+            self._pan_origin = event.position().toPoint()
+            self.horizontalScrollBar().setValue(
+                self.horizontalScrollBar().value() - delta.x()
+            )
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().value() - delta.y()
+            )
+            return
+
+        if self._drag_wire is not None:
+            self._drag_wire.set_drag_end(scene_pos)
+            return
+
+        super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         scene_pos = self.mapToScene(event.position().toPoint())
@@ -325,6 +354,18 @@ class GraphView(QtWidgets.QGraphicsView):
 
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
             return
+
+        if event.button() == QtCore.Qt.MouseButton.LeftButton and self._move_origins:
+            for item in self.scene.selectedItems():
+                node = item if isinstance(item, BaseNode) else item.parentItem()
+                if isinstance(node, BaseNode) and id(node) in self._move_origins:
+                    old_pos = self._move_origins[id(node)]
+                    new_pos = node.pos()
+                    if old_pos != new_pos:
+                        self.commands._undo_stack.append(
+                            MoveNodeCommand(node, old_pos, new_pos)
+                        )
+            self._move_origins.clear()
 
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         super().mouseReleaseEvent(event)
