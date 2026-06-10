@@ -110,6 +110,7 @@ def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
         for node_types in graph.node_registry.values()
         for node_type in node_types
     }
+    registry[graph.comment_type.__name__] = graph.comment_type
 
     graph.scene.clear()
     nodes_by_id: dict[str, BaseNode] = {}
