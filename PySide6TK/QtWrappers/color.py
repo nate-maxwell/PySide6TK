@@ -281,6 +281,12 @@ class ColorButton(QtWidgets.QPushButton):
         self._update_style()
         self.clicked.connect(self.choose_color)
 
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+        )
+        self.setMinimumHeight(18)
+
     def _update_style(self) -> None:
         self.setStyleSheet(
             f"background-color: {self._color.name()}; border: 1px solid #333;"
