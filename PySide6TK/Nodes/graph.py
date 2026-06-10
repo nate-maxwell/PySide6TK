@@ -26,7 +26,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
     Attributes:
         scene (QtWidgets.QGraphicsScene): The scene Nodes are added to.
-        registered_nodes (dict[str, list[type[BaseNode]]]): Map of category
+        node_registry (dict[str, list[type[BaseNode]]]): Map of category
             name to node types registered under that category.
 
     Example::
@@ -72,7 +72,8 @@ class GraphView(QtWidgets.QGraphicsView):
         self._pan_origin: QtCore.QPoint = QtCore.QPoint()
         self._drag_wire: Wire | None = None
 
-        self.registered_nodes: dict[str, list[type[BaseNode]]] = defaultdict(list)
+        self.node_registry: dict[str, list[type[BaseNode]]] = defaultdict(list)
+        self.nodes_in_view: list[BaseNode] = []
 
         self.customContextMenuRequested.connect(self._on_context_menu)
 
@@ -84,32 +85,36 @@ class GraphView(QtWidgets.QGraphicsView):
             category (str): The category name to group the node under.
             node_type (type[BaseNode]): The node class to register.
         """
-        self.registered_nodes[category].append(node_type)
+        self.node_registry[category].append(node_type)
 
-    def add_node(self, node: object, x: float, y: float) -> None:
+    def add_node(self, node: BaseNode, x: float, y: float) -> None:
         """
         Add a node to the scene at the given scene coordinates.
 
         Args:
-            node (object): The node graphics item to add.
+            node (BaseNode): The node graphics item to add.
             x (float): Scene x position.
             y (float): Scene y position.
         """
         node._grid_size = self._GRID_SMALL
         self.scene.addItem(node)
         node.setPos(x, y)
+        self.nodes_in_view.append(node)
 
-    def remove_node(self, node: object) -> None:
+    def remove_node(self, node: BaseNode) -> None:
         """
         Remove a node and all its connected wires from the scene.
 
         Args:
-            node (object): The node graphics item to remove.
+            node (BaseNode): The node graphics item to remove.
         """
         for port in self._ports_of(node):
             for wire in list(port.wires):
                 self._destroy_wire(wire)
+
         self.scene.removeItem(node)
+        if node in self.nodes_in_view:
+            self.nodes_in_view.remove(node)
 
     def connect_ports(self, source: Port, target: Port) -> None:
         """
@@ -141,7 +146,7 @@ class GraphView(QtWidgets.QGraphicsView):
         ]
 
     def _on_context_menu(self, viewport_pos: QtCore.QPoint) -> None:
-        if not self.registered_nodes:
+        if not self.node_registry:
             return
 
         item = self.itemAt(viewport_pos)
@@ -151,7 +156,7 @@ class GraphView(QtWidgets.QGraphicsView):
         scene_pos = self.mapToScene(viewport_pos)
         menu = QtWidgets.QMenu(self)
 
-        for category, node_types in sorted(self.registered_nodes.items()):
+        for category, node_types in sorted(self.node_registry.items()):
             submenu = menu.addMenu(category)
             for node_type in node_types:
                 action = submenu.addAction(node_type.__name__)

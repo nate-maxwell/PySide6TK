@@ -271,15 +271,6 @@ class BaseNode(QtWidgets.QGraphicsItem):
             for wire in port.wires:
                 wire.update_path()
 
-    def itemChange(
-        self,
-        change: QtWidgets.QGraphicsItem.GraphicsItemChange,
-        value: object,
-    ) -> object:
-        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-            self._update_wires()
-        return super().itemChange(change, value)
-
     def boundingRect(self) -> QtCore.QRectF:
         """
         Return the bounding rectangle of the node.

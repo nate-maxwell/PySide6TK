@@ -14,21 +14,32 @@ def serialize(view: GraphView) -> dict[str, Any]:
     """
     Serialize a GraphView to a plain dict.
 
-    Nodes are stored with their type name, position, field values, and a
-    generated id. Wires are stored as pairs of port references in the form
-    ``(node_id, port_type, port_index)``.
+    All nodes are serialized in insertion order. Wires are stored as pairs
+    of port references in the form ``(node_id, port_type, port_index)``.
 
     Args:
         view (GraphView): The graph view to serialize.
     Returns:
         dict[str, Any]: The serialized graph.
     """
-    nodes = [i for i in view.scene.items() if isinstance(i, BaseNode)]
+
+    def _serialize_value(value: Any) -> Any:
+        if isinstance(value, tuple):
+            return list(value)
+        return value
+
+    def _port_index(port: Port, node_: BaseNode, port_type: str) -> int:
+        ports = (
+            node_.output_ports()
+            if port_type == PortType.OUTPUT
+            else node_.input_ports()
+        )
+        return ports.index(port)
 
     node_ids: dict[int, str] = {}
     nodes_data: list[dict[str, Any]] = []
 
-    for i, node in enumerate(nodes):
+    for i, node in enumerate(view.nodes_in_view):
         node_id = str(i)
         node_ids[id(node)] = node_id
         pos = node.pos()
@@ -65,11 +76,19 @@ def serialize(view: GraphView) -> dict[str, Any]:
     return {"nodes": nodes_data, "wires": wires_data}
 
 
-def deserialize(
-    view: GraphView,
-    data: dict[str, Any],
-    registry: dict[str, type[BaseNode]],
-) -> None:
+def save(graph: GraphView, path: Path) -> None:
+    """
+    Serialize a GraphView and write it to a JSON file.
+
+    Args:
+        graph (GraphView): The graph view to save.
+        path (Path): Destination file path.
+    """
+    data = serialize(graph)
+    path.write_text(json.dumps(data, indent=2))
+
+
+def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
     """
     Reconstruct a graph from serialized data into a GraphView.
 
@@ -77,23 +96,36 @@ def deserialize(
     ``registry``, which maps type name strings to node classes.
 
     Args:
-        view (GraphView): The graph view to load into.
+        graph (GraphView): The graph view to load into.
         data (dict[str, Any]): Serialized graph data from ``serialize``.
-        registry (dict[str, type[BaseNode]]): Map of type name to node class.
     """
-    view.scene.clear()
 
+    def _deserialize_value(value_: Any) -> Any:
+        if isinstance(value_, list):
+            return tuple(value_)
+        return value_
+
+    registry = {
+        node_type.__name__: node_type
+        for node_types in graph.node_registry.values()
+        for node_type in node_types
+    }
+
+    graph.scene.clear()
     nodes_by_id: dict[str, BaseNode] = {}
 
     for node_data in data["nodes"]:
         node_type = registry.get(node_data["type"])
         if node_type is None:
             continue
+
         node = node_type()
+        node.title = node_data.get("title", node.title)
         for name, value in node_data["fields"].items():
             if name in node._fields:
                 node.set_field_value(name, _deserialize_value(value))
-        view.add_node(node, node_data["x"], node_data["y"])
+
+        graph.add_node(node, node_data["x"], node_data["y"])
         nodes_by_id[node_data["id"]] = node
 
     for wire_data in data["wires"]:
@@ -101,56 +133,24 @@ def deserialize(
         target_node = nodes_by_id.get(wire_data["target_node"])
         if source_node is None or target_node is None:
             continue
+
         source_ports = source_node.output_ports()
         target_ports = target_node.input_ports()
         si = wire_data["source_port"]
         ti = wire_data["target_port"]
         if si >= len(source_ports) or ti >= len(target_ports):
             continue
-        view.connect_ports(source_ports[si], target_ports[ti])
+
+        graph.connect_ports(source_ports[si], target_ports[ti])
 
 
-def save(view: GraphView, path: Path) -> None:
-    """
-    Serialize a GraphView and write it to a JSON file.
-
-    Args:
-        view (GraphView): The graph view to save.
-        path (Path): Destination file path.
-    """
-    data = serialize(view)
-    path.write_text(json.dumps(data, indent=2))
-
-
-def load(
-    view: GraphView,
-    path: Path,
-    registry: dict[str, type[BaseNode]],
-) -> None:
+def load(graph: GraphView, path: Path) -> None:
     """
     Load a JSON file and reconstruct the graph into a GraphView.
 
     Args:
-        view (GraphView): The graph view to load into.
+        graph (GraphView): The graph view to load into.
         path (Path): Source file path.
-        registry (dict[str, type[BaseNode]]): Map of type name to node class.
     """
     data = json.loads(path.read_text())
-    deserialize(view, data, registry)
-
-
-def _port_index(port: Port, node: BaseNode, port_type: str) -> int:
-    ports = node.output_ports() if port_type == PortType.OUTPUT else node.input_ports()
-    return ports.index(port)
-
-
-def _serialize_value(value: Any) -> Any:
-    if isinstance(value, tuple):
-        return list(value)
-    return value
-
-
-def _deserialize_value(value: Any) -> Any:
-    if isinstance(value, list):
-        return tuple(value)
-    return value
+    deserialize(graph, data)
