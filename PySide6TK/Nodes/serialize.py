@@ -39,7 +39,7 @@ def serialize(view: GraphView) -> dict[str, Any]:
     node_ids: dict[int, str] = {}
     nodes_data: list[dict[str, Any]] = []
 
-    for i, node in enumerate(view.nodes_in_view):
+    for i, node in enumerate(view._node_refs):
         node_id = str(i)
         node_ids[id(node)] = node_id
         pos = node.pos()

@@ -91,7 +91,7 @@ class GraphView(QtWidgets.QGraphicsView):
         box = CommentBox(label)
         self.scene.addItem(box)
         box.setPos(x, y)
-        self.nodes_in_view.append(box)
+        self._node_refs.append(box)
         return box
 
     def register_node(self, category: str, node_type: type[BaseNode]) -> None:
@@ -114,7 +114,6 @@ class GraphView(QtWidgets.QGraphicsView):
             y (float): Scene y position.
         """
         self._node_refs.append(node)
-        self.nodes_in_view.append(node)
         self.scene.addItem(node)
         node.setPos(x, y)
         node._grid_size = self._GRID_SMALL
@@ -130,8 +129,6 @@ class GraphView(QtWidgets.QGraphicsView):
             for wire in list(port.wires):
                 self._destroy_wire(wire)
         self.scene.removeItem(node)
-        if node in self.nodes_in_view:
-            self.nodes_in_view.remove(node)
         if node in self._node_refs:
             self._node_refs.remove(node)
 
