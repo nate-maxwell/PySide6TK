@@ -113,9 +113,10 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position.
             y (float): Scene y position.
         """
-        node._grid_size = self._GRID_SMALL
+        node.setParent(None)
         self.scene.addItem(node)
         node.setPos(x, y)
+        node._grid_size = self._GRID_SMALL
         self.nodes_in_view.append(node)
 
     def remove_node(self, node: BaseNode) -> None:
