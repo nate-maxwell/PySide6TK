@@ -91,6 +91,7 @@ class GraphView(QtWidgets.QGraphicsView):
         box = CommentBox(label)
         self.scene.addItem(box)
         box.setPos(x, y)
+        self.nodes_in_view.append(box)
         return box
 
     def register_node(self, category: str, node_type: type[BaseNode]) -> None:
