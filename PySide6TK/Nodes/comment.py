@@ -25,6 +25,11 @@ class CommentBox(BaseNode):
 
     _HEADER_HEIGHT: int = 24
     _HANDLE_SIZE: float = 12.0
+    _CORNER_NONE = 0
+    _CORNER_TOP_LEFT = 1
+    _CORNER_TOP_RIGHT = 2
+    _CORNER_BOTTOM_LEFT = 3
+    _CORNER_BOTTOM_RIGHT = 4
     _CORNER_RADIUS: float = 6.0
     _MIN_WIDTH: float = 120.0
     _MIN_HEIGHT: float = 60.0
@@ -88,6 +93,23 @@ class CommentBox(BaseNode):
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._box_width, self._box_height)
 
+    def _corner_rects(self) -> dict[int, QtCore.QRectF]:
+        h = self._HANDLE_SIZE
+        return {
+            self._CORNER_TOP_LEFT: QtCore.QRectF(0, 0, h, h),
+            self._CORNER_TOP_RIGHT: QtCore.QRectF(self._box_width - h, 0, h, h),
+            self._CORNER_BOTTOM_LEFT: QtCore.QRectF(0, self._box_height - h, h, h),
+            self._CORNER_BOTTOM_RIGHT: QtCore.QRectF(
+                self._box_width - h, self._box_height - h, h, h
+            ),
+        }
+
+    def _corner_at(self, pos: QtCore.QPointF) -> int:
+        for corner, rect in self._corner_rects().items():
+            if rect.contains(pos):
+                return corner
+        return self._CORNER_NONE
+
     def paint(
         self,
         painter: QtGui.QPainter,
@@ -95,7 +117,7 @@ class CommentBox(BaseNode):
         widget: QtWidgets.QWidget | None = None,
     ) -> None:
         """
-        Paint the comment box body, header, label, border, and resize handle.
+        Paint the comment box body, header, label, border, and resize handles.
 
         Args:
             painter (QtGui.QPainter): The painter.
@@ -142,39 +164,67 @@ class CommentBox(BaseNode):
         painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(rect, self._CORNER_RADIUS, self._CORNER_RADIUS)
 
-        painter.fillRect(self._handle_rect(), QtGui.QBrush(self._border_color()))
+        if self.isSelected():
+            for corner_rect in self._corner_rects().values():
+                painter.fillRect(corner_rect, QtGui.QBrush(self._border_color()))
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
-        Begin a resize drag if the press is in the handle, otherwise move.
+        Begin a resize drag if the press is on a corner handle, otherwise move.
 
         Args:
             event (QtWidgets.QGraphicsSceneMouseEvent): The mouse event.
         """
-        if self._handle_rect().contains(event.pos()):
+        corner = self._corner_at(event.pos())
+        if corner != self._CORNER_NONE:
             self._resizing = True
+            self._resize_corner = corner
             self._resize_origin = event.scenePos()
             self._resize_start_size = (self._box_width, self._box_height)
+            self._resize_start_pos = self.pos()
             event.accept()
         else:
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
-        Update the box size during a resize drag.
+        Update the box size and position during a resize drag.
 
         Args:
             event (QtWidgets.QGraphicsSceneMouseEvent): The mouse event.
         """
         if self._resizing:
             delta = event.scenePos() - self._resize_origin
+            start_w, start_h = self._resize_start_size
+            start_pos = self._resize_start_pos
             self.prepareGeometryChange()
-            self._box_width = max(
-                self._MIN_WIDTH, self._resize_start_size[0] + delta.x()
-            )
-            self._box_height = max(
-                self._MIN_HEIGHT, self._resize_start_size[1] + delta.y()
-            )
+
+            if self._resize_corner == self._CORNER_BOTTOM_RIGHT:
+                self._box_width = max(self._MIN_WIDTH, start_w + delta.x())
+                self._box_height = max(self._MIN_HEIGHT, start_h + delta.y())
+
+            elif self._resize_corner == self._CORNER_BOTTOM_LEFT:
+                new_w = max(self._MIN_WIDTH, start_w - delta.x())
+                self._box_height = max(self._MIN_HEIGHT, start_h + delta.y())
+                self.setPos(start_pos.x() + (start_w - new_w), start_pos.y())
+                self._box_width = new_w
+
+            elif self._resize_corner == self._CORNER_TOP_RIGHT:
+                self._box_width = max(self._MIN_WIDTH, start_w + delta.x())
+                new_h = max(self._MIN_HEIGHT, start_h - delta.y())
+                self.setPos(start_pos.x(), start_pos.y() + (start_h - new_h))
+                self._box_height = new_h
+
+            elif self._resize_corner == self._CORNER_TOP_LEFT:
+                new_w = max(self._MIN_WIDTH, start_w - delta.x())
+                new_h = max(self._MIN_HEIGHT, start_h - delta.y())
+                self.setPos(
+                    start_pos.x() + (start_w - new_w),
+                    start_pos.y() + (start_h - new_h),
+                )
+                self._box_width = new_w
+                self._box_height = new_h
+
             self.update()
         else:
             super().mouseMoveEvent(event)
@@ -188,6 +238,7 @@ class CommentBox(BaseNode):
         """
         if self._resizing:
             self._resizing = False
+            self._resize_corner = self._CORNER_NONE
             event.accept()
         else:
             super().mouseReleaseEvent(event)
