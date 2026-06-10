@@ -124,8 +124,6 @@ class GraphView(QtWidgets.QGraphicsView):
             source (Port): The output port to connect from.
             target (Port): The input port to connect to.
         """
-        for existing in list(target.wires):
-            self._destroy_wire(existing)
         wire = Wire(source, target)
         source.add_wire(wire)
         target.add_wire(wire)
@@ -290,18 +288,18 @@ class GraphView(QtWidgets.QGraphicsView):
             and self._drag_wire is not None
         ):
             target_port = self._port_at(scene_pos)
-            if target_port is not None and self._drag_wire.source.can_connect_to(
-                target_port
-            ):
-                for existing in list(target_port.wires):
-                    self._destroy_wire(existing)
-                self._drag_wire.target = target_port
-                self._drag_wire.source.add_wire(self._drag_wire)
-                target_port.add_wire(self._drag_wire)
-                self._drag_wire.update_path()
-            else:
-                self.scene.removeItem(self._drag_wire)
+            drag_port = self._drag_wire.source
+            reverse = getattr(self._drag_wire, "reverse", False)
+
+            self.scene.removeItem(self._drag_wire)
             self._drag_wire = None
+
+            if target_port is not None and drag_port.can_connect_to(target_port):
+                source, target = (
+                    (target_port, drag_port) if reverse else (drag_port, target_port)
+                )
+                self.connect_ports(source, target)
+
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
             return
 
