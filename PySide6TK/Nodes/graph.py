@@ -298,10 +298,16 @@ class GraphView(QtWidgets.QGraphicsView):
             else:
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
                 if isinstance(item, BaseNode):
+                    if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
+                        item.setSelected(not item.isSelected())
+                        return
                     self._move_origins[id(item)] = item.pos()
                 else:
                     parent = item.parentItem()
                     if isinstance(parent, BaseNode):
+                        if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
+                            parent.setSelected(not parent.isSelected())
+                            return
                         self._move_origins[id(parent)] = parent.pos()
 
         super().mousePressEvent(event)
