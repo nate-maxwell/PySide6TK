@@ -297,18 +297,22 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
             else:
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
-                if isinstance(item, BaseNode):
+                node = item if isinstance(item, BaseNode) else item.parentItem()
+                if isinstance(node, BaseNode):
                     if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
-                        item.setSelected(not item.isSelected())
+                        node.setSelected(not node.isSelected())
                         return
-                    self._move_origins[id(item)] = item.pos()
-                else:
-                    parent = item.parentItem()
-                    if isinstance(parent, BaseNode):
-                        if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
-                            parent.setSelected(not parent.isSelected())
-                            return
-                        self._move_origins[id(parent)] = parent.pos()
+                    if not node.isSelected():
+                        self.scene.clearSelection()
+                        node.setSelected(True)
+                    for selected in self.scene.selectedItems():
+                        n = (
+                            selected
+                            if isinstance(selected, BaseNode)
+                            else selected.parentItem()
+                        )
+                        if isinstance(n, BaseNode):
+                            self._move_origins[id(n)] = n.pos()
 
         super().mousePressEvent(event)
 
