@@ -21,54 +21,6 @@ class PanelNodeWidget(Nodes.NodeWidget):
     _COLOR_HEADER = QtGui.QColor(160, 60, 60)
 
 
-def _make_start(graph: Nodes.Graph) -> Nodes.NodeData:
-    node = graph.add_node(
-        node_type="Start", title="Start", x=0, y=0, width=160, height=68
-    )
-    graph.add_port(node.node_id, Nodes.PortType.OUTPUT, "Exec")
-    return node
-
-
-def _make_panel(graph: Nodes.Graph, x: float, y: float) -> Nodes.NodeData:
-    node = graph.add_node(
-        node_type="Panel", title="Panel", x=x, y=y, width=180, height=68
-    )
-    graph.add_port(node.node_id, Nodes.PortType.INPUT, "Previous")
-    graph.add_port(node.node_id, Nodes.PortType.OUTPUT, "Output")
-    node.fields = {
-        "filepath": "",
-        "duration": 3.0,
-        "scale": 1.0,
-        "offset": (0.0, 0.0),
-        "fit_mode": "Fit",
-        "visible": True,
-    }
-    return node
-
-
-def _make_transition(graph: Nodes.Graph, x: float, y: float) -> Nodes.NodeData:
-    node = graph.add_node(
-        node_type="Transition", title="Transition", x=x, y=y, width=240, height=68
-    )
-    graph.add_port(node.node_id, Nodes.PortType.INPUT, "Pane")
-    graph.add_port(node.node_id, Nodes.PortType.OUTPUT, "Post Transition")
-    node.fields = {
-        "duration": 0.5,
-        "type": "fade",
-        "easing": "ease_in_out",
-        "color": (0, 0, 0, 255),
-    }
-    return node
-
-
-def _make_outro(graph: Nodes.Graph, x: float, y: float) -> Nodes.NodeData:
-    node = graph.add_node(
-        node_type="Outro", title="Outro", x=x, y=y, width=160, height=68
-    )
-    graph.add_port(node.node_id, Nodes.PortType.INPUT, "Pane")
-    return node
-
-
 class NodeGraphWindow(QtWidgets.QMainWindow):
 
     def __init__(self) -> None:
@@ -80,10 +32,63 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
         self.view = Nodes.GraphView(self.data_graph, self)
         self.setCentralWidget(self.view)
 
-        self._register()
+        self._register_types()
+        self._register_widgets()
         self._populate()
 
-    def _register(self) -> None:
+    def _register_types(self) -> None:
+        self.data_graph.register_type(
+            Nodes.NodeTypeDefinition(
+                node_type="Start",
+                title="Start",
+                width=160,
+                height=68,
+                ports=[("output", "Exec")],
+            )
+        )
+        self.data_graph.register_type(
+            Nodes.NodeTypeDefinition(
+                node_type="Panel",
+                title="Panel",
+                width=180,
+                height=68,
+                ports=[("input", "Previous"), ("output", "Output")],
+                fields={
+                    "filepath": "",
+                    "duration": 3.0,
+                    "scale": 1.0,
+                    "offset": (0.0, 0.0),
+                    "fit_mode": "Fit",
+                    "visible": True,
+                },
+            )
+        )
+        self.data_graph.register_type(
+            Nodes.NodeTypeDefinition(
+                node_type="Transition",
+                title="Transition",
+                width=240,
+                height=68,
+                ports=[("input", "Pane"), ("output", "Post Transition")],
+                fields={
+                    "duration": 0.5,
+                    "type": "fade",
+                    "easing": "ease_in_out",
+                    "color": (0, 0, 0, 255),
+                },
+            )
+        )
+        self.data_graph.register_type(
+            Nodes.NodeTypeDefinition(
+                node_type="Outro",
+                title="Outro",
+                width=160,
+                height=60,
+                ports=[("input", "Pane")],
+            )
+        )
+
+    def _register_widgets(self) -> None:
         self.view.register_node(
             "Start", StartNodeWidget, category="Main", label="Start"
         )
@@ -98,12 +103,12 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
         )
 
     def _populate(self) -> None:
-        node_start = _make_start(self.data_graph)
-        node_pane_a = _make_panel(self.data_graph, 200, 0)
-        node_pane_b = _make_panel(self.data_graph, 400, 0)
-        node_transition = _make_transition(self.data_graph, 600, 0)
-        node_pane_c = _make_panel(self.data_graph, 900, 0)
-        node_outro = _make_outro(self.data_graph, 1100, 0)
+        node_start = self.data_graph.add_node_of_type("Start", 0, 0)
+        node_pane_a = self.data_graph.add_node_of_type("Panel", 200, 0)
+        node_pane_b = self.data_graph.add_node_of_type("Panel", 400, 0)
+        node_transition = self.data_graph.add_node_of_type("Transition", 600, 0)
+        node_pane_c = self.data_graph.add_node_of_type("Panel", 900, 0)
+        node_outro = self.data_graph.add_node_of_type("Outro", 1100, 0)
 
         self.data_graph.set_field_value(
             node_pane_a.node_id,

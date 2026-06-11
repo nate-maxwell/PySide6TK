@@ -58,6 +58,30 @@ class NodeData(object):
     height: float | None = None
 
 
+@dataclass
+class NodeTypeDefinition(object):
+    """
+    Complete definition of a node type including default dimensions,
+    ports, and field defaults. Register on a Graph to allow nodes to
+    be fully constructed from type name alone.
+
+    Args:
+        node_type (str): Unique type name matching NodeData.node_type.
+        title (str): Default display title.
+        width (int): Default width in pixels.
+        height (int): Default height in pixels.
+        ports (list[tuple[str, str]]): Ordered list of (port_type, name) pairs.
+        fields (dict[str, Any]): Default field values.
+    """
+
+    node_type: str
+    title: str
+    width: int
+    height: int
+    ports: list[tuple[str, str]] = field(default_factory=list)
+    fields: dict[str, Any] = field(default_factory=dict)
+
+
 class Graph(object):
     """
     A pure data graph of nodes and connections.
@@ -73,11 +97,13 @@ class Graph(object):
         on_ports_disconnected (list[Callable[[str, str], None]]): Callbacks fired when ports disconnect.
         on_field_changed (list[Callable[[str, str, Any], None]]): Callbacks fired when a field value changes.
         on_node_moved (list[Callable[[str, float, float], None]]): Callbacks fired when a node moves.
+        on_port_added (list[Callable[[PortData], None]]): Callbacks fired when a port is added.
     """
 
     def __init__(self) -> None:
         self.nodes: dict[str, NodeData] = {}
         self._id_counter: int = 0
+        self._type_registry: dict[str, NodeTypeDefinition] = {}
 
         self.on_node_added: list[Callable[[NodeData], None]] = []
         self.on_node_removed: list[Callable[[str], None]] = []
@@ -94,6 +120,15 @@ class Graph(object):
     def _fire(self, callbacks: list[Callable], *args: Any) -> None:
         for cb in callbacks:
             cb(*args)
+
+    def register_type(self, definition: NodeTypeDefinition) -> None:
+        """
+        Register a node type definition.
+
+        Args:
+            definition (NodeTypeDefinition): The type definition to register.
+        """
+        self._type_registry[definition.node_type] = definition
 
     def add_node(
         self,
@@ -128,6 +163,31 @@ class Graph(object):
         )
         self.nodes[node.node_id] = node
         self._fire(self.on_node_added, node)
+        return node
+
+    def add_node_of_type(self, node_type: str, x: float, y: float) -> NodeData:
+        """
+        Add a fully constructed node from a registered type definition.
+
+        Args:
+            node_type (str): The registered type name.
+            x (float): Scene x position.
+            y (float): Scene y position.
+        Returns:
+            NodeData: The created node.
+        """
+        definition = self._type_registry[node_type]
+        node = self.add_node(
+            node_type=node_type,
+            title=definition.title,
+            x=x,
+            y=y,
+            width=definition.width,
+            height=definition.height,
+        )
+        for port_type, name in definition.ports:
+            self.add_port(node.node_id, port_type, name)
+        node.fields = dict(definition.fields)
         return node
 
     def remove_node(self, node_id: str) -> None:

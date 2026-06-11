@@ -27,6 +27,9 @@ class NodeRegistryEntry(object):
         widget_class (type[NodeWidget]): The widget class to instantiate.
         category (str): Context menu category.
         label (str): Display name in the context menu.
+        factory (Callable[[Graph, str], None] | None): Optional function called
+            after the node is added to set up its ports and default fields.
+            Receives the graph and the new node_id.
     """
 
     widget_class: type[NodeWidget]
@@ -77,7 +80,9 @@ class NodeWidget(QtWidgets.QGraphicsItem):
         self._grid_size = grid_size
         self._width = int(node_data.width) if node_data.width is not None else width
         self._body_height = (
-            int(node_data.height) if node_data.height is not None else body_height
+            int(node_data.height) - self._HEADER_HEIGHT
+            if node_data.height is not None
+            else body_height
         )
         self.ports: dict[str, Port] = {}
         self.on_double_click: list[Callable[[NodeData], None]] = []
@@ -85,7 +90,7 @@ class NodeWidget(QtWidgets.QGraphicsItem):
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
-        self.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.DeviceCoordinateCache)
+        self.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.NoCache)
 
     @property
     def width(self) -> int:
@@ -422,6 +427,7 @@ class GraphView(QtWidgets.QGraphicsView):
         )
         y = widget._HEADER_HEIGHT + widget._PORT_MARGIN + count * widget._PORT_SPACING
         x = 0 if is_input else widget._width
+
         port = Port(port_data.port_type, port_data.name, widget)
         port.setPos(x, y)
         port.port_id = port_data.port_id
@@ -520,12 +526,7 @@ class GraphView(QtWidgets.QGraphicsView):
         elif data[0] == "node":
             node_type = data[1]
             pos = data[2]
-            self.graph.add_node(
-                node_type=node_type,
-                title=node_type,
-                x=pos.x(),
-                y=pos.y(),
-            )
+            self.graph.add_node_of_type(node_type, pos.x(), pos.y())
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
