@@ -84,6 +84,15 @@ class GraphView(QtWidgets.QGraphicsView):
 
         self.customContextMenuRequested.connect(self._on_context_menu)
 
+    def view_center(self) -> QtCore.QPointF:
+        """
+        Return the center of the current viewport in scene coordinates.
+
+        Returns:
+            QtCore.QPointF: The scene-space center of the visible viewport.
+        """
+        return self.mapToScene(self.viewport().rect().center())
+
     def add_comment(self, x: float, y: float, label: str = "Comment") -> CommentBox:
         """
         Add a comment box to the scene at the given scene coordinates.
