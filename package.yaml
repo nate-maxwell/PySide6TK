@@ -2,5 +2,5 @@ name: PySide6TK
 authors:
   - Nate Maxwell
 description: A collection of PySide6 helpers and style-sheets.
-version: 2.4.1
+version: 2.3.0
 env: {}

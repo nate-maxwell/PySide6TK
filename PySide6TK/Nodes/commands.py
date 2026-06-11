@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 from PySide6 import QtCore
 
-from PySide6TK.Nodes.graph_data import Graph
-from PySide6TK.Nodes.graph_data import NodeData
+from PySide6TK.Nodes.node import BaseNode
+from PySide6TK.Nodes.port import Port
+from PySide6TK.Nodes.wire import Wire
 from PySide6TK.Nodes.comment import CommentBox
 
 if TYPE_CHECKING:
@@ -28,155 +29,102 @@ class Command(ABC):
 
 class AddNodeCommand(Command):
     """
-    Adds a node to the data graph.
+    Adds a node to the graph.
 
     Args:
-        graph (Graph): The data graph to operate on.
-        node_type (str): The node type name.
-        title (str): Display title.
+        graph (GraphView): The graph view to operate on.
+        node (BaseNode): The node to add.
         x (float): Scene x position.
         y (float): Scene y position.
-        width (float | None): Optional width override.
-        height (float | None): Optional height override.
     """
 
-    def __init__(
-        self,
-        graph: Graph,
-        node_type: str,
-        title: str,
-        x: float,
-        y: float,
-        width: float | None = None,
-        height: float | None = None,
-    ) -> None:
+    def __init__(self, graph: GraphView, node: BaseNode, x: float, y: float) -> None:
         self._graph = graph
-        self._node_type = node_type
-        self._title = title
+        self._node = node
         self._x = x
         self._y = y
-        self._width = width
-        self._height = height
-        self._node: NodeData | None = None
 
     def execute(self) -> None:
-        self._node = self._graph.add_node(
-            node_type=self._node_type,
-            title=self._title,
-            x=self._x,
-            y=self._y,
-            width=self._width,
-            height=self._height,
-        )
+        self._graph.add_node_internal(self._node, self._x, self._y)
 
     def undo(self) -> None:
-        if self._node is not None:
-            self._graph.remove_node(self._node.node_id)
+        self._graph.remove_node_internal(self._node)
 
 
 class RemoveNodeCommand(Command):
     """
-    Removes a node and all its connections from the data graph.
+    Removes a node and all its connected wires from the graph.
 
     Args:
-        graph (Graph): The data graph to operate on.
-        node (NodeData): The node to remove.
+        graph (GraphView): The graph view to operate on.
+        node (BaseNode): The node to remove.
     """
 
-    def __init__(self, graph: Graph, node: NodeData) -> None:
+    def __init__(self, graph: GraphView, node: BaseNode) -> None:
         self._graph = graph
         self._node = node
-        self._x = node.x
-        self._y = node.y
-        self._severed_connections: list[tuple[str, str]] = []
+        self._pos = node.pos()
+        self._severed_wires: list[tuple[Port, Port]] = []
 
     def execute(self) -> None:
-        for port in self._node.ports.values():
-            for connected_id in list(port.connections):
-                self._severed_connections.append((port.port_id, connected_id))
-        self._graph.remove_node(self._node.node_id)
+        for port in self._graph._ports_of(self._node):
+            for wire in list(port.wires):
+                self._severed_wires.append((wire.source, wire.target))
+                self._graph._destroy_wire(wire)
+        self._graph.remove_node_internal(self._node)
 
     def undo(self) -> None:
-        self._graph.nodes[self._node.node_id] = self._node
-        self._node.x = self._x
-        self._node.y = self._y
-        for port in self._node.ports.values():
-            port.connections.clear()
-        for port_id_a, port_id_b in self._severed_connections:
-            self._graph.connect_ports(port_id_a, port_id_b)
-        self._graph._fire(self._graph.on_node_added, self._node)
-
-
-class ConnectPortsCommand(Command):
-    """
-    Connects two ports in the data graph.
-
-    Args:
-        graph (Graph): The data graph to operate on.
-        source_port_id (str): The output port id.
-        target_port_id (str): The input port id.
-    """
-
-    def __init__(self, graph: Graph, source_port_id: str, target_port_id: str) -> None:
-        self._graph = graph
-        self._source_port_id = source_port_id
-        self._target_port_id = target_port_id
-
-    def execute(self) -> None:
-        self._graph.connect_ports(self._source_port_id, self._target_port_id)
-
-    def undo(self) -> None:
-        self._graph.disconnect_ports(self._source_port_id, self._target_port_id)
-
-
-class DisconnectPortsCommand(Command):
-    """
-    Disconnects two ports in the data graph.
-
-    Args:
-        graph (Graph): The data graph to operate on.
-        port_id_a (str): One end of the connection.
-        port_id_b (str): The other end of the connection.
-    """
-
-    def __init__(self, graph: Graph, port_id_a: str, port_id_b: str) -> None:
-        self._graph = graph
-        self._port_id_a = port_id_a
-        self._port_id_b = port_id_b
-
-    def execute(self) -> None:
-        self._graph.disconnect_ports(self._port_id_a, self._port_id_b)
-
-    def undo(self) -> None:
-        self._graph.connect_ports(self._port_id_a, self._port_id_b)
+        self._graph.add_node_internal(self._node, self._pos.x(), self._pos.y())
+        for source, target in self._severed_wires:
+            self._graph.connect_ports_internal(source, target)
 
 
 class AddCommentCommand(Command):
     """
-    Adds a comment box to the view.
+    Adds a comment box to the graph.
 
     Args:
-        view (GraphView): The graph view to operate on.
+        graph (GraphView): The graph view to operate on.
         box (CommentBox): The comment box to add.
         x (float): Scene x position.
         y (float): Scene y position.
     """
 
-    def __init__(self, view: GraphView, box: CommentBox, x: float, y: float) -> None:
-        self._view = view
+    def __init__(self, graph: GraphView, box: CommentBox, x: float, y: float) -> None:
+        self._graph = graph
         self._box = box
         self._x = x
         self._y = y
 
     def execute(self) -> None:
-        self._view._node_refs.append(self._box)
-        self._view.scene.addItem(self._box)
-        self._box.setPos(self._x, self._y)
+        self._graph.add_node_internal(self._box, self._x, self._y)
 
     def undo(self) -> None:
-        self._view.scene.removeItem(self._box)
-        if self._box in self._view._node_refs:
-            self._view._node_refs.remove(self._box)
+        self._graph.remove_node_internal(self._box)
+
+
+class ConnectPortsCommand(Command):
+    """
+    Connects two ports with a wire.
+
+    Args:
+        graph (GraphView): The graph view to operate on.
+        source (Port): The output port.
+        target (Port): The input port.
+    """
+
+    def __init__(self, graph: GraphView, source: Port, target: Port) -> None:
+        self._graph = graph
+        self._source = source
+        self._target = target
+        self._wire: Wire | None = None
+
+    def execute(self) -> None:
+        self._wire = self._graph.connect_ports_internal(self._source, self._target)
+
+    def undo(self) -> None:
+        if self._wire is not None:
+            self._graph._destroy_wire(self._wire)
 
 
 class MoveNodeCommand(Command):
@@ -184,35 +132,26 @@ class MoveNodeCommand(Command):
     Records a node move for undo/redo.
 
     Args:
-        graph (Graph): The data graph to operate on.
-        node_id (str): The id of the node that was moved.
-        old_x (float): The x position before the move.
-        old_y (float): The y position before the move.
-        new_x (float): The x position after the move.
-        new_y (float): The y position after the move.
+        node (BaseNode): The node that was moved.
+        old_pos (QtCore.QPointF): The position before the move.
+        new_pos (QtCore.QPointF): The position after the move.
     """
 
     def __init__(
         self,
-        graph: Graph,
-        node_id: str,
-        old_x: float,
-        old_y: float,
-        new_x: float,
-        new_y: float,
+        node: BaseNode,
+        old_pos: QtCore.QPointF,
+        new_pos: QtCore.QPointF,
     ) -> None:
-        self._graph = graph
-        self._node_id = node_id
-        self._old_x = old_x
-        self._old_y = old_y
-        self._new_x = new_x
-        self._new_y = new_y
+        self._node = node
+        self._old_pos = old_pos
+        self._new_pos = new_pos
 
     def execute(self) -> None:
-        self._graph.move_node(self._node_id, self._new_x, self._new_y)
+        self._node.setPos(self._new_pos)
 
     def undo(self) -> None:
-        self._graph.move_node(self._node_id, self._old_x, self._old_y)
+        self._node.setPos(self._old_pos)
 
 
 class CommandStack(object):

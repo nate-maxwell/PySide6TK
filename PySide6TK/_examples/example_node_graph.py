@@ -5,20 +5,141 @@ from PySide6TK import QtWrappers
 from PySide6TK import Nodes
 
 
-class StartNodeWidget(Nodes.NodeWidget):
+class StartNode(Nodes.BaseNode):
+
     _COLOR_HEADER = QtGui.QColor(40, 120, 60)
 
+    def __init__(self) -> None:
+        super().__init__(title="Start", width=160, body_height=40)
 
-class TransitionNodeWidget(Nodes.NodeWidget):
+    def _build(self) -> None:
+        self.port_out = self.add_port(Nodes.PortType.OUTPUT, "Exec")
+
+
+class TransitionNode(Nodes.BaseNode):
+
     _COLOR_HEADER = QtGui.QColor(100, 60, 160)
 
+    def __init__(self) -> None:
+        super().__init__(title="Transition", width=240, body_height=40)
 
-class OutroNodeWidget(Nodes.NodeWidget):
+    def _build(self) -> None:
+        self.port_in = self.add_port(Nodes.PortType.INPUT, "Pane")
+        self.port_out = self.add_port(Nodes.PortType.OUTPUT, "Post Transition")
+
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="duration",
+                label="Duration",
+                field_type=Nodes.FieldType.FLOAT,
+                default=0.5,
+                min_value=0.0,
+                max_value=10.0,
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="type",
+                label="Type",
+                field_type=Nodes.FieldType.CHOICE,
+                default="fade",
+                options=["fade", "wipe", "dissolve", "cut"],
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="easing",
+                label="Easing",
+                field_type=Nodes.FieldType.CHOICE,
+                default="ease_in_out",
+                options=["linear", "ease_in", "ease_out", "ease_in_out"],
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="color",
+                label="Color",
+                field_type=Nodes.FieldType.COLOR,
+                default=(0, 0, 0, 255),
+            )
+        )
+
+
+class OutroNode(Nodes.BaseNode):
+
     _COLOR_HEADER = QtGui.QColor(100, 160, 160)
 
+    def __init__(self) -> None:
+        super().__init__(title="Outro", width=160, body_height=40)
 
-class PanelNodeWidget(Nodes.NodeWidget):
+    def _build(self) -> None:
+        self.port_in = self.add_port(Nodes.PortType.INPUT, "Pane")
+
+
+class PanelNode(Nodes.BaseNode):
+
     _COLOR_HEADER = QtGui.QColor(160, 60, 60)
+
+    def __init__(self) -> None:
+        super().__init__(title="Panel", width=180, body_height=40)
+
+    def _build(self) -> None:
+        self.port_in = self.add_port(Nodes.PortType.INPUT, "Previous")
+        self.port_out = self.add_port(Nodes.PortType.OUTPUT, "Output")
+
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="filepath",
+                label="Filepath",
+                field_type=Nodes.FieldType.STR,
+                default="",
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="duration",
+                label="Duration",
+                field_type=Nodes.FieldType.FLOAT,
+                default=3.0,
+                min_value=0.0,
+                max_value=60.0,
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="scale",
+                label="Scale",
+                field_type=Nodes.FieldType.FLOAT,
+                default=1.0,
+                min_value=0.1,
+                max_value=10.0,
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="offset",
+                label="Offset",
+                field_type=Nodes.FieldType.VEC2,
+                default=(0.0, 0.0),
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="fit_mode",
+                label="Fit Mode",
+                field_type=Nodes.FieldType.CHOICE,
+                default="Fit",
+                options=["Fit", "Fill", "Stretch", "None"],
+            )
+        )
+        self.add_field(
+            Nodes.FieldDefinition(
+                name="visible",
+                label="Visible",
+                field_type=Nodes.FieldType.BOOL,
+                default=True,
+            )
+        )
 
 
 class NodeGraphWindow(QtWidgets.QMainWindow):
@@ -28,106 +149,47 @@ class NodeGraphWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Node Graph")
         self.resize(1024, 768)
 
-        self.data_graph = Nodes.Graph()
-        self.view = Nodes.GraphView(self.data_graph, self)
-        self.setCentralWidget(self.view)
+        self.cur_pos = 0
 
-        self._register_types()
-        self._register_widgets()
+        self.graph = Nodes.GraphView(self)
+        self.setCentralWidget(self.graph)
+
+        self._register()
         self._populate()
 
-    def _register_types(self) -> None:
-        self.data_graph.register_type(
-            Nodes.NodeTypeDefinition(
-                node_type="Start",
-                title="Start",
-                width=160,
-                height=68,
-                ports=[("output", "Exec")],
-            )
-        )
-        self.data_graph.register_type(
-            Nodes.NodeTypeDefinition(
-                node_type="Panel",
-                title="Panel",
-                width=180,
-                height=68,
-                ports=[("input", "Previous"), ("output", "Output")],
-                fields={
-                    "filepath": "",
-                    "duration": 3.0,
-                    "scale": 1.0,
-                    "offset": (0.0, 0.0),
-                    "fit_mode": "Fit",
-                    "visible": True,
-                },
-            )
-        )
-        self.data_graph.register_type(
-            Nodes.NodeTypeDefinition(
-                node_type="Transition",
-                title="Transition",
-                width=240,
-                height=68,
-                ports=[("input", "Pane"), ("output", "Post Transition")],
-                fields={
-                    "duration": 0.5,
-                    "type": "fade",
-                    "easing": "ease_in_out",
-                    "color": (0, 0, 0, 255),
-                },
-            )
-        )
-        self.data_graph.register_type(
-            Nodes.NodeTypeDefinition(
-                node_type="Outro",
-                title="Outro",
-                width=160,
-                height=60,
-                ports=[("input", "Pane")],
-            )
-        )
-
-    def _register_widgets(self) -> None:
-        self.view.register_node(
-            "Start", StartNodeWidget, category="Main", label="Start"
-        )
-        self.view.register_node(
-            "Panel", PanelNodeWidget, category="Main", label="Panel"
-        )
-        self.view.register_node(
-            "Transition", TransitionNodeWidget, category="Main", label="Transition"
-        )
-        self.view.register_node(
-            "Outro", OutroNodeWidget, category="Main", label="Outro"
-        )
-
     def _populate(self) -> None:
-        node_start = self.data_graph.add_node_of_type("Start", 0, 0)
-        node_pane_a = self.data_graph.add_node_of_type("Panel", 200, 0)
-        node_pane_b = self.data_graph.add_node_of_type("Panel", 400, 0)
-        node_transition = self.data_graph.add_node_of_type("Transition", 600, 0)
-        node_pane_c = self.data_graph.add_node_of_type("Panel", 900, 0)
-        node_outro = self.data_graph.add_node_of_type("Outro", 1100, 0)
-
-        self.data_graph.set_field_value(
-            node_pane_a.node_id,
-            "filepath",
-            "T:/git/catena/Core/Resources/PIC_Example_Board.png",
+        self.node_start = StartNode()
+        self.node_pane_a = PanelNode()
+        self.node_pane_a.set_field_value(
+            "filepath", "T:/git/catena//Core/Resources/PIC_Example_Board.png"
         )
+        self.node_pane_b = PanelNode()
+        self.node_transition = TransitionNode()
+        self.node_pane_c = PanelNode()
+        self.node_outro = OutroNode()
 
-        start_out = list(node_start.ports.values())[0]
-        pane_a_in, pane_a_out = list(node_pane_a.ports.values())
-        pane_b_in, pane_b_out = list(node_pane_b.ports.values())
-        trans_in, trans_out = list(node_transition.ports.values())
-        pane_c_in, pane_c_out = list(node_pane_c.ports.values())
-        outro_in = list(node_outro.ports.values())[0]
+        self.graph.add_node(self.node_start, 0, 0)
+        self.graph.add_node(self.node_pane_a, 200, 0)
+        self.graph.add_node(self.node_pane_b, 400, 0)
+        self.graph.add_node(self.node_transition, 600, 0)
+        self.graph.add_node(self.node_pane_c, 900, 0)
+        self.graph.add_node(self.node_outro, 1100, 0)
 
-        self.data_graph.connect_ports(start_out.port_id, pane_a_in.port_id)
-        self.data_graph.connect_ports(pane_a_out.port_id, pane_b_in.port_id)
-        self.data_graph.connect_ports(pane_b_out.port_id, trans_in.port_id)
-        self.data_graph.connect_ports(trans_out.port_id, pane_c_in.port_id)
-        self.data_graph.connect_ports(pane_c_out.port_id, outro_in.port_id)
+        self.graph.connect_ports(self.node_start.port_out, self.node_pane_a.port_in)
+        self.graph.connect_ports(self.node_pane_a.port_out, self.node_pane_b.port_in)
+        self.graph.connect_ports(
+            self.node_pane_b.port_out, self.node_transition.port_in
+        )
+        self.graph.connect_ports(
+            self.node_transition.port_out, self.node_pane_c.port_in
+        )
+        self.graph.connect_ports(self.node_pane_c.port_out, self.node_outro.port_in)
+
+    def _register(self) -> None:
+        self.graph.register_node("Main", PanelNode)
+        self.graph.register_node("Main", TransitionNode)
+        self.graph.register_node("Main", StartNode)
+        self.graph.register_node("Main", OutroNode)
 
 
 class ExampleWindow(QtWrappers.MainWindow):
