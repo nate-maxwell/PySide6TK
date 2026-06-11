@@ -264,7 +264,7 @@ class GraphView(QtWidgets.QGraphicsView):
             self._zoom = new_zoom
             self.scale(factor, factor)
 
-    def _delete_selected(self) -> None:
+    def delete_selected(self) -> None:
         for item in list(self.scene.selectedItems()):
             if isinstance(item, BaseNode):
                 self.remove_node(item)
