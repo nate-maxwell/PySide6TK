@@ -1,35 +1,40 @@
 from __future__ import annotations
 
+from typing import Any
+from typing import Callable
+
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
-from PySide6TK.Nodes.node import BaseNode
-from PySide6TK.Nodes.node import FieldDefinition
-from PySide6TK.Nodes.node import FieldType
 
-
-class CommentBox(BaseNode):
+class CommentBox(QtWidgets.QGraphicsItem):
     """
     A resizable comment box that sits behind nodes in the graph.
 
-    Title and color are editable via the properties panel on double-click.
-    Drag the bottom-right corner handle to resize.
+    Label and color are plain attributes edited via ``on_double_click``
+    callbacks. Drag any corner handle to resize.
 
     Args:
         label (str): The comment text displayed in the header.
-        width (float): Initial width in pixels.
-        height (float): Initial height in pixels.
+        width (int): Initial width in pixels.
+        height (int): Initial height in pixels.
         parent (QtWidgets.QGraphicsItem | None): Optional parent item.
+
+    Attributes:
+        label (str): The comment text.
+        color (tuple[int, int, int, int]): RGBA header color.
+        on_double_click (list[Callable[[CommentBox], None]]): Callbacks fired
+            when the comment box is double-clicked.
     """
 
     _HEADER_HEIGHT: int = 24
     _HANDLE_SIZE: float = 12.0
-    _CORNER_NONE = 0
-    _CORNER_TOP_LEFT = 1
-    _CORNER_TOP_RIGHT = 2
-    _CORNER_BOTTOM_LEFT = 3
-    _CORNER_BOTTOM_RIGHT = 4
+    _CORNER_NONE: int = 0
+    _CORNER_TOP_LEFT: int = 1
+    _CORNER_TOP_RIGHT: int = 2
+    _CORNER_BOTTOM_LEFT: int = 3
+    _CORNER_BOTTOM_RIGHT: int = 4
     _CORNER_RADIUS: float = 6.0
     _MIN_WIDTH: float = 120.0
     _MIN_HEIGHT: float = 60.0
@@ -42,56 +47,35 @@ class CommentBox(BaseNode):
         height: int = 160,
         parent: QtWidgets.QGraphicsItem | None = None,
     ) -> None:
-        self._box_width = width
-        self._box_height = height
-        self._resizing = False
+        super().__init__(parent)
+        self.label: str = label
+        self.color: tuple[int, int, int, int] = (80, 80, 40, 180)
+        self.on_double_click: list[Callable[[CommentBox], None]] = []
+
+        self._box_width: float = float(width)
+        self._box_height: float = float(height)
+        self._resizing: bool = False
+        self._resize_corner: int = self._CORNER_NONE
         self._resize_origin: QtCore.QPointF = QtCore.QPointF()
-        self._resize_start_size: tuple[float, float] = (width, height)
-        super().__init__(
-            title=label, width=width, body_height=height - 24, parent=parent
-        )
+        self._resize_start_size: tuple[float, float] = (float(width), float(height))
+        self._resize_start_pos: QtCore.QPointF = QtCore.QPointF()
+
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
         self.setZValue(-2)
 
-    def _build(self) -> None:
-        self.add_field(
-            FieldDefinition(
-                name="label",
-                label="Label",
-                field_type=FieldType.STR,
-                default=self.title,
-            )
-        )
-        self.add_field(
-            FieldDefinition(
-                name="color",
-                label="Color",
-                field_type=FieldType.COLOR,
-                default=(80, 80, 40, 180),
-            )
-        )
-
     def _header_color(self) -> QtGui.QColor:
-        r, g, b, a = self.get_field_value("color")
+        r, g, b, a = self.color
         return QtGui.QColor(r, g, b, a)
 
     def _body_color(self) -> QtGui.QColor:
-        r, g, b, a = self.get_field_value("color")
+        r, g, b, a = self.color
         return QtGui.QColor(r, g, b, max(0, a - 100))
 
     def _border_color(self) -> QtGui.QColor:
-        r, g, b, _ = self.get_field_value("color")
+        r, g, b, _ = self.color
         return QtGui.QColor(r, g, b, 200)
-
-    def _handle_rect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(
-            self._box_width - self._HANDLE_SIZE,
-            self._box_height - self._HANDLE_SIZE,
-            self._HANDLE_SIZE,
-            self._HANDLE_SIZE,
-        )
-
-    def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._box_width, self._box_height)
 
     def _corner_rects(self) -> dict[int, QtCore.QRectF]:
         h = self._HANDLE_SIZE
@@ -109,6 +93,15 @@ class CommentBox(BaseNode):
             if rect.contains(pos):
                 return corner
         return self._CORNER_NONE
+
+    def boundingRect(self) -> QtCore.QRectF:
+        """
+        Return the bounding rectangle of the comment box.
+
+        Returns:
+            QtCore.QRectF: The bounding rect.
+        """
+        return QtCore.QRectF(0, 0, self._box_width, self._box_height)
 
     def paint(
         self,
@@ -153,7 +146,7 @@ class CommentBox(BaseNode):
         painter.drawText(
             QtCore.QRectF(8, 0, self._box_width - 16, self._HEADER_HEIGHT),
             QtCore.Qt.AlignmentFlag.AlignVCenter,
-            self.get_field_value("label"),
+            self.label,
         )
 
         border_pen = QtGui.QPen(
@@ -167,6 +160,17 @@ class CommentBox(BaseNode):
         if self.isSelected():
             for corner_rect in self._corner_rects().values():
                 painter.fillRect(corner_rect, QtGui.QBrush(self._border_color()))
+
+    def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        """
+        Fire all registered double-click callbacks.
+
+        Args:
+            event (QtWidgets.QGraphicsSceneMouseEvent): The mouse event.
+        """
+        for cb in self.on_double_click:
+            cb(self)
+        super().mouseDoubleClickEvent(event)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
