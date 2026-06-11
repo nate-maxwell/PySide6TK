@@ -401,7 +401,8 @@ class GraphView(QtWidgets.QGraphicsView):
         widget_class = entry.widget_class if entry is not None else NodeWidget
         widget = widget_class(node, self.graph, self._GRID_SMALL)
         for cb in self.on_node_double_click:
-            widget.on_double_click.append(cb)
+            if cb not in widget.on_double_click:
+                widget.on_double_click.append(cb)
         self._node_widgets[node.node_id] = widget
         self._node_refs.append(widget)
         self.scene.addItem(widget)
