@@ -217,6 +217,17 @@ class BaseNode(QtWidgets.QGraphicsItem):
             raise KeyError(f"No field '{name}' on node '{self.title}'.")
         self._field_values[name] = value
 
+    def contains_field(self, field_name: str) -> bool:
+        """
+        Returns whether the node contains a field by the given field_name.
+
+        Args:
+            field_name (str): The name to look up.
+        Returns:
+            bool: Whether it exists in the node's fields.
+        """
+        return field_name in self._fields
+
     def input_ports(self) -> list[Port]:
         """
         Return all input ports on this node.
