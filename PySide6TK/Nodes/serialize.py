@@ -24,6 +24,7 @@ def serialize(view: GraphView) -> dict[str, Any]:
     """
 
     def _serialize_value(value: Any) -> Any:
+        """Converts non-json values to json friendly values."""
         if isinstance(value, tuple):
             return list(value)
         return value
