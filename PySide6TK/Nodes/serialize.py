@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import json
 from pathlib import Path
 from typing import Any
 
-from PySide6TK.Nodes.graph import GraphView
 from PySide6TK.Nodes.node import BaseNode
+
+if TYPE_CHECKING:
+    from PySide6TK.Nodes.graph import GraphView
 
 
 def serialize_nodes(view: GraphView, nodes: list[BaseNode]) -> dict[str, Any]:

@@ -18,6 +18,8 @@ from PySide6TK.Nodes.commands import RemoveNodeCommand
 from PySide6TK.Nodes.commands import ConnectPortsCommand
 from PySide6TK.Nodes.commands import MoveNodeCommand
 from PySide6TK.Nodes.commands import CommandStack
+from PySide6TK.Nodes.serialize import serialize_nodes
+from PySide6TK.Nodes.serialize import deserialize_nodes
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -382,15 +384,13 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def copy_selected(self) -> None:
         """Copy selected nodes and the wires between them to the clipboard as JSON."""
-        from PySide6TK.Nodes import serialize as serialize_module
-
         selected_nodes = [
             item for item in self.scene.selectedItems() if isinstance(item, BaseNode)
         ]
         if not selected_nodes:
             return
 
-        data = serialize_module.serialize_nodes(self, selected_nodes)
+        data = serialize_nodes(self, selected_nodes)
         QtGui.QGuiApplication.clipboard().setText(json.dumps(data))
 
     def paste_clipboard(self, x: float, y: float) -> None:
@@ -401,8 +401,6 @@ class GraphView(QtWidgets.QGraphicsView):
             x (float): Scene x position for the first pasted node.
             y (float): Scene y position for the first pasted node.
         """
-        from PySide6TK.Nodes import serialize as serialize_module
-
         text = QtGui.QGuiApplication.clipboard().text()
         if not text:
             return
@@ -415,4 +413,4 @@ class GraphView(QtWidgets.QGraphicsView):
         if "nodes" not in data or not data["nodes"]:
             return
 
-        serialize_module.deserialize_nodes(self, data, offset=(x, y))
+        deserialize_nodes(self, data, offset=(x, y))
