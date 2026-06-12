@@ -342,18 +342,20 @@ class BaseNode(QtWidgets.QGraphicsItem):
         painter.setFont(label_font)
         painter.setPen(self._COLOR_PORT_LABEL)
 
+        half_width = self.width * 0.5
+
         for port in self._ports:
             py = port.pos().y()
             if port.port_type == PortType.INPUT:
                 painter.drawText(
-                    QtCore.QRectF(10, py - 8, self.width * 0.5, 16),
+                    QtCore.QRectF(10, py - 8, half_width, 16),
                     QtCore.Qt.AlignmentFlag.AlignVCenter
                     | QtCore.Qt.AlignmentFlag.AlignLeft,
                     port.name,
                 )
             else:
                 painter.drawText(
-                    QtCore.QRectF(self.width * 0.5, py - 8, self.width * 0.5 - 10, 16),
+                    QtCore.QRectF(half_width, py - 8, half_width - 10, 16),
                     QtCore.Qt.AlignmentFlag.AlignVCenter
                     | QtCore.Qt.AlignmentFlag.AlignRight,
                     port.name,
