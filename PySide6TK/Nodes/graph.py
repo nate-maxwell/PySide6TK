@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 
 from PySide6 import QtCore
@@ -378,3 +379,40 @@ class GraphView(QtWidgets.QGraphicsView):
 
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         super().mouseReleaseEvent(event)
+
+    def copy_selected(self) -> None:
+        """Copy selected nodes and the wires between them to the clipboard as JSON."""
+        from PySide6TK.Nodes import serialize as serialize_module
+
+        selected_nodes = [
+            item for item in self.scene.selectedItems() if isinstance(item, BaseNode)
+        ]
+        if not selected_nodes:
+            return
+
+        data = serialize_module.serialize_nodes(self, selected_nodes)
+        QtGui.QGuiApplication.clipboard().setText(json.dumps(data))
+
+    def paste_clipboard(self, x: float, y: float) -> None:
+        """
+        Paste nodes from the clipboard, offset so the first node lands at (x, y).
+
+        Args:
+            x (float): Scene x position for the first pasted node.
+            y (float): Scene y position for the first pasted node.
+        """
+        from PySide6TK.Nodes import serialize as serialize_module
+
+        text = QtGui.QGuiApplication.clipboard().text()
+        if not text:
+            return
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            return
+
+        if "nodes" not in data or not data["nodes"]:
+            return
+
+        serialize_module.deserialize_nodes(self, data, offset=(x, y))

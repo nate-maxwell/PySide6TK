@@ -4,43 +4,30 @@ import json
 from pathlib import Path
 from typing import Any
 
-from PySide6TK.Nodes.node import BaseNode
-from PySide6TK.Nodes.port import Port
-from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.graph import GraphView
+from PySide6TK.Nodes.node import BaseNode
 
 
-def serialize(view: GraphView) -> dict[str, Any]:
+def serialize_nodes(view: GraphView, nodes: list[BaseNode]) -> dict[str, Any]:
     """
-    Serialize a GraphView to a plain dict.
-
-    All nodes are serialized in insertion order. Wires are stored as pairs
-    of port references in the form ``(node_id, port_type, port_index)``.
+    Serialize a subset of nodes and the wires between them to a plain dict.
 
     Args:
-        view (GraphView): The graph view to serialize.
+        view (GraphView): The graph view the nodes belong to.
+        nodes (list[BaseNode]): The nodes to serialize.
     Returns:
-        dict[str, Any]: The serialized graph.
+        dict[str, Any]: The serialized nodes and wires.
     """
 
     def _serialize_value(value: Any) -> Any:
-        """Converts non-json values to json friendly values."""
         if isinstance(value, tuple):
             return list(value)
         return value
 
-    def _port_index(port: Port, node_: BaseNode, port_type: str) -> int:
-        ports = (
-            node_.output_ports()
-            if port_type == PortType.OUTPUT
-            else node_.input_ports()
-        )
-        return ports.index(port)
-
     node_ids: dict[int, str] = {}
     nodes_data: list[dict[str, Any]] = []
 
-    for i, node in enumerate(view._node_refs):
+    for i, node in enumerate(nodes):
         node_id = str(i)
         node_ids[id(node)] = node_id
         pos = node.pos()
@@ -60,24 +47,35 @@ def serialize(view: GraphView) -> dict[str, Any]:
             }
         )
 
+    node_set = set(node_ids.keys())
     wires_data: list[dict[str, Any]] = []
     for wire in view.get_wires():
         source_node = wire.source.parentItem()
         target_node = wire.target.parentItem()
-        if not isinstance(source_node, BaseNode) or not isinstance(
-            target_node, BaseNode
-        ):
+        if id(source_node) not in node_set or id(target_node) not in node_set:
             continue
         wires_data.append(
             {
                 "source_node": node_ids[id(source_node)],
-                "source_port": _port_index(wire.source, source_node, PortType.OUTPUT),
+                "source_port": source_node.output_ports().index(wire.source),
                 "target_node": node_ids[id(target_node)],
-                "target_port": _port_index(wire.target, target_node, PortType.INPUT),
+                "target_port": target_node.input_ports().index(wire.target),
             }
         )
 
     return {"nodes": nodes_data, "wires": wires_data}
+
+
+def serialize(view: GraphView) -> dict[str, Any]:
+    """
+    Serialize a GraphView to a plain dict.
+
+    Args:
+        view (GraphView): The graph view to serialize.
+    Returns:
+        dict[str, Any]: The serialized graph.
+    """
+    return serialize_nodes(view, view._node_refs)
 
 
 def save(graph: GraphView, path: Path) -> None:
@@ -92,16 +90,22 @@ def save(graph: GraphView, path: Path) -> None:
     path.write_text(json.dumps(data, indent=2))
 
 
-def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
+def deserialize_nodes(
+    view: GraphView,
+    data: dict[str, Any],
+    offset: tuple[float, float] | None = None,
+) -> list[BaseNode]:
     """
-    Reconstruct a graph from serialized data into a GraphView.
-
-    Clears the existing scene before loading. Node types are resolved via
-    ``registry``, which maps type name strings to node classes.
+    Reconstruct nodes and wires from serialized data and add them to a GraphView.
 
     Args:
-        graph (GraphView): The graph view to load into.
-        data (dict[str, Any]): Serialized graph data from ``serialize``.
+        view (GraphView): The graph view to add the nodes to.
+        data (dict[str, Any]): Serialized data from ``serialize_nodes`` or ``serialize``.
+        offset (tuple[float, float] | None): If provided, positions are
+            translated so the first node lands at this (x, y), preserving
+            relative offsets between nodes.
+    Returns:
+        list[BaseNode]: The newly created nodes, selected and added to the scene.
     """
 
     def _deserialize_value(value_: Any) -> Any:
@@ -111,13 +115,21 @@ def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
 
     registry = {
         node_type.__name__: node_type
-        for node_types in graph.node_registry.values()
+        for node_types in view.node_registry.values()
         for node_type in node_types
     }
-    registry[graph.comment_type.__name__] = graph.comment_type
+    registry[view.comment_type.__name__] = view.comment_type
 
-    graph.scene.clear()
     nodes_by_id: dict[str, BaseNode] = {}
+    created: list[BaseNode] = []
+
+    origin_x = 0.0
+    origin_y = 0.0
+    if offset is not None and data["nodes"]:
+        origin_x = data["nodes"][0]["x"]
+        origin_y = data["nodes"][0]["y"]
+
+    view.scene.clearSelection()
 
     for node_data in data["nodes"]:
         node_type = registry.get(node_data["type"])
@@ -134,8 +146,19 @@ def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
             if name in node._fields:
                 node.set_field_value(name, _deserialize_value(value))
 
-        graph.add_node(node, node_data["x"], node_data["y"])
+        if offset is not None:
+            new_x = offset[0] + (node_data["x"] - origin_x)
+            new_y = offset[1] + (node_data["y"] - origin_y)
+        else:
+            new_x = node_data["x"]
+            new_y = node_data["y"]
+
+        view.add_node(node, new_x, new_y)
         nodes_by_id[node_data["id"]] = node
+        created.append(node)
+
+        if offset is not None:
+            node.setSelected(True)
 
     for wire_data in data["wires"]:
         source_node = nodes_by_id.get(wire_data["source_node"])
@@ -150,7 +173,23 @@ def deserialize(graph: GraphView, data: dict[str, Any]) -> None:
         if si >= len(source_ports) or ti >= len(target_ports):
             continue
 
-        graph.connect_ports(source_ports[si], target_ports[ti])
+        view.connect_ports(source_ports[si], target_ports[ti])
+
+    return created
+
+
+def deserialize(view: GraphView, data: dict[str, Any]) -> None:
+    """
+    Reconstruct a graph from serialized data into a GraphView.
+
+    Clears the existing scene before loading.
+
+    Args:
+        view (GraphView): The graph view to load into.
+        data (dict[str, Any]): Serialized graph data from ``serialize``.
+    """
+    view.scene.clear()
+    deserialize_nodes(view, data, offset=None)
 
 
 def load(graph: GraphView, path: Path) -> None:
