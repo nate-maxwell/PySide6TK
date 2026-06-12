@@ -414,3 +414,14 @@ class GraphView(QtWidgets.QGraphicsView):
             return
 
         deserialize_nodes(self, data, offset=(x, y))
+
+    def cursor_scene_pos(self) -> tuple[float, float]:
+        """
+        Return the current cursor position in scene coordinates.
+
+        Returns:
+            tuple[float, float]: Scene-space x and y of the cursor.
+        """
+        viewport_pos = self.viewport().mapFromGlobal(QtGui.QCursor.pos())
+        scene_pos = self.mapToScene(viewport_pos)
+        return scene_pos.x(), scene_pos.y()
