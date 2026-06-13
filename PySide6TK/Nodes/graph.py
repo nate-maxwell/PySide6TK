@@ -369,6 +369,11 @@ class GraphView(QtWidgets.QGraphicsView):
 
                 self.connect_ports(source, target)
 
+            elif target_port is None:
+                self._open_drop_menu(
+                    event.position().toPoint(), scene_pos, drag_port, reverse
+                )
+
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
             return
 
@@ -386,6 +391,50 @@ class GraphView(QtWidgets.QGraphicsView):
 
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         super().mouseReleaseEvent(event)
+
+    def _open_drop_menu(
+        self,
+        viewport_pos: QtCore.QPoint,
+        scene_pos: QtCore.QPointF,
+        drag_port: Port,
+        reverse: bool,
+    ) -> None:
+        menu = QtWidgets.QMenu(self)
+
+        for category, node_types in sorted(self.node_registry.items()):
+            submenu = menu.addMenu(category)
+            for node_type in node_types:
+                action = submenu.addAction(node_type.__name__)
+                action.setData(node_type)
+
+        chosen = menu.exec(self.viewport().mapToGlobal(viewport_pos))
+        if chosen is None:
+            return
+
+        node_type = chosen.data()
+        node = node_type()
+        self.add_node(node, scene_pos.x(), scene_pos.y())
+
+        candidate_ports = (
+            node.input_ports()
+            if drag_port.port_type == PortType.OUTPUT
+            else node.output_ports()
+        )
+        if not candidate_ports:
+            return
+
+        target = candidate_ports[0]
+
+        if reverse:
+            source, target_final = target, drag_port
+        else:
+            source, target_final = drag_port, target
+
+        if target_final.port_type == PortType.INPUT:
+            for wire in list(target_final.wires):
+                self._destroy_wire(wire)
+
+        self.connect_ports(source, target_final)
 
     def copy_selected(self) -> None:
         """Copy selected nodes and the wires between them to the clipboard as JSON."""
