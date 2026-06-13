@@ -95,6 +95,10 @@ class LabeledComboBox(QtWidgets.QWidget):
                 self.layout_main = QtWidgets.QHBoxLayout()
                 self.layout_main.addLayout(self.hlayout_box)
                 self.layout_main.addWidget(self.label)
+            case _:
+                self.layout_main = QtWidgets.QHBoxLayout()
+                self.layout_main.addWidget(self.label)
+                self.layout_main.addLayout(self.hlayout_box)
 
         self.layout_main.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_main)
