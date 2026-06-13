@@ -362,6 +362,11 @@ class GraphView(QtWidgets.QGraphicsView):
                 source, target = (
                     (target_port, drag_port) if reverse else (drag_port, target_port)
                 )
+
+                if target.port_type == PortType.INPUT:
+                    for wire in list(target.wires):
+                        self._destroy_wire(wire)
+
                 self.connect_ports(source, target)
 
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
