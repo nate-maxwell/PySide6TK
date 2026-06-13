@@ -70,7 +70,7 @@ class RemoveNodeCommand(Command):
         for port in self._graph._ports_of(self._node):
             for wire in list(port.wires):
                 self._severed_wires.append((wire.source, wire.target))
-                self._graph._destroy_wire(wire)
+                self._graph.destroy_wire(wire)
         self._graph.remove_node_internal(self._node)
 
     def undo(self) -> None:
@@ -124,7 +124,7 @@ class ConnectPortsCommand(Command):
 
     def undo(self) -> None:
         if self._wire is not None:
-            self._graph._destroy_wire(self._wire)
+            self._graph.destroy_wire(self._wire)
 
 
 class MoveNodeCommand(Command):

@@ -224,7 +224,7 @@ class GraphView(QtWidgets.QGraphicsView):
                 return item
         return None
 
-    def _destroy_wire(self, wire: Wire) -> None:
+    def destroy_wire(self, wire: Wire) -> None:
         wire.source.remove_wire(wire)
         if wire.target:
             wire.target.remove_wire(wire)
@@ -286,7 +286,7 @@ class GraphView(QtWidgets.QGraphicsView):
             if port is not None:
                 if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
                     for wire in list(port.wires):
-                        self._destroy_wire(wire)
+                        self.destroy_wire(wire)
                     return
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
                 self._drag_wire = Wire(port)
@@ -365,7 +365,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
                 if target.port_type == PortType.INPUT:
                     for wire in list(target.wires):
-                        self._destroy_wire(wire)
+                        self.destroy_wire(wire)
 
                 self.connect_ports(source, target)
 
@@ -432,7 +432,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
         if target_final.port_type == PortType.INPUT:
             for wire in list(target_final.wires):
-                self._destroy_wire(wire)
+                self.destroy_wire(wire)
 
         self.connect_ports(source, target_final)
 
