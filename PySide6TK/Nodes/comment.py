@@ -199,25 +199,35 @@ class CommentBox(BaseNode):
             start_pos = self._resize_start_pos
             self.prepareGeometryChange()
 
+            grid = self._grid_size
+
             if self._resize_corner == self._CORNER_BOTTOM_RIGHT:
                 self._box_width = max(self._MIN_WIDTH, start_w + delta.x())
                 self._box_height = max(self._MIN_HEIGHT, start_h + delta.y())
+                self._box_width = round(self._box_width / grid) * grid
+                self._box_height = round(self._box_height / grid) * grid
 
             elif self._resize_corner == self._CORNER_BOTTOM_LEFT:
                 new_w = max(self._MIN_WIDTH, start_w - delta.x())
+                new_w = round(new_w / grid) * grid
                 self._box_height = max(self._MIN_HEIGHT, start_h + delta.y())
+                self._box_height = round(self._box_height / grid) * grid
                 self.setPos(start_pos.x() + (start_w - new_w), start_pos.y())
                 self._box_width = new_w
 
             elif self._resize_corner == self._CORNER_TOP_RIGHT:
                 self._box_width = max(self._MIN_WIDTH, start_w + delta.x())
+                self._box_width = round(self._box_width / grid) * grid
                 new_h = max(self._MIN_HEIGHT, start_h - delta.y())
+                new_h = round(new_h / grid) * grid
                 self.setPos(start_pos.x(), start_pos.y() + (start_h - new_h))
                 self._box_height = new_h
 
             elif self._resize_corner == self._CORNER_TOP_LEFT:
                 new_w = max(self._MIN_WIDTH, start_w - delta.x())
+                new_w = round(new_w / grid) * grid
                 new_h = max(self._MIN_HEIGHT, start_h - delta.y())
+                new_h = round(new_h / grid) * grid
                 self.setPos(
                     start_pos.x() + (start_w - new_w),
                     start_pos.y() + (start_h - new_h),
