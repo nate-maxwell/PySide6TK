@@ -164,6 +164,16 @@ class GraphView(QtWidgets.QGraphicsView):
             if isinstance(item, Wire) and item.is_connected()
         ]
 
+    def clear(self) -> None:
+        """Removes all nodes, comments, and wires from the scene and resets state."""
+        for item in list(self.scene.items()):
+            self.scene.removeItem(item)
+
+        self._node_refs.clear()
+        self.commands.clear()
+        self._move_origins.clear()
+        self._drag_wire = None
+
     # -----Command tracking for undo/redo--------------------------------------
 
     def add_node_internal(self, node: BaseNode, x: float, y: float) -> None:
