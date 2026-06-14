@@ -8,9 +8,9 @@ import PySide6.QtWidgets
 
 QtCore = PySide6.QtCore
 QtGui = PySide6.QtGui
-QtWidgets = PySide6.QtOpenGL
-QtOpenGL = PySide6.QtOpenGLWidgets
-QtOpenGLWidgets = PySide6.QtWidgets
+QtWidgets = PySide6.QtWidgets
+QtOpenGL = PySide6.QtOpenGL
+QtOpenGLWidgets = PySide6.QtOpenGLWidgets
 
 
 MODULE_NAME = Path(__file__).parent.name
