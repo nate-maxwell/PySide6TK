@@ -22,11 +22,17 @@ class Port(QtWidgets.QGraphicsEllipseItem):
     Args:
         port_type (str): Either ``PortType.INPUT`` or ``PortType.OUTPUT``.
         name (str): Display name for this port.
+        data_type (str): The data type this port carries. Defaults to ``"any"``,
+            which connects to any other type.
         parent (QtWidgets.QGraphicsItem | None): The parent node item.
 
     Attributes:
         port_type (str): Whether this is an input or output port.
         name (str): The port's display name.
+        data_type (str): The type of data carried by this port.
+        color (QtGui.QColor): The display color for this port and its wires.
+            Defaults to the standard input/output color. Set by the application
+            after construction to reflect data type.
         wires (list[Wire]): All wires currently connected to this port.
     """
 
@@ -40,20 +46,35 @@ class Port(QtWidgets.QGraphicsEllipseItem):
         self,
         port_type: str,
         name: str,
+        data_type: str = "any",
         parent: QtWidgets.QGraphicsItem | None = None,
     ) -> None:
         r = self._RADIUS
         super().__init__(-r, -r, r * 2, r * 2, parent)
         self.port_type = port_type
         self.name = name
+        self.data_type = data_type
         self.wires: list[Wire] = []
 
-        color = self._COLOR_INPUT if port_type == PortType.INPUT else self._COLOR_OUTPUT
-        self.setBrush(QtGui.QBrush(color))
+        self.color: QtGui.QColor = (
+            self._COLOR_INPUT if port_type == PortType.INPUT else self._COLOR_OUTPUT
+        )
+        self.setBrush(QtGui.QBrush(self.color))
         self.setPen(QtGui.QPen(self._COLOR_BORDER, 1.5))
         self.setAcceptHoverEvents(True)
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
         self.setZValue(1)
+
+    def set_color(self, color: QtGui.QColor) -> None:
+        """
+        Set the port's display color and update the brush immediately.
+
+        Args:
+            color (QtGui.QColor): The new color for this port and its wires.
+        """
+        self.color = color
+        self.setBrush(QtGui.QBrush(color))
+        self.update()
 
     def center_scene_pos(self) -> QtCore.QPointF:
         """
@@ -64,18 +85,23 @@ class Port(QtWidgets.QGraphicsEllipseItem):
         """
         return self.scenePos()
 
-    def can_connect_to(self, other: Port) -> bool:
+    def can_connect_to(self, other: "Port") -> bool:
         """
         Return whether this port can connect to another port.
 
-        Ports must be of opposite types.
+        Ports must be of opposite types and carry compatible data types.
+        A data type of ``"any"`` is compatible with all other types.
 
         Args:
             other (Port): The candidate port.
         Returns:
             bool: True if connection is valid.
         """
-        return self.port_type != other.port_type
+        if self.port_type == other.port_type:
+            return False
+        if self.data_type == "any" or other.data_type == "any":
+            return True
+        return self.data_type == other.data_type
 
     def add_wire(self, wire: Wire) -> None:
         """
@@ -101,10 +127,5 @@ class Port(QtWidgets.QGraphicsEllipseItem):
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        color = (
-            self._COLOR_INPUT
-            if self.port_type == PortType.INPUT
-            else self._COLOR_OUTPUT
-        )
-        self.setBrush(QtGui.QBrush(color))
+        self.setBrush(QtGui.QBrush(self.color))
         super().hoverLeaveEvent(event)

@@ -11,6 +11,8 @@ class Wire(QtWidgets.QGraphicsPathItem):
 
     Can be fully connected (source + target) or dangling (source only),
     in which case ``set_drag_end`` drives the free end during drag.
+    The wire's color is derived from the source port's ``color`` attribute,
+    allowing the application to communicate data type visually.
 
     Args:
         source (Port): The output port the wire originates from.
@@ -21,7 +23,7 @@ class Wire(QtWidgets.QGraphicsPathItem):
         target (Port | None): The destination port, or None if not yet connected.
     """
 
-    _COLOR: QtGui.QColor = QtGui.QColor(200, 200, 200)
+    _COLOR_FALLBACK: QtGui.QColor = QtGui.QColor(200, 200, 200)
     _COLOR_INVALID: QtGui.QColor = QtGui.QColor(220, 80, 80)
     _WIDTH: float = 2.0
 
@@ -35,11 +37,35 @@ class Wire(QtWidgets.QGraphicsPathItem):
         self.target = target
         self._drag_end: QtCore.QPointF = source.center_scene_pos()
 
-        pen = QtGui.QPen(self._COLOR, self._WIDTH)
+        pen = QtGui.QPen(self._wire_color(), self._WIDTH)
         pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
         self.setPen(pen)
         self.setZValue(-1)
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
+
+    def _wire_color(self) -> QtGui.QColor:
+        """
+        Resolve the wire color from the source port.
+
+        Returns:
+            QtGui.QColor: The source port's color, or the fallback color if
+                the source port has no color attribute set.
+        """
+        if self.source is not None and hasattr(self.source, "color"):
+            return self.source.color
+        return self._COLOR_FALLBACK
+
+    def refresh_color(self) -> None:
+        """
+        Re-read the source port's color and update the wire's pen.
+
+        Call this after the source port's color has been changed externally,
+        e.g. after the application assigns a data-type color to the port.
+        """
+        pen = self.pen()
+        pen.setColor(self._wire_color())
+        self.setPen(pen)
+        self.update()
 
     def set_drag_end(self, pos: QtCore.QPointF) -> None:
         """

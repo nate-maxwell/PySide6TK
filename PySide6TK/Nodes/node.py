@@ -162,7 +162,7 @@ class BaseNode(QtWidgets.QGraphicsItem):
         input_count = sum(1 for p in self._ports if p.port_type == PortType.INPUT)
         output_count = sum(1 for p in self._ports if p.port_type == PortType.OUTPUT)
 
-        port = Port(port_type, name, self)
+        port = Port(port_type, name, "any", self)
         y = (
             self._HEADER_HEIGHT
             + self._PORT_MARGIN
