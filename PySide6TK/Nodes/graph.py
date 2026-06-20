@@ -46,17 +46,17 @@ class GraphView(QtWidgets.QGraphicsView):
         commands (CommandStack): The undo/redo command stack.
     """
 
+    grid_small: int = 20
+    grid_large: int = 100
+    color_bg: QtGui.QColor = QtGui.QColor(30, 30, 30)
+    color_grid_small: QtGui.QColor = QtGui.QColor(45, 45, 45)
+    color_grid_large: QtGui.QColor = QtGui.QColor(55, 55, 55)
+    zoom_min: float = 0.1
+    zoom_max: float = 4.0
+    zoom_step: float = 0.12
+
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        self.grid_small: int = 20
-        self.grid_large: int = 100
-        self.color_bg: QtGui.QColor = QtGui.QColor(30, 30, 30)
-        self.color_grid_small: QtGui.QColor = QtGui.QColor(45, 45, 45)
-        self.color_grid_large: QtGui.QColor = QtGui.QColor(55, 55, 55)
-        self.zoom_min: float = 0.1
-        self.zoom_max: float = 4.0
-        self.zoom_step: float = 0.12
-
         self.graph_scene = QtWidgets.QGraphicsScene(self)
         self.graph_scene.setSceneRect(-10000, -10000, 20000, 20000)
         self.setScene(self.graph_scene)
