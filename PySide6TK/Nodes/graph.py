@@ -46,14 +46,14 @@ class GraphView(QtWidgets.QGraphicsView):
         commands (CommandStack): The undo/redo command stack.
     """
 
-    _GRID_SMALL: int = 20
-    _GRID_LARGE: int = 100
-    _COLOR_BG: QtGui.QColor = QtGui.QColor(30, 30, 30)
-    _COLOR_GRID_SMALL: QtGui.QColor = QtGui.QColor(45, 45, 45)
-    _COLOR_GRID_LARGE: QtGui.QColor = QtGui.QColor(55, 55, 55)
-    _ZOOM_MIN: float = 0.1
-    _ZOOM_MAX: float = 4.0
-    _ZOOM_STEP: float = 0.12
+    grid_small: int = 20
+    grid_large: int = 100
+    color_bg: QtGui.QColor = QtGui.QColor(30, 30, 30)
+    color_grid_small: QtGui.QColor = QtGui.QColor(45, 45, 45)
+    color_grid_large: QtGui.QColor = QtGui.QColor(55, 55, 55)
+    zoom_min: float = 0.1
+    zoom_max: float = 4.0
+    zoom_step: float = 0.12
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
@@ -71,7 +71,7 @@ class GraphView(QtWidgets.QGraphicsView):
             QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse
         )
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
-        self.setBackgroundBrush(QtGui.QBrush(self._COLOR_BG))
+        self.setBackgroundBrush(QtGui.QBrush(self.color_bg))
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
@@ -189,7 +189,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self._node_refs.append(node)
         self.scene.addItem(node)
         node.setPos(x, y)
-        node._grid_size = self._GRID_SMALL
+        node._grid_size = self.grid_small
 
     def remove_node_internal(self, node: BaseNode) -> None:
         self.scene.removeItem(node)
@@ -256,33 +256,33 @@ class GraphView(QtWidgets.QGraphicsView):
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
 
-        left = int(rect.left()) - (int(rect.left()) % self._GRID_SMALL)
-        top = int(rect.top()) - (int(rect.top()) % self._GRID_SMALL)
+        left = int(rect.left()) - (int(rect.left()) % self.grid_small)
+        top = int(rect.top()) - (int(rect.top()) % self.grid_small)
 
-        small_pen = QtGui.QPen(self._COLOR_GRID_SMALL)
+        small_pen = QtGui.QPen(self.color_grid_small)
         small_pen.setCosmetic(True)
-        large_pen = QtGui.QPen(self._COLOR_GRID_LARGE)
+        large_pen = QtGui.QPen(self.color_grid_large)
         large_pen.setCosmetic(True)
 
         x = left
         while x < rect.right():
-            pen = large_pen if x % self._GRID_LARGE == 0 else small_pen
+            pen = large_pen if x % self.grid_large == 0 else small_pen
             painter.setPen(pen)
             painter.drawLine(int(x), int(rect.top()), int(x), int(rect.bottom()))
-            x += self._GRID_SMALL
+            x += self.grid_small
 
         y = top
         while y < rect.bottom():
-            pen = large_pen if y % self._GRID_LARGE == 0 else small_pen
+            pen = large_pen if y % self.grid_large == 0 else small_pen
             painter.setPen(pen)
             painter.drawLine(int(rect.left()), int(y), int(rect.right()), int(y))
-            y += self._GRID_SMALL
+            y += self.grid_small
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         delta = event.angleDelta().y()
-        factor = 1 + self._ZOOM_STEP if delta > 0 else 1 - self._ZOOM_STEP
+        factor = 1 + self.zoom_step if delta > 0 else 1 - self.zoom_step
         new_zoom = self._zoom * factor
-        if self._ZOOM_MIN <= new_zoom <= self._ZOOM_MAX:
+        if self.zoom_min <= new_zoom <= self.zoom_max:
             self._zoom = new_zoom
             self.scale(factor, factor)
 
