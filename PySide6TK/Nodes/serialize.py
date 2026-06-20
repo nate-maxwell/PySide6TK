@@ -133,7 +133,7 @@ def deserialize_nodes(
         origin_x = data["nodes"][0]["x"]
         origin_y = data["nodes"][0]["y"]
 
-    view.scene_.clearSelection()
+    view.graph_scene.clearSelection()
 
     for node_data in data["nodes"]:
         node_type = registry.get(node_data["type"])
@@ -205,7 +205,7 @@ def deserialize(view: GraphView, data: dict[str, Any]) -> None:
         view (GraphView): The graph view to load into.
         data (dict[str, Any]): Serialized graph data from ``serialize``.
     """
-    view.scene_.clear()
+    view.graph_scene.clear()
     deserialize_nodes(view, data, offset=None)
 
 

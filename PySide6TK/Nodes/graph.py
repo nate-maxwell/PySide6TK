@@ -40,7 +40,7 @@ class GraphView(QtWidgets.QGraphicsView):
         parent (QtWidgets.QWidget | None): Optional parent widget.
 
     Attributes:
-        scene_ (QtWidgets.QGraphicsScene): The scene Nodes are added to.
+        graph_scene (QtWidgets.QGraphicsScene): The scene Nodes are added to.
         node_registry (dict[str, list[type[BaseNode]]]): Map of category
             name to node types registered under that category.
         commands (CommandStack): The undo/redo command stack.
@@ -57,9 +57,9 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        self.scene_ = QtWidgets.QGraphicsScene(self)
-        self.scene_.setSceneRect(-10000, -10000, 20000, 20000)
-        self.setScene(self.scene_)
+        self.graph_scene = QtWidgets.QGraphicsScene(self)
+        self.graph_scene.setSceneRect(-10000, -10000, 20000, 20000)
+        self.setScene(self.graph_scene)
 
         self.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         self.setViewportUpdateMode(
@@ -163,14 +163,14 @@ class GraphView(QtWidgets.QGraphicsView):
         """
         return [
             item
-            for item in self.scene_.items()
+            for item in self.graph_scene.items()
             if isinstance(item, Wire) and item.is_connected()
         ]
 
     def clear(self) -> None:
         """Removes all nodes, comments, and wires from the scene and resets state."""
-        for item in list(self.scene_.items()):
-            self.scene_.removeItem(item)
+        for item in list(self.graph_scene.items()):
+            self.graph_scene.removeItem(item)
 
         self._node_refs.clear()
         self.commands.clear()
@@ -187,12 +187,12 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def add_node_internal(self, node: BaseNode, x: float, y: float) -> None:
         self._node_refs.append(node)
-        self.scene_.addItem(node)
+        self.graph_scene.addItem(node)
         node.setPos(x, y)
         node._grid_size = self.grid_small
 
     def remove_node_internal(self, node: BaseNode) -> None:
-        self.scene_.removeItem(node)
+        self.graph_scene.removeItem(node)
         if node in self._node_refs:
             self._node_refs.remove(node)
 
@@ -201,7 +201,7 @@ class GraphView(QtWidgets.QGraphicsView):
         source.add_wire(wire)
         target.add_wire(wire)
         wire.update_path()
-        self.scene_.addItem(wire)
+        self.graph_scene.addItem(wire)
         return wire
 
     # -------------------------------------------------------------------------
@@ -236,7 +236,7 @@ class GraphView(QtWidgets.QGraphicsView):
             self.add_node(node, data[2].x(), data[2].y())
 
     def _port_at(self, scene_pos: QtCore.QPointF) -> Port | None:
-        for item in self.scene_.items(scene_pos):
+        for item in self.graph_scene.items(scene_pos):
             if item is self._drag_wire:
                 continue
             if isinstance(item, Port):
@@ -247,7 +247,7 @@ class GraphView(QtWidgets.QGraphicsView):
         wire.source.remove_wire(wire)
         if wire.target:
             wire.target.remove_wire(wire)
-        self.scene_.removeItem(wire)
+        self.graph_scene.removeItem(wire)
 
     @staticmethod
     def _ports_of(node: object) -> list[Port]:
@@ -287,7 +287,7 @@ class GraphView(QtWidgets.QGraphicsView):
             self.scale(factor, factor)
 
     def delete_selected(self) -> None:
-        for item in list(self.scene_.selectedItems()):
+        for item in list(self.graph_scene.selectedItems()):
             if isinstance(item, BaseNode):
                 self.remove_node(item)
 
@@ -310,7 +310,7 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
                 self._drag_wire = Wire(port)
                 self._drag_wire.reverse = port.port_type == PortType.INPUT
-                self.scene_.addItem(self._drag_wire)
+                self.graph_scene.addItem(self._drag_wire)
                 self._drag_wire.update_path()
                 return
 
@@ -325,9 +325,9 @@ class GraphView(QtWidgets.QGraphicsView):
                         node.setSelected(not node.isSelected())
                         return
                     if not node.isSelected():
-                        self.scene_.clearSelection()
+                        self.graph_scene.clearSelection()
                         node.setSelected(True)
-                    for selected in self.scene_.selectedItems():
+                    for selected in self.graph_scene.selectedItems():
                         n = (
                             selected
                             if isinstance(selected, BaseNode)
@@ -374,7 +374,7 @@ class GraphView(QtWidgets.QGraphicsView):
             drag_port = self._drag_wire.source
             reverse = getattr(self._drag_wire, "reverse", False)
 
-            self.scene_.removeItem(self._drag_wire)
+            self.graph_scene.removeItem(self._drag_wire)
             self._drag_wire = None
 
             if target_port is not None and drag_port.can_connect_to(target_port):
@@ -397,7 +397,7 @@ class GraphView(QtWidgets.QGraphicsView):
             return
 
         if event.button() == QtCore.Qt.MouseButton.LeftButton and self._move_origins:
-            for item in self.scene_.selectedItems():
+            for item in self.graph_scene.selectedItems():
                 node = item if isinstance(item, BaseNode) else item.parentItem()
                 if isinstance(node, BaseNode) and id(node) in self._move_origins:
                     old_pos = self._move_origins[id(node)]
@@ -458,7 +458,9 @@ class GraphView(QtWidgets.QGraphicsView):
     def copy_selected(self) -> None:
         """Copy selected nodes and the wires between them to the clipboard as JSON."""
         selected_nodes = [
-            item for item in self.scene_.selectedItems() if isinstance(item, BaseNode)
+            item
+            for item in self.graph_scene.selectedItems()
+            if isinstance(item, BaseNode)
         ]
         if not selected_nodes:
             return
