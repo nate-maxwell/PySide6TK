@@ -61,9 +61,9 @@ def serialize_nodes(view: GraphView, nodes: list[BaseNode]) -> dict[str, Any]:
         wires_data.append(
             {
                 "source_node": node_ids[id(source_node)],
-                "source_port": source_node.output_ports().index(wire.source),
+                "source_port": wire.source.name,
                 "target_node": node_ids[id(target_node)],
-                "target_port": target_node.input_ports().index(wire.target),
+                "target_port": wire.target.name,
             }
         )
 
@@ -170,14 +170,27 @@ def deserialize_nodes(
         if source_node is None or target_node is None:
             continue
 
-        source_ports = source_node.output_ports()
-        target_ports = target_node.input_ports()
-        si = wire_data["source_port"]
-        ti = wire_data["target_port"]
-        if si >= len(source_ports) or ti >= len(target_ports):
+        source_port = next(
+            (
+                p
+                for p in source_node.output_ports()
+                if p.name == wire_data["source_port"]
+            ),
+            None,
+        )
+        target_port = next(
+            (
+                p
+                for p in target_node.input_ports()
+                if p.name == wire_data["target_port"]
+            ),
+            None,
+        )
+
+        if source_port is None or target_port is None:
             continue
 
-        view.connect_ports(source_ports[si], target_ports[ti])
+        view.connect_ports(source_port, target_port)
 
     return created
 
