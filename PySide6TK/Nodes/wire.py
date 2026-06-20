@@ -1,8 +1,15 @@
+from enum import Enum
+
 from PySide6 import QtCore
 from PySide6 import QtGui
 from PySide6 import QtWidgets
 
 from PySide6TK.Nodes.port import Port
+
+
+class WireStyle(Enum):
+    BEZIER = "bezier"
+    RIGHT_ANGLE = "right_angle"
 
 
 class Wire(QtWidgets.QGraphicsPathItem):
@@ -26,6 +33,8 @@ class Wire(QtWidgets.QGraphicsPathItem):
     _COLOR_FALLBACK: QtGui.QColor = QtGui.QColor(200, 200, 200)
     _COLOR_INVALID: QtGui.QColor = QtGui.QColor(220, 80, 80)
     _WIDTH: float = 2.0
+
+    style = WireStyle.BEZIER
 
     def __init__(
         self,
@@ -86,12 +95,21 @@ class Wire(QtWidgets.QGraphicsPathItem):
             start = self.source.center_scene_pos()
             end = self.target.center_scene_pos() if self.target else self._drag_end
 
-        dx = abs(end.x() - start.x()) * 0.5
-        ctrl1 = QtCore.QPointF(start.x() + dx, start.y())
-        ctrl2 = QtCore.QPointF(end.x() - dx, end.y())
-
         path = QtGui.QPainterPath(start)
-        path.cubicTo(ctrl1, ctrl2, end)
+
+        if Wire.style == WireStyle.RIGHT_ANGLE:
+            mid_x = (start.x() + end.x()) / 2.0
+            path.lineTo(QtCore.QPointF(mid_x, start.y()))
+            path.lineTo(QtCore.QPointF(mid_x, end.y()))
+            path.lineTo(end)
+        elif Wire.style == WireStyle.BEZIER:
+            dx = abs(end.x() - start.x()) * 0.5
+            ctrl1 = QtCore.QPointF(start.x() + dx, start.y())
+            ctrl2 = QtCore.QPointF(end.x() - dx, end.y())
+            path.cubicTo(ctrl1, ctrl2, end)
+        else:
+            raise ValueError(f"Unsupported wire style {str(Wire.style)}")
+
         self.setPath(path)
 
     def is_connected(self) -> bool:

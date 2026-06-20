@@ -11,6 +11,7 @@ from PySide6TK.Nodes.node import BaseNode
 from PySide6TK.Nodes.port import Port
 from PySide6TK.Nodes.port import PortType
 from PySide6TK.Nodes.wire import Wire
+from PySide6TK.Nodes.wire import WireStyle
 from PySide6TK.Nodes.comment import CommentBox
 from PySide6TK.Nodes.commands import AddNodeCommand
 from PySide6TK.Nodes.commands import AddCommentCommand
@@ -86,6 +87,8 @@ class GraphView(QtWidgets.QGraphicsView):
         self.commands: CommandStack = CommandStack()
 
         self.customContextMenuRequested.connect(self._on_context_menu)
+
+        self.wire_style = WireStyle.BEZIER
 
     def view_center(self) -> QtCore.QPointF:
         """
@@ -173,6 +176,12 @@ class GraphView(QtWidgets.QGraphicsView):
         self.commands.clear()
         self._move_origins.clear()
         self._drag_wire = None
+
+    def set_wire_style(self, style: WireStyle) -> None:
+        """Update all wires to the selected style."""
+        Wire.style = style
+        for wire in self.get_wires():
+            wire.update_path()
 
     # -----Command tracking for undo/redo--------------------------------------
 
