@@ -10,7 +10,6 @@ from pathlib import Path
 
 import PySide6TK
 
-
 ICONS_PATH = Path(PySide6TK.RESOURCES_PATH, "icons")
 
 # ----------Generic Color Button Icons-----------------------------------------
@@ -21,8 +20,10 @@ BUTTON_GREEN_40X40 = Path(ICONS_PATH, "ICON_Default_Green_40x40.png")
 BUTTON_ORANGE_40X40 = Path(ICONS_PATH, "ICON_Default_Orange_40x40.png")
 BUTTON_PURPLE_40X40 = Path(ICONS_PATH, "ICON_Default_Purple_40x40.png")
 BUTTON_RED_40X40 = Path(ICONS_PATH, "ICON_Default_Red_40x40.png")
+BUTTON_MAGENTA_40X40 = Path(ICONS_PATH, "ICON_Default_Magenta_40x40.png")
 BUTTON_YELLOW_40X40 = Path(ICONS_PATH, "ICON_Default_Yellow_40x40.png")
 BUTTON_BLACK_40X40 = Path(ICONS_PATH, "ICON_Default_Black_40x40.png")
+BUTTON_WHITE_40X40 = Path(ICONS_PATH, "ICON_Default_White_40x40.png")
 BUTTON_FLAT_BLACK_200X40 = Path(ICONS_PATH, "ICON_FlatBlack_200x40.png")
 
 # ----------Program LOGOS / ICONS----------------------------------------------
