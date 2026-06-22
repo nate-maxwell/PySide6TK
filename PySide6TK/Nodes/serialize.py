@@ -32,24 +32,27 @@ def serialize_nodes(view: GraphView, nodes: list[BaseNode]) -> dict[str, Any]:
     nodes_data: list[dict[str, Any]] = []
 
     for i, node in enumerate(nodes):
-        node_id = str(i)
-        node_ids[id(node)] = node_id
-        pos = node.pos()
-        nodes_data.append(
-            {
-                "id": node_id,
-                "type": type(node).__name__,
-                "title": node.title,
-                "x": pos.x(),
-                "y": pos.y(),
-                "width": getattr(node, "_box_width", None),
-                "height": getattr(node, "_box_height", None),
-                "fields": {
-                    name: _serialize_value(value)
-                    for name, value in node._field_values.items()
-                },
-            }
-        )
+        try:
+            node_id = str(i)
+            node_ids[id(node)] = node_id
+            pos = node.pos()
+            nodes_data.append(
+                {
+                    "id": node_id,
+                    "type": type(node).__name__,
+                    "title": node.title,
+                    "x": pos.x(),
+                    "y": pos.y(),
+                    "width": getattr(node, "_box_width", None),
+                    "height": getattr(node, "_box_height", None),
+                    "fields": {
+                        name: _serialize_value(value)
+                        for name, value in node._field_values.items()
+                    },
+                }
+            )
+        except RuntimeError:
+            pass
 
     node_set = set(node_ids.keys())
     wires_data: list[dict[str, Any]] = []
