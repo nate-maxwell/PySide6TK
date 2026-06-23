@@ -175,6 +175,35 @@ class BaseNode(QtWidgets.QGraphicsItem):
         self._ports.append(port)
         return port
 
+    def remove_port(self, port: Port) -> None:
+        """
+        Remove a port from this node and reposition remaining ports of the
+        same type to fill the gap.
+
+        Args:
+            port (Port): The port to remove.
+        """
+        if port not in self._ports:
+            return
+
+        for wire in list(port.wires):
+            wire.remove()
+
+        self._ports.remove(port)
+        port.setParentItem(None)
+
+        count = 0
+        for p in self._ports:
+            if p.port_type != port.port_type:
+                continue
+            y = self._HEADER_HEIGHT + self._PORT_MARGIN + count * self._PORT_SPACING
+            x = 0 if p.port_type == PortType.INPUT else self.width
+            p.setPos(x, y)
+            count += 1
+
+        self._update_wires()
+        self.update()
+
     def add_field(self, definition: FieldDefinition) -> None:
         """
         Register a field on this node.
