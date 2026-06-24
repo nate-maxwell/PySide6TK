@@ -186,21 +186,16 @@ class BaseNode(QtWidgets.QGraphicsItem):
         if port not in self._ports:
             return
 
-        scene = self.scene()
-        if scene is not None:
-            from PySide6TK.Nodes.graph import GraphView
-
-            for view in scene.views():
-                if isinstance(view, GraphView):
-                    for wire in list(port.wires):
-                        view.destroy_wire(wire)
-                    break
-        else:
-            for wire in list(port.wires):
-                if wire.scene() is not None:
-                    wire.scene().removeItem(wire)
+        for wire in list(port.wires):
+            wire.source.remove_wire(wire)
+            if wire.target is not None:
+                wire.target.remove_wire(wire)
+            if wire.scene() is not None:
+                wire.scene().removeItem(wire)
 
         self._ports.remove(port)
+        if port.scene() is not None:
+            port.scene().removeItem(port)
         port.setParentItem(None)
 
         count = 0
