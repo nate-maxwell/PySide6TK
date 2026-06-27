@@ -111,8 +111,7 @@ class Toolbar(QtWidgets.QToolBar):
             tool_button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
             return tool_button
 
-        tool_button.setStyleSheet(
-            f"""
+        tool_button.setStyleSheet(f"""
             QToolButton {{
                 background: url('{button_image.as_posix()}');
                 background-position: center;            /* Center the image */
@@ -121,8 +120,7 @@ class Toolbar(QtWidgets.QToolBar):
                 background-color: rgba(0, 0, 0, 0.1);   /* Add a semi-transparent black overlay */
                 font-size: 10px;
             }}
-        """
-        )
+        """)
 
         return tool_button
 
@@ -226,4 +224,4 @@ class Toolbar(QtWidgets.QToolBar):
         """The derived class's constructor.
         This will build the toolbar widgets/layout.
         """
-        raise NotImplementedError
+        pass
