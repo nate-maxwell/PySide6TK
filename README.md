@@ -1,47 +1,6 @@
 # PySide6TK
 A library of PySide6 helpers + stylesheets specifically for Windows development.
 
-# Remember!
-
-When adding to the toolkit, be sure to run `PySide6TK._generate_namespace.py`
-to rebuild the `PySide6TK.QtWrappers.py` file before pushing updates.
-
-Internal files do not reference `QtWrappers`.
-When expanding  the toolkit, reference `PySide6TK.SpecificModule` inside other
-modules. This keeps the internal repo clean and customizable while external
-references all flow  through `QtWrappers`.
-
-## Namespaces
-
-Wrapper objects and helper methods can be imported similarly to how PySide
-namespaces are usually handled:
-
-```python
-from PySide6TK import QtWrappers
-
-class Foo(QtWrappers.MainWindow):
-    def __init__(self) -> None:
-        super().__init__('example window')
-        self.wid = QtWrappers.GroupBox('test box')
-        self.setCentralWidget(self.wid)
-
-        
-if __name__ == '__main__':
-    QtWrapers.exec_app(Foo, 'Foo')
-```
-
-Optionally, these same items can be gotten from like so:
-```python
-from PySide6TK.groupbox import GroupBox
-from PySide6TK.main_window import MainWindow
-
-class Foo(MainWindow):
-    def __init__(self) -> None:
-        super().__init__('example window')
-        self.wid = GroupBox('test box')
-        self.setCentralWidget(self.wid)
-```
-
 ## Wrappers
 
 ### Methods
@@ -74,14 +33,13 @@ organized this way.
 
 ## Resources
 
-`PySide6TK.icons` contains path variables to the stored icons while
-`PySide6TK.styles` contains path variables to stored stylesheets. All of which
-can also be gotten from `PySide6TK.QtWrappers`.
+`PySide6TK.resources` contains path variables to the stored icons while
+`PySide6TK.QtWrappers` contains path variables to stored stylesheets.
 
 ## Examples
 
 ### Code Snippets and Example Windows
-PySide6TK._examples is full of example files of code snippets along with
+`PySide6TK._examples` is full of example files of code snippets along with
 `__name__ == '__main__'` idiom blocks to launch an example window showcasing
 the widget.
 
